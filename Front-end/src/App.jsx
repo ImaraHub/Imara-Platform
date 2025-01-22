@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Auth from './components/Auth'; 
 import { 
   Brain, 
   Users, 
@@ -32,8 +33,14 @@ import {
 } from 'lucide-react';
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activePhase, setActivePhase] = useState(1);
+  const [showAuth, setShowAuth] = useState(false); // New state variable
 
+
+  if (showAuth) {
+    return <Auth />;
+  }
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white relative">
       {/* Background Pattern */}
@@ -60,7 +67,9 @@ function App() {
               <a href="#process" className="text-gray-300 hover:text-white transition-colors">Process</a>
               <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
               <a href="#benefits" className="text-gray-300 hover:text-white transition-colors">Benefits</a>
-              <button className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-4 py-2 rounded-lg transition-all">
+              <button
+                onClick={() => setShowAuth(true)} // Added onClick handler
+                className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-4 py-2 rounded-lg transition-all">
                 Sign In
               </button>
             </div>
