@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Auth from './components/Auth'; 
+// import { Globe } from 'lucide-react';
 import { 
   Brain, 
   Users, 
@@ -39,7 +40,7 @@ function App() {
 
 
   if (showAuth) {
-    return <Auth />;
+    return <Auth setShowAuth={setShowAuth} />; // Pass setShowAuth as a prop
   }
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white relative">
