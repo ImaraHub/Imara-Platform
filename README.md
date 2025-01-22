@@ -67,7 +67,7 @@ We welcome developers, contributors, and investors to join us on this journey to
 
 ### Contact
 
-If you have any questions, suggestions, or want to get involved, feel free to reach out to us at [contact@imara-platform.com](mailto: imarahub@gmail.com).
+If you have any questions, suggestions, or want to get involved, feel free to mail: imarahub@gmail.com.
 
 ---
 
