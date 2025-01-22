@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Github, Wallet, Mail, ArrowRight } from 'lucide-react';
 
-function Auth() {
+function Auth({ setShowAuth }) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,6 +14,7 @@ function Auth() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center px-4">
+        
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-4 -left-4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl" />
         <div className="absolute top-1/4 -right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
@@ -31,6 +32,13 @@ function Auth() {
           </p>
         </div>
 
+        {/* Back Button */}
+        <button
+          onClick={() => setShowAuth(false)}
+          className="w-full bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 mb-6 rounded-lg transition-all"
+        >
+          Back to Home
+        </button>
         {/* Auth Options */}
         <div className="space-y-4 mb-8">
           <button className="w-full bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-lg transition-all flex items-center justify-center gap-3 group">
