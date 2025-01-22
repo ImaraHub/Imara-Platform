@@ -135,13 +135,13 @@ function App() {
               />
               <RoleCard
                 icon={<UserCircle />}
-                title="Contributors"
-                description="Experts who enhance projects through research, insights, and specialized knowledge."
+                title="Project Managers"
+                description="Professionals who monitor project milestones, verify progress, and deliver detailed reports to ensure accountability and success"
               />
             </div>
           </div>
         </section>
-
+Experts who enhance projects through research, insights, and specialized knowledge.
         {/* Project Lifecycle Section */}
         <section id="process" className="py-20">
           <div className="container mx-auto px-6">
@@ -185,7 +185,7 @@ function App() {
                   ]}
                 />
               )}
-              {activePhase === 2 && (
+              {activePhase === 3 && (
                 <PhaseContent
                   title="Investor Onboarding"
                   description="Secure backing and refine tokenomics with interested investors."
@@ -196,7 +196,7 @@ function App() {
                   ]}
                 />
               )}
-              {activePhase === 3 && (
+              {activePhase === 2 && (
                 <PhaseContent
                   title="Team Building"
                   description="Assemble your dream team through our bidding system."
