@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Home from './components/Home';
 import Auth from './components/Auth'; 
 // import { Globe } from 'lucide-react';
 import { 
@@ -37,10 +38,17 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activePhase, setActivePhase] = useState(1);
   const [showAuth, setShowAuth] = useState(false); // New state variable
+  const [showHome, setShowHome] = useState(false); // New state for Home page
 
 
-  if (showAuth) {
-    return <Auth setShowAuth={setShowAuth} />; // Pass setShowAuth as a prop
+
+   if (showAuth) {
+    return <Auth setShowAuth={setShowAuth} setShowHome={setShowHome} />; // Pass setShowHome
+  }
+  if (showHome) {
+    return <Home />; // Render Home component when showHome is true
+
+  
   }
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white relative">
