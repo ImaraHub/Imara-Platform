@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Github, Wallet, Mail, ArrowRight } from 'lucide-react';
 
-function Auth({ setShowAuth }) {
+
+function Auth({ setShowAuth, setShowHome }) {  
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -10,6 +11,9 @@ function Auth({ setShowAuth }) {
     e.preventDefault();
     // Handle form submission
     console.log('Form submitted:', { email, password });
+    //simulate login page success
+        setShowAuth(false);  // Hide the Auth page
+    setShowHome(true);    // Show the Home page
   };
 
   return (
@@ -93,6 +97,8 @@ function Auth({ setShowAuth }) {
               required
             />
           </div>
+
+          {/* ✅ Sign In Button Triggers handleSubmit */}
           <button
             type="submit"
             className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
@@ -102,7 +108,7 @@ function Auth({ setShowAuth }) {
           </button>
         </form>
 
-        {/* Toggle Auth Mode */}
+       {/* ✅ Toggle Sign-Up or Sign-In Mode */}
         <p className="mt-8 text-center text-gray-400">
           {isLogin ? "Don't have an account?" : "Already have an account?"}
           <button
