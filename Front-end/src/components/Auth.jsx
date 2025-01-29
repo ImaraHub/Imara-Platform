@@ -3,6 +3,7 @@ import { Github, Wallet, Mail, ArrowRight } from 'lucide-react';
 
 
 function Auth({ setShowAuth, setShowHome }) {  
+
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

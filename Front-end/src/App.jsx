@@ -41,11 +41,14 @@ function App() {
   const [showHome, setShowHome] = useState(false); // New state for Home page
 
 
+
    if (showAuth) {
     return <Auth setShowAuth={setShowAuth} setShowHome={setShowHome} />; // Pass setShowHome
   }
   if (showHome) {
     return <Home />; // Render Home component when showHome is true
+
+  
   }
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white relative">
