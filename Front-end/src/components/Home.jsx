@@ -12,6 +12,7 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
+  Globe,
 } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -65,43 +66,20 @@ function Home() {
 
   const userEmail = "user@example.com"; // This would come from your auth context
 
-  return (
+return (
     <div className="min-h-screen bg-gray-900">
       {/* Navbar */}
       <nav className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src="/vite.svg" alt="Logo" className="w-8 h-8" />
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                <Globe className="w-6 h-6 text-blue-400" />
+              </div>
               <span className="text-xl font-bold text-white">IMARA</span>
             </div>
             
             <div className="flex items-center gap-4">
-              {/* Profile Menu */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center gap-2 bg-gray-700/50 px-3 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-                >
-                  <User className="w-5 h-5 text-gray-300" />
-                  <span className="text-sm text-gray-300">{userEmail}</span>
-                </button>
-                
-                {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-1 z-50">
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
-                      Profile Settings
-                    </button>
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
-                      My Projects
-                    </button>
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
-                      Sign Out
-                    </button>
-                  </div>
-                )}
-              </div>
-
               {/* Role Menu */}
               <div className="relative">
                 <button
@@ -133,6 +111,31 @@ function Home() {
                     <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-3">
                       <Wrench className="w-4 h-4" />
                       Join as Builder
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Profile Menu */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center gap-2 bg-gray-700/50 px-3 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  <User className="w-5 h-5 text-gray-300" />
+                  <span className="text-sm text-gray-300">{userEmail}</span>
+                </button>
+                
+                {showProfileMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-1 z-50">
+                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                      Profile Settings
+                    </button>
+                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                      My Projects
+                    </button>
+                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                      Sign Out
                     </button>
                   </div>
                 )}
