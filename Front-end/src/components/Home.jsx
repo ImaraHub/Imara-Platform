@@ -69,7 +69,7 @@ function Home() {
 return (
     <div className="min-h-screen bg-gray-900">
       {/* Navbar */}
-      <nav className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700">
+      <nav className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -84,35 +84,66 @@ return (
               <div className="relative">
                 <button
                   onClick={() => setShowRoleMenu(!showRoleMenu)}
-                  className="flex items-center gap-2 bg-blue-500/20 px-3 py-2 rounded-lg hover:bg-blue-500/30 transition-colors"
+                  className="flex items-center gap-2 bg-blue-500/20 px-4 py-2 rounded-lg hover:bg-blue-500/30 transition-all duration-200"
                 >
-                  <span className="text-sm text-blue-400">Join As</span>
-                  <ChevronDown className="w-4 h-4 text-blue-400" />
+                  <span className="text-sm font-medium text-blue-400">Join As</span>
+                  <ChevronDown className={`w-4 h-4 text-blue-400 transition-transform duration-200 ${showRoleMenu ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {showRoleMenu && (
-                  <div className="absolute right-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-lg py-1 z-50">
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-3">
-                      <PlusCircle className="w-4 h-4" />
-                      Create an Idea
-                    </button>
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-3">
-                      <Briefcase className="w-4 h-4" />
-                      Join as Investor
-                    </button>
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-3">
-                      <UserCog className="w-4 h-4" />
-                      Join as Project Manager
-                    </button>
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-3">
-                      <Megaphone className="w-4 h-4" />
-                      Join as Marketer
-                    </button>
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 flex items-center gap-3">
-                      <Wrench className="w-4 h-4" />
-                      Join as Builder
-                    </button>
-                  </div>
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowRoleMenu(false)} />
+                    <div className="absolute right-0 mt-2 w-64 bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-lg py-2 z-50 border border-gray-700/50 transform transition-all duration-200 origin-top-right">
+                      <div className="px-4 py-2 border-b border-gray-700/50">
+                        <h3 className="text-sm font-semibold text-gray-400">Choose your role</h3>
+                      </div>
+                      <button className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group">
+                        <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <PlusCircle className="w-4 h-4 text-purple-400" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Create an Idea</div>
+                          <div className="text-xs text-gray-500">Start your own project</div>
+                        </div>
+                      </button>
+                      <button className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group">
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Briefcase className="w-4 h-4 text-blue-400" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Join as Investor</div>
+                          <div className="text-xs text-gray-500">Fund promising projects</div>
+                        </div>
+                      </button>
+                      <button className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group">
+                        <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <UserCog className="w-4 h-4 text-green-400" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Project Manager</div>
+                          <div className="text-xs text-gray-500">Lead project execution</div>
+                        </div>
+                      </button>
+                      <button className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group">
+                        <div className="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Megaphone className="w-4 h-4 text-pink-400" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Join as Marketer</div>
+                          <div className="text-xs text-gray-500">Promote projects</div>
+                        </div>
+                      </button>
+                      <button className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group">
+                        <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Wrench className="w-4 h-4 text-orange-400" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Join as Builder</div>
+                          <div className="text-xs text-gray-500">Develop solutions</div>
+                        </div>
+                      </button>
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -120,24 +151,37 @@ return (
               <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center gap-2 bg-gray-700/50 px-3 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+                  className="flex items-center gap-2 bg-gray-700/50 px-4 py-2 rounded-lg hover:bg-gray-700 transition-all duration-200"
                 >
-                  <User className="w-5 h-5 text-gray-300" />
-                  <span className="text-sm text-gray-300">{userEmail}</span>
+                  <div className="w-8 h-8 rounded-lg bg-gray-600/50 flex items-center justify-center">
+                    <User className="w-4 h-4 text-gray-300" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-300">{userEmail}</span>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`} />
                 </button>
                 
                 {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg py-1 z-50">
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
-                      Profile Settings
-                    </button>
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
-                      My Projects
-                    </button>
-                    <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
-                      Sign Out
-                    </button>
-                  </div>
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+                    <div className="absolute right-0 mt-2 w-56 bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-lg py-2 z-50 border border-gray-700/50">
+                      <div className="px-4 py-2 border-b border-gray-700/50">
+                        <h3 className="text-sm font-semibold text-gray-400">Account</h3>
+                      </div>
+                      <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
+                        <User className="w-4 h-4" />
+                        Profile Settings
+                      </button>
+                      <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
+                        <Briefcase className="w-4 h-4" />
+                        My Projects
+                      </button>
+                      <div className="border-t border-gray-700/50 mt-2 pt-2">
+                        <button className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
+                          Sign Out
+                        </button>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
