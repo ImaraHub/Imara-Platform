@@ -41,14 +41,17 @@ function App() {
   const [showHome, setShowHome] = useState(false); // New state for Home page
 
 
+  const handleSignOut = () => { 
+    setIsAuthenticated(false); // Set isAuthenticated to false
+    setShowHome(false); // Hide Home page
+  }
 
    if (showAuth) {
     return <Auth setShowAuth={setShowAuth} setShowHome={setShowHome} />; // Pass setShowHome
   }
   if (showHome) {
-    return <Home />; // Render Home component when showHome is true
+    return <Home  handleSignOut={handleSignOut}/>; // Render Home component when showHome is true
 
-  
   }
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white relative">

@@ -16,7 +16,7 @@ import {
   Globe,
 } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
+// import {useNavigate} from "react-router-dom";
 const trendingProjects = [
   {
     id: 1,
@@ -57,7 +57,7 @@ const categories = ["All", "DeFi", "NFT", "Gaming", "DAO", "Infrastructure"];
 const stages = ["All Stages", "Ideation", "Development", "Launch Ready"];
 const sortOptions = ["Newest", "Most Popular", "Highest Funded"];
 
-function Home() {
+function Home({ handleSignOut }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStage, setSelectedStage] = useState("All Stages");
@@ -65,6 +65,7 @@ function Home() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
 
+  // const navigate = useNavigate();
   const address = useAddress();
   const [userEmail, setUserEmail] = useState('user@example.com');
   
@@ -184,7 +185,9 @@ return (
                         My Projects
                       </button>
                       <div className="border-t border-gray-700/50 mt-2 pt-2">
-                        <button className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
+                        <button 
+                        onClick={handleSignOut}
+                        className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
                           Sign Out
                         </button>
                       </div>
