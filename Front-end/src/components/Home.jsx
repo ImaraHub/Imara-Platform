@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import {useAddress} from "@thirdweb-dev/react";
 import { Carousel } from 'react-bootstrap';
 import {
   User,
@@ -64,8 +65,15 @@ function Home() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
 
-  const userEmail = "user@example.com"; // This would come from your auth context
-
+  const address = useAddress();
+  const [userEmail, setUserEmail] = useState('user@example.com');
+  
+  useEffect(() => { 
+    if (address) {
+      console.log("Connected wallet address:", address);
+      setUserEmail(address);
+    }
+  }, [address]);
 return (
     <div className="min-h-screen bg-gray-900">
       {/* Navbar */}
