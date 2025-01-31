@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Github, Wallet, Mail, ArrowRight } from 'lucide-react';
-
+import {ConnectWallet} from "@thirdweb-dev/react";
 
 function Auth({ setShowAuth, setShowHome }) {  
 
@@ -51,11 +51,12 @@ function Auth({ setShowAuth, setShowHome }) {
             Continue with GitHub
             <ArrowRight className="w-4 h-4 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
           </button>
-          <button className="w-full bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-lg transition-all flex items-center justify-center gap-3 group">
+          {/* <button className="w-full bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-lg transition-all flex items-center justify-center gap-3 group">
             <Wallet className="w-5 h-5" />
-            Continue with Wallet
+            
             <ArrowRight className="w-4 h-4 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
-          </button>
+          </button> */}
+          <ConnectWallet />
         </div>
 
         {/* Divider */}
