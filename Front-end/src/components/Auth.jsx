@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import { Github, Wallet, Mail, ArrowRight } from 'lucide-react';
-import {ConnectWallet} from "@thirdweb-dev/react";
+import {ConnectWallet, useAddress} from "@thirdweb-dev/react";
+// import {useNavigate} from "react-router-dom";
 
 function Auth({ setShowAuth, setShowHome }) {  
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const address = useAddress();
+  // const navigate = useNavigate();
+
+  useEffect(() => {
+    if (address) {
+      console.log("Connected wallet address:", address);
+      setShowAuth(false);  // Hide the Auth page
+      setShowHome(true);    // Show the Home page
+    }
+  }, [address]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
