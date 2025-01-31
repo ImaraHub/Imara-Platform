@@ -71,7 +71,7 @@ function Home() {
   useEffect(() => { 
     if (address) {
       console.log("Connected wallet address:", address);
-      setUserEmail(address);
+      setUserEmail(address.slice(0, 6) + '...' + address.slice(-4) );
     }
   }, [address]);
 return (
