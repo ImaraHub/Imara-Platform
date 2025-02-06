@@ -9,7 +9,8 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['buffer'],
-    exclude: ['lucide-react', 'chunk-J7JDWDWR']
+    exclude: ['lucide-react', 'chunk-J7JDWDWR'],
+    'process.env': process.env,
   },
   server: {
     host: true, // Enable listening on all network interfaces

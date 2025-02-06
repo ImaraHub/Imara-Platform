@@ -34,12 +34,26 @@ import {
   CheckCircle2,
   ArrowRight
 } from 'lucide-react';
+import { useAddress, useDisconnect } from '@thirdweb-dev/react';
+
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activePhase, setActivePhase] = useState(1);
   const [showAuth, setShowAuth] = useState(false); // New state variable
+  const [showHome, setShowHome] = useState(false); // New state for Home page
+ 
+  
+  const address = useAddress();
+  const disconnect = useDisconnect();
 
+  const handleSignOut = () => { 
+    console.log(`${address} signed out`);
+    disconnect(); // Disconnect the wallet
+    setIsAuthenticated(false); // Set isAuthenticated to false
+    setShowHome(false); // Hide Home page
+    
+  }
 
   // if (showAuth) {
   //   return <Auth setShowAuth={setShowAuth} />; // Pass setShowAuth as a prop
