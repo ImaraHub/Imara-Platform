@@ -14,6 +14,18 @@ import {
   ChevronLeft,
   ChevronRight,
   Globe,
+  ArrowBigUp,
+  ArrowBigDown,
+  MessageSquare,
+  Share2,
+  Facebook,
+  Twitter,
+  Instagram,
+  Send,
+  Copy,
+  X,
+  Link2,
+  Check
 } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 // import {useNavigate} from "react-router-dom";
@@ -64,6 +76,11 @@ function Home({ handleSignOut }) {
   const [selectedSort, setSelectedSort] = useState("Newest");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
+   const [selectedProject, setSelectedProject] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [projects, setProjects] = useState(allProjects);
+  const [copiedLink, setCopiedLink] = useState(false);
+
 
   // const navigate = useNavigate();
   const address = useAddress();
@@ -75,9 +92,99 @@ function Home({ handleSignOut }) {
       setUserEmail(address.slice(0, 6) + '...' + address.slice(-4) );
     }
   }, [address]);
-return (
+   const handleVote = (projectId, voteType) => {
+    setProjects(projects.map(project => {
+      if (project.id === projectId) {
+        const currentVote = project.userVote;
+        let voteDelta = 0;
+
+        if (currentVote === voteType) {
+          voteDelta = voteType === 'up' ? -1 : 1;
+          return {
+            ...project,
+            userVote: null,
+            votes: project.votes + voteDelta
+          };
+        } else {
+          voteDelta = voteType === 'up' ? 
+            (currentVote === 'down' ? 2 : 1) : 
+            (currentVote === 'up' ? -2 : -1);
+          return {
+            ...project,
+            userVote: voteType,
+            votes: project.votes + voteDelta
+          };
+        }
+      }
+      return project;
+    }));
+  };
+
+  const handleCopyLink = (projectId) => {
+    const url = `https://imara.com/project/${projectId}`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  const ShareModal = ({ project, onClose }) => (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md relative">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-white"
+        >
+          <X className="w-6 h-6" />
+        </button>
+        
+        <h3 className="text-xl font-semibold text-white mb-6">Share Project</h3>
+        
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <button className="flex items-center gap-3 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+            <Facebook className="w-5 h-5" />
+            Facebook
+          </button>
+          <button className="flex items-center gap-3 bg-sky-500 text-white px-4 py-3 rounded-lg hover:bg-sky-600 transition-colors">
+            <Twitter className="w-5 h-5" />
+            Twitter
+          </button>
+          <button className="flex items-center gap-3 bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors">
+            <Send className="w-5 h-5" />
+            WhatsApp
+          </button>
+          <button className="flex items-center gap-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg hover:opacity-90 transition-opacity">
+            <Instagram className="w-5 h-5" />
+            Instagram
+          </button>
+        </div>
+
+        <div className="bg-gray-700/50 p-3 rounded-lg flex items-center gap-3">
+          <div className="flex-1 truncate text-gray-300 text-sm">
+            https://imara.com/project/{project.id}
+          </div>
+          <button
+            onClick={() => handleCopyLink(project.id)}
+            className="flex items-center gap-2 bg-gray-600 text-white px-3 py-1.5 rounded-lg hover:bg-gray-500 transition-colors"
+          >
+            {copiedLink ? (
+              <>
+                <Check className="w-4 h-4" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4" />
+                Copy
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+ 
+  return (
     <div className="min-h-screen bg-gray-900">
-      {/* Navbar */}
       <nav className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
@@ -89,7 +196,6 @@ return (
             </div>
             
             <div className="flex items-center gap-4">
-              {/* Role Menu */}
               <div className="relative">
                 <button
                   onClick={() => setShowRoleMenu(!showRoleMenu)}
@@ -156,7 +262,6 @@ return (
                 )}
               </div>
 
-              {/* Profile Menu */}
               <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -185,9 +290,7 @@ return (
                         My Projects
                       </button>
                       <div className="border-t border-gray-700/50 mt-2 pt-2">
-                        <button 
-                        onClick={handleSignOut}
-                        className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
+                        <button className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
                           Sign Out
                         </button>
                       </div>
@@ -200,7 +303,6 @@ return (
         </div>
       </nav>
 
-      {/* Trending Projects Carousel */}
       <div className="container mx-auto px-4 py-8">
         <h2 className="text-2xl font-bold text-white mb-6">Trending Projects</h2>
         <Carousel className="rounded-xl overflow-hidden">
@@ -238,10 +340,8 @@ return (
         </Carousel>
       </div>
 
-      {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
-          {/* Filters Sidebar */}
           <div className="w-64 flex-shrink-0">
             <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <div className="mb-6">
@@ -309,10 +409,9 @@ return (
             </div>
           </div>
 
-          {/* Project Grid */}
           <div className="flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {allProjects.map((project) => (
+              {projects.map((project) => (
                 <div
                   key={project.id}
                   className="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden hover:transform hover:scale-[1.02] transition-all"
@@ -320,12 +419,12 @@ return (
                   <img
                     src={project.image}
                     alt={project.title}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-80 object-cover"
                   />
                   <div className="p-6">
                     <h3 className="text-xl font-semibold text-white mb-2">{project.title}</h3>
                     <p className="text-gray-400 mb-4">{project.description}</p>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-4">
                       <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
                         {project.category}
                       </span>
@@ -339,12 +438,73 @@ return (
                         <span className="text-gray-400 text-sm">{project.progress}%</span>
                       </div>
                     </div>
+
+                    <div className="border-t border-gray-700/50 pt-4 mt-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleVote(project.id, 'up')}
+                            className={`p-1.5 rounded-lg transition-colors ${
+                              project.userVote === 'up'
+                                ? 'bg-green-500/20 text-green-400'
+                                : 'hover:bg-gray-700/50 text-gray-400'
+                            }`}
+                          >
+                            <ArrowBigUp className="w-5 h-5" />
+                          </button>
+                          <span className={`text-sm font-medium ${
+                            project.userVote === 'up'
+                              ? 'text-green-400'
+                              : project.userVote === 'down'
+                              ? 'text-red-400'
+                              : 'text-gray-400'
+                          }`}>
+                            {project.votes}
+                          </span>
+                          <button
+                            onClick={() => handleVote(project.id, 'down')}
+                            className={`p-1.5 rounded-lg transition-colors ${
+                              project.userVote === 'down'
+                                ? 'bg-red-500/20 text-red-400'
+                                : 'hover:bg-gray-700/50 text-gray-400'
+                            }`}
+                          >
+                            <ArrowBigDown className="w-5 h-5" />
+                          </button>
+                        </div>
+
+                        <button className="flex items-center gap-2 text-gray-400 hover:text-gray-300 transition-colors">
+                          <MessageSquare className="w-5 h-5" />
+                          <span className="text-sm">{project.comments}</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setSelectedProject(project);
+                            setShowShareModal(true);
+                          }}
+                          className="flex items-center gap-2 text-gray-400 hover:text-gray-300 transition-colors"
+                        >
+                          <Share2 className="w-5 h-5" />
+                          <span className="text-sm">{project.shares}</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Pagination */}
+            {showShareModal && selectedProject && (
+              <ShareModal
+                project={selectedProject}
+                onClose={() => {
+                  setShowShareModal(false);
+                  setSelectedProject(null);
+                }}
+              />
+            )}
+
             <div className="flex justify-center items-center gap-2 mt-8">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
