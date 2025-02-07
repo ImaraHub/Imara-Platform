@@ -22,9 +22,9 @@ async function createToken({name, symbol, initialSupply, logUrl, address}) {
     
         const receipt = await tx.wait();  // Wait for transaction to be mined
         // EXtract token address from emitted event
-        const event = receipt.events?.find(e => e.event === "TokenCreated");
-        
-        if (event === undefined) {
+        const event = receipt.events?.find(e => e.event === "TokenCreated" || e.event === null);
+
+        if (!event) {
             console.error("TokenCreated event not found in transaction receipt");
         }
         const tokenAddress = event.args[1];
