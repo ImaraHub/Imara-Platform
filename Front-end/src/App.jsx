@@ -77,8 +77,7 @@ function App() {
       <div className="relative">
         {/* Hero Section */}
         <header className="container mx-auto px-6 pt-8">
-          <nav className="flex justify-between items-center mb-16">
-            <div className="flex items-center gap-2">
+        <nav className="fixed top-0 left-0 w-full bg-gray-900 flex justify-between items-center px-6 py-4 z-50 shadow-md">            <div className="flex items-center gap-2">
               <Globe className="w-8 h-8 text-blue-400" />
               <span className="text-2xl font-bold">IMARA</span>
             </div>
