@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import Home from './components/Home';
-import Auth from './components/Auth'; 
+import Auth from './components/Auth';
 // import { Globe } from 'lucide-react';
-import { 
-  Brain, 
-  Users, 
-  Workflow, 
-  Shield, 
+import {
+  Brain,
+  Users,
+  Workflow,
+  Shield,
   Rocket,
   ChevronRight,
   PenTool as Token,
@@ -41,24 +41,24 @@ function App() {
   const [activePhase, setActivePhase] = useState(1);
   const [showAuth, setShowAuth] = useState(false); // New state variable
   const [showHome, setShowHome] = useState(false); // New state for Home page
- 
-  
+
+
   const address = useAddress();
   const disconnect = useDisconnect();
 
-  const handleSignOut = () => { 
+  const handleSignOut = () => {
     console.log(`${address} signed out`);
     disconnect(); // Disconnect the wallet
     setIsAuthenticated(false); // Set isAuthenticated to false
     setShowHome(false); // Hide Home page
-    
+
   }
 
-   if (showAuth) {
+  if (showAuth) {
     return <Auth setShowAuth={setShowAuth} setShowHome={setShowHome} />; // Pass setShowHome
   }
   if (showHome) {
-    return <Home  handleSignOut={handleSignOut}/>; // Render Home component when showHome is true
+    return <Home handleSignOut={handleSignOut} />; // Render Home component when showHome is true
 
   }
   return (
@@ -77,7 +77,7 @@ function App() {
       <div className="relative">
         {/* Hero Section */}
         <header className="container mx-auto px-6 pt-8">
-          <nav className="flex justify-between items-center mb-16">
+          <nav className="fixed top-0 left-0 w-full bg-gray-900 flex justify-between items-center px-6 py-4 z-50 shadow-md">
             <div className="flex items-center gap-2">
               <Globe className="w-8 h-8 text-blue-400" />
               <span className="text-2xl font-bold">IMARA</span>
@@ -106,7 +106,9 @@ function App() {
               A decentralized platform where brilliant ideas meet collaborative execution, powered by blockchain, AI technologies, and a vibrant community of innovators.
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
-              <button className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:scale-105 flex items-center justify-center gap-2">
+              <button
+                onClick={() => setShowAuth(true)} 
+              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:scale-105 flex items-center justify-center gap-2">
                 Launch Your Idea <ChevronRight className="w-5 h-5" />
               </button>
               <button className="bg-white/10 backdrop-blur-sm text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:bg-white/20">
@@ -170,7 +172,7 @@ function App() {
             </div>
           </div>
         </section>
-Experts who enhance projects through research, insights, and specialized knowledge.
+        Experts who enhance projects through research, insights, and specialized knowledge.
         {/* Project Lifecycle Section */}
         <section id="process" className="py-20">
           <div className="container mx-auto px-6">
@@ -190,11 +192,10 @@ Experts who enhance projects through research, insights, and specialized knowled
                 <button
                   key={phase}
                   onClick={() => setActivePhase(phase)}
-                  className={`px-6 py-3 rounded-lg transition-all ${
-                    activePhase === phase
+                  className={`px-6 py-3 rounded-lg transition-all ${activePhase === phase
                       ? 'bg-blue-500 text-white'
                       : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-                  }`}
+                    }`}
                 >
                   Phase {phase}
                 </button>
