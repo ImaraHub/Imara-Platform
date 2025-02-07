@@ -1,5 +1,5 @@
 import {ethers}  from "ethers";
-import TokenFactoryABI from "../../../backend/out/TokenFactory.sol/TokenFactory.json";
+import TokenFactoryABI from "./abi.json";
 // import { useAddress } from '@thirdweb-dev/react';
 
 
