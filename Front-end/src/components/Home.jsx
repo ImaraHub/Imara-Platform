@@ -83,7 +83,6 @@ function Home({ handleSignOut }) {
   const [projects, setProjects] = useState(allProjects);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  const[showIdeationMenu, setShowIdeationMenu] = useState(false);
 
   // const navigate = useNavigate();
   const address = useAddress();

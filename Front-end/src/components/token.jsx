@@ -1,72 +1,68 @@
 import React, { useState } from 'react';
-import {useAddress} from "@thirdweb-dev/react";
-import createToken from '../utils/config';
 import { ArrowLeft, Upload, Link as LinkIcon } from 'lucide-react';
-import Home from './home';
+// import Home from './home';
+import createToken from '../utils/config';
+import {useAddress} from "@thirdweb-dev/react";
 function TokenizationPage({ onSubmit }) {
-    
-    const address = useAddress();
-    const [formData, setFormData] = useState({
-      name: '',
-      symbol: '',
-      description: '',
-      initialSupply: '',
-      decimalPlaces: '',
-      tokenType: 'ERC20',
-      initialDistribution: '',
-      distributionDates: { start: '', end: '' },
-      allocation: '',
-      legalEntity: '',
-      jurisdiction: '',
-      regulatoryCompliance: '',
-      logoUrl: '',
-      whitepaper: '',
-      contactInformation: '',
-      logo: null,
-      socialMediaLinks: { twitter: '', linkedin: '', telegram: '' }
-    });
-  
+  const [formData, setFormData] = useState({
+    name: '',
+    symbol: '',
+    description: '',
+    initialSupply: '',
+    decimalPlaces: '',
+    tokenType: 'ERC20',
+    initialDistribution: '',
+    distributionDates: { start: '', end: '' },
+    allocation: '',
+    legalEntity: '',
+    jurisdiction: '',
+    regulatoryCompliance: '',
+    logoUrl: '',
+    whitepaper: '',
+    contactInformation: '',
+    logo: null,
+    socialMediaLinks: { twitter: '', linkedin: '', telegram: '' }
+  });
+  const address = useAddress();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    const handleChange = (e) => {
-      const { name, value } = e.target;
-      setFormData({ ...formData, [name]: value });
-    };
+      // call creationToken function
+      // print  form data
+      console.log("Form data:", formData);
 
-  
-    const handleSubmit = async (e) => {
-      e.preventDefault();
+      try {
+          const tokenAddress = await createToken({
+            name: formData.name,
+            symbol: formData.symbol,
+            initialSupply: Number(formData.initialSupply),
+            logUrl: formData.logoUrl,
+            address
+          });
 
-        // call creationToken function
-        // print  form data
-        console.log("Form data:", formData);
-
-        try {
-            const tokenAddress = await createToken({
-              name: formData.name,
-              symbol: formData.symbol,
-              initialSupply: Number(formData.initialSupply),
-              logUrl: formData.logoUrl,
-              address
-            });
-
-            if (tokenAddress) {
-              alert(`Token created successfully! Contract Address: ${tokenAddress}`);
-          } else {
-              alert("Token creation failed.");
-          }
-
-            alert("Token created successfully");
-        } catch (error) {
-            alert("Error creating token");
-            console.log("Error creating token:", error);
+          if (tokenAddress) {
+            alert(`Token created successfully! Contract Address: ${tokenAddress}`);
+        } else {
+            alert("Token creation failed.");
         }
 
-      if (onSubmit) {
-        onSubmit(formData);
+          alert("Token created successfully");
+      } catch (error) {
+          alert("Error creating token");
+          console.log("Error creating token:", error);
       }
-    };
+
+    if (onSubmit) {
+      onSubmit(formData);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -357,3 +353,5 @@ function TokenizationPage({ onSubmit }) {
 }
 
 export default TokenizationPage;
+
+
