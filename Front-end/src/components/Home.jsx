@@ -290,7 +290,9 @@ function Home({ handleSignOut }) {
                         My Projects
                       </button>
                       <div className="border-t border-gray-700/50 mt-2 pt-2">
-                        <button className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
+                        <button  
+                        className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50 transition-colors flex items-center gap-3" 
+                        onClick={handleSignOut}>
                           Sign Out
                         </button>
                       </div>
