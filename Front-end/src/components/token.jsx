@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Upload, Link as LinkIcon } from 'lucide-react';
-// import Home from './home';
+import { ArrowLeft, Upload, Link as LinkIcon} from 'lucide-react';
+import Home from './Home';
 import createToken from '../utils/config';
 import {useAddress} from "@thirdweb-dev/react";
+
+
 function TokenizationPage({ onSubmit }) {
   const [formData, setFormData] = useState({
     name: '',
@@ -24,12 +26,16 @@ function TokenizationPage({ onSubmit }) {
     socialMediaLinks: { twitter: '', linkedin: '', telegram: '' }
   });
   const address = useAddress();
+  const [ShowHomepage, setHomePage] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  if (ShowHomepage) {
+    return <Home />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,12 +53,13 @@ function TokenizationPage({ onSubmit }) {
             address
           });
 
-          if (tokenAddress) {
-            alert(`Token created successfully! Contract Address: ${tokenAddress}`);
-        } else {
-            alert("Token creation failed.");
-        }
+        // if (tokenAddress) {
+        //     alert(`Token created successfully! Contract Address: ${tokenAddress}`);
+        // } else {
+        //     alert("Token creation failed.");
+        // }
 
+          setHomePage(true);
           alert("Token created successfully");
       } catch (error) {
           alert("Error creating token");
@@ -69,7 +76,7 @@ function TokenizationPage({ onSubmit }) {
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <button
-          onClick={onBack}
+          onClick={() => window.history.back()} // go back to previous page
           className="mb-8 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
@@ -110,7 +117,7 @@ function TokenizationPage({ onSubmit }) {
                 required
               />
             </label>
-            <label className="block">
+            {/* <label className="block">
               <span className="text-lg font-semibold block mb-2">Description</span>
               <textarea
                 value={formData.description}
@@ -119,7 +126,7 @@ function TokenizationPage({ onSubmit }) {
                 placeholder="Describe the purpose of your token..."
                 required
               />
-            </label>
+            </label> */}
           </div>
 
           {/* Token Specifications */}
@@ -135,7 +142,7 @@ function TokenizationPage({ onSubmit }) {
                 required
               />
             </label>
-            <label className="block">
+            {/* <label className="block">
               <span className="text-lg font-semibold block mb-2">Decimal Places</span>
               <input
                 type="number"
@@ -145,8 +152,8 @@ function TokenizationPage({ onSubmit }) {
                 placeholder="Enter the number of decimal places"
                 required
               />
-            </label>
-            <label className="block">
+            </label> */}
+            {/* <label className="block">
               <span className="text-lg font-semibold block mb-2">Token Type</span>
               <select
                 value={formData.tokenType}
@@ -157,12 +164,12 @@ function TokenizationPage({ onSubmit }) {
                 <option value="ERC721">ERC721</option>
                 <option value="BEP20">BEP20</option>
               </select>
-            </label>
+            </label> */}
           </div>
 
           {/* Token Distribution */}
           <div className="space-y-4">
-            <label className="block">
+            {/* <label className="block">
               <span className="text-lg font-semibold block mb-2">Initial Distribution</span>
               <input
                 type="text"
@@ -172,8 +179,8 @@ function TokenizationPage({ onSubmit }) {
                 placeholder="Describe the initial distribution method"
                 required
               />
-            </label>
-            <label className="block">
+            </label> */}
+            {/* <label className="block">
               <span className="text-lg font-semibold block mb-2">Distribution Dates</span>
               <div className="flex space-x-4">
                 <input
@@ -193,8 +200,8 @@ function TokenizationPage({ onSubmit }) {
                   required
                 />
               </div>
-            </label>
-            <label className="block">
+            </label> */}
+            {/* <label className="block">
               <span className="text-lg font-semibold block mb-2">Allocation</span>
               <input
                 type="text"
@@ -204,12 +211,12 @@ function TokenizationPage({ onSubmit }) {
                 placeholder="Describe the allocation of tokens"
                 required
               />
-            </label>
+            </label> */}
           </div>
 
           {/* Legal and Compliance */}
           <div className="space-y-4">
-            <label className="block">
+            {/* <label className="block">
               <span className="text-lg font-semibold block mb-2">Legal Entity</span>
               <input
                 type="text"
@@ -219,8 +226,8 @@ function TokenizationPage({ onSubmit }) {
                 placeholder="Enter the legal entity name"
                 required
               />
-            </label>
-            <label className="block">
+            </label> */}
+            {/* <label className="block">
               <span className="text-lg font-semibold block mb-2">Jurisdiction</span>
               <input
                 type="text"
@@ -230,8 +237,8 @@ function TokenizationPage({ onSubmit }) {
                 placeholder="Enter the legal jurisdiction"
                 required
               />
-            </label>
-            <label className="block">
+            </label> */}
+            {/* <label className="block">
               <span className="text-lg font-semibold block mb-2">Regulatory Compliance</span>
               <textarea
                 value={formData.regulatoryCompliance}
@@ -240,13 +247,13 @@ function TokenizationPage({ onSubmit }) {
                 placeholder="Describe how your token complies with regulations..."
                 required
               />
-            </label>
+            </label> */}
           </div>
 
           {/* Additional Information */}
           <div className="space-y-4">
             <label className="block">
-              <span className="text-lg font-semibold block mb-2">Website URL</span>
+              <span className="text-lg font-semibold block mb-2">Logo URL</span>
               <div className="relative">
                 <input
                   type="url"
@@ -258,7 +265,7 @@ function TokenizationPage({ onSubmit }) {
                 <LinkIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
               </div>
             </label>
-            <label className="block">
+            {/* <label className="block">
               <span className="text-lg font-semibold block mb-2">Whitepaper</span>
               <div className="relative">
                 <input
@@ -270,8 +277,8 @@ function TokenizationPage({ onSubmit }) {
                 />
                 <LinkIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
               </div>
-            </label>
-            <label className="block">
+            </label> */}
+            {/* <label className="block">
               <span className="text-lg font-semibold block mb-2">Contact Information</span>
               <input
                 type="email"
@@ -281,11 +288,11 @@ function TokenizationPage({ onSubmit }) {
                 placeholder="Enter your contact email"
                 required
               />
-            </label>
+            </label> */}
           </div>
 
           {/* Optional Fields */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <label className="block">
               <span className="text-lg font-semibold block mb-2">Logo</span>
               <div className="relative">
@@ -335,7 +342,7 @@ function TokenizationPage({ onSubmit }) {
                 />
               </div>
             </label>
-          </div>
+          </div> */}
 
           {/* Submit Button */}
           <div className="pt-6">

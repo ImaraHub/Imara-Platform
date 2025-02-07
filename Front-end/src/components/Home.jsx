@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {useAddress} from "@thirdweb-dev/react";
 import { Carousel } from 'react-bootstrap';
-import Ideation from './ideation';
 import {
   User,
   ChevronDown,
@@ -30,7 +29,8 @@ import {
 } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import CreateIdea from './CreateIdea';
-// import {useNavigate} from "react-router-dom";
+
+
 const trendingProjects = [
   {
     id: 1,
