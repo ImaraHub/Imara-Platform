@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {useAddress} from "@thirdweb-dev/react";
 import { Carousel } from 'react-bootstrap';
+import Ideation from './ideation';
 import {
   User,
   ChevronDown,
@@ -16,6 +17,7 @@ import {
   Globe,
 } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+// import 
 // import {useNavigate} from "react-router-dom";
 const trendingProjects = [
   {
@@ -64,6 +66,7 @@ function Home({ handleSignOut }) {
   const [selectedSort, setSelectedSort] = useState("Newest");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
+  const [showIdeationMenu, setShowIdeationMenu] = useState(false);
 
   // const navigate = useNavigate();
   const address = useAddress();
@@ -75,6 +78,10 @@ function Home({ handleSignOut }) {
       setUserEmail(address.slice(0, 6) + '...' + address.slice(-4) );
     }
   }, [address]);
+
+  if (showIdeationMenu) {
+    return <Ideation />
+    }
 return (
     <div className="min-h-screen bg-gray-900">
       {/* Navbar */}
@@ -106,7 +113,7 @@ return (
                       <div className="px-4 py-2 border-b border-gray-700/50">
                         <h3 className="text-sm font-semibold text-gray-400">Choose your role</h3>
                       </div>
-                      <button className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group">
+                      <button className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group"  onClick={()=> setShowIdeationMenu(true)}>
                         <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                           <PlusCircle className="w-4 h-4 text-purple-400" />
                         </div>
