@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Hash, Link as LinkIcon, Upload, ArrowLeft } from 'lucide-react';
+import TokenizationPage from './token';
 
 function CreateIdea({ onBack }) {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ function CreateIdea({ onBack }) {
     image: null
   });
   const [charCount, setCharCount] = useState(0);
+  const [showTokenPage, setTokenPage] = useState(false);
 
   const handleDetailsChange = (e) => {
     const text = e.target.value;
@@ -17,9 +19,15 @@ function CreateIdea({ onBack }) {
     setFormData(prev => ({ ...prev, details: text }));
   };
 
+  if (showTokenPage) {
+    return <TokenizationPage />;
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle form submission
+    return < TokenizationPage/>; // Remove this line
+
     console.log('Form submitted:', formData);
   };
 
@@ -176,6 +184,7 @@ function CreateIdea({ onBack }) {
             <button
               type="submit"
               className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90"
+              onClick={() => setTokenPage(true)}
             >
               Publish Idea
             </button>

@@ -29,7 +29,8 @@ import {
 } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import CreateIdea from './CreateIdea';
-// import {useNavigate} from "react-router-dom";
+
+
 const trendingProjects = [
   {
     id: 1,

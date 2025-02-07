@@ -5,11 +5,12 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   define: {
-    'process.env': process.env,
+    'process.env': {},
   },
   optimizeDeps: {
     include: ['buffer'],
-    exclude: ['lucide-react'],
+    exclude: ['lucide-react', 'chunk-J7JDWDWR'],
+    'process.env': process.env,
   },
   server: {
     host: true, // Enable listening on all network interfaces
