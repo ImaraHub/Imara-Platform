@@ -18,7 +18,7 @@ contract TokenFactory {
     mapping(address => TokenDetails) public tokens; // address token contract to its details
 
     event TokenCreated(address indexed creator, address tokenAddress);
-    // indexed; parameter becmes part of event's topic; creator address becomes searchable
+    // indexed; parameter becomes part of event's topic; creator address becomes searchable
         /**
     * @dev Create token
     */
