@@ -29,7 +29,7 @@ import {
   Check
 } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-// import 
+import CreateIdea from './CreateIdea';
 // import {useNavigate} from "react-router-dom";
 const trendingProjects = [
   {
@@ -89,6 +89,8 @@ function Home({ handleSignOut }) {
   const address = useAddress();
   const [userEmail, setUserEmail] = useState('user@example.com');
 
+  const[showIdeationMenu, setShowIdeationMenu] = useState(false);
+  
   useEffect(() => { 
     if (address) {
       console.log("Connected wallet address:", address);
@@ -124,7 +126,7 @@ function Home({ handleSignOut }) {
   };
 
   if (showIdeationMenu) {
-    return <Ideation />;
+    return <CreateIdea />;
   }
 
   const handleCopyLink = (projectId) => {
@@ -219,9 +221,8 @@ function Home({ handleSignOut }) {
                       <div className="px-4 py-2 border-b border-gray-700/50">
                         <h3 className="text-sm font-semibold text-gray-400">Choose your role</h3>
                       </div>
-                      <button 
-                        className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group" 
-                        onClick={()=> setShowIdeationMenu(true)}>
+                      <button className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group"
+                      onClick={()=> setShowIdeationMenu(true)}>
                         <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                           <PlusCircle className="w-4 h-4 text-purple-400" />
                         </div>
