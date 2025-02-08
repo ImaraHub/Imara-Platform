@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {useAddress} from "@thirdweb-dev/react";
 import { Carousel } from 'react-bootstrap';
+import BuilderProfile from './BuilderProfile';
 import {
   User,
   ChevronDown,
@@ -82,13 +83,16 @@ function Home({ handleSignOut }) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [projects, setProjects] = useState(allProjects);
   const [copiedLink, setCopiedLink] = useState(false);
+   const [showBuilderProfile, setShowBuilderProfile] = useState(false);
 
 
   // const navigate = useNavigate();
   const address = useAddress();
   const [userEmail, setUserEmail] = useState('user@example.com');
 
-  const[showIdeationMenu, setShowIdeationMenu] = useState(false);
+  const [showIdeationMenu, setShowIdeationMenu] = useState(false);
+
+
   
   useEffect(() => { 
     if (address) {
@@ -127,7 +131,9 @@ function Home({ handleSignOut }) {
   if (showIdeationMenu) {
     return <CreateIdea />;
   }
-
+    if (showBuilderProfile) {
+    return <BuilderProfile onBack={() => setShowBuilderProfile(false)} />;
+  }
   const handleCopyLink = (projectId) => {
     const url = `https://imara.com/project/${projectId}`;
     navigator.clipboard.writeText(url);
@@ -257,7 +263,9 @@ function Home({ handleSignOut }) {
                           <div className="text-xs text-gray-500">Promote projects</div>
                         </div>
                       </button>
-                      <button className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group">
+                      <button
+                        onClick={() => setShowBuilderProfile(true)}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group">
                         <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                           <Wrench className="w-4 h-4 text-orange-400" />
                         </div>
