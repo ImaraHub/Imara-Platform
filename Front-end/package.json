@@ -11,15 +11,15 @@
   },
   "dependencies": {
     "@thirdweb-dev/react": "^4.9.4",
-    "buffer": "^6.0.3",
-    "react-query": "^3.39.3",
     "bootstrap": "^5.3.3",
+    "buffer": "^6.0.3",
+    "ipfs-http-client": "^60.0.1",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.8",
     "react-dom": "^18.3.1",
+    "react-query": "^3.39.3",
     "react-router-dom": "^7.1.4"
-
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
