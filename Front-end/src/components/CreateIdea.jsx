@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Hash, Link as LinkIcon, Upload, ArrowLeft } from 'lucide-react';
 import TokenizationPage from './token';
+import { createClient } from '@supabase/supabase-js'
 
 function CreateIdea({ onBack }) {
   const [formData, setFormData] = useState({
