@@ -3,16 +3,51 @@ import { Hash, Link as LinkIcon, Upload, ArrowLeft } from 'lucide-react';
 import TokenizationPage from './token';
 import { createClient } from '@supabase/supabase-js'
 
-function CreateIdea({ onBack }) {
+import { checkIfImage } from '../utils';
+import { uploadToIPFS } from '../Infura';
+
+
+
+const CreateIdea = ({ onBack }) => {
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [charCount, setCharCount] = useState(0);
+  const [showTokenPage, setTokenPage] = useState(false);
+
   const [formData, setFormData] = useState({
     title: '',
     details: '',
     link: '',
     license: 'cc0',
-    image: null
+    image: ''
   });
-  const [charCount, setCharCount] = useState(0);
-  const [showTokenPage, setTokenPage] = useState(false);
+
+  const handleFormFieldChange = (fieldName, e) => {
+    setForm({ ...formData, [fieldName]: e.target.value })
+  }
+
+const makeInteraction = (e) => {
+  e.preventDefault();
+  const {title, details,link, license, image } = formData;
+  const myCall = contract.populate('create-idea+', [title, details, link, uploadedFile])
+  setIsLoading(true)
+  contract['scwerre'](myCall.calldata).then((res) => {
+    console.info("Successful Response:", res)
+}).catch((err) => {
+    console.error("Error: ", err)
+}).finally(() => {
+    setIsLoading(false)
+}) 
+}
+
+const handleFileChange = async (e) => {
+  // console.log(e)
+  var file = e.target.files[0];
+  const response = await uploadToIPFS(file);
+  console.log(response);
+  setUploadedFile(response)
+
+}
+
 
   const handleDetailsChange = (e) => {
     const text = e.target.value;
@@ -24,13 +59,31 @@ function CreateIdea({ onBack }) {
     return <TokenizationPage />;
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    return < TokenizationPage/>; // Remove this line
+    //prove to see whether the form submits the data
+    console.log(formData);
 
-    console.log('Form submitted:', formData);
-  };
+    checkIfImage(formData.image, async (exists) => {
+      if(exists) {
+        setIsLoading(true)
+        setIsLoading(false);
+        navigate('/');
+      } else {
+        alert('Provide valid image URL')
+        setForm({ ...formData, image: '' });
+        console.log('Form submitted:', formData);
+      }
+    })
+  }
+
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   // Handle form submission
+  //   return < TokenizationPage/>; // Remove this line
+
+  //   console.log('Form submitted:', formData);
+  // };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -116,7 +169,9 @@ function CreateIdea({ onBack }) {
                 <input
                   type="file"
                   accept=".png"
+                  value={formData.image}
                   onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.files[0] }))}
+                  // handleChange={handleFileChange}
                   className="hidden"
                   id="image-upload"
                 />
