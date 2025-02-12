@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {useAddress} from "@thirdweb-dev/react";
 import { Carousel } from 'react-bootstrap';
 import BuilderProfile from './BuilderProfile';
+import ViewIdea from './ViewIdea';
 import {
   User,
   ChevronDown,
@@ -91,6 +92,7 @@ function Home({ handleSignOut }) {
   const [userEmail, setUserEmail] = useState('user@example.com');
 
   const [showIdeationMenu, setShowIdeationMenu] = useState(false);
+  const [showsetIdeaPage, setIdeaPage] = useState(false);
 
 
   
@@ -133,6 +135,9 @@ function Home({ handleSignOut }) {
   }
     if (showBuilderProfile) {
     return <BuilderProfile onBack={() => setShowBuilderProfile(false)} />;
+  }
+  if (setIdeaPage) {
+    return <ViewIdea />;
   }
   const handleCopyLink = (projectId) => {
     const url = `https://imara.com/project/${projectId}`;
@@ -322,7 +327,7 @@ function Home({ handleSignOut }) {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8" onClick={() => setIdeaPage(true)}>
         <h2 className="text-2xl font-bold text-white mb-6">Trending Projects</h2>
         <Carousel className="rounded-xl overflow-hidden">
           {trendingProjects.map((project) => (

@@ -18,11 +18,21 @@ import {
   X
 } from 'lucide-react';
 
-function ViewIdea({ project, onBack }) {
+function ViewIdea({onBack }) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [comment, setComment] = useState('');
+
+  const project = 
+    {
+      id: 1,
+      title: "DeFi Lending Platform",
+      description: "Decentralized lending platform with AI-driven risk assessment",
+      image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60",
+      category: "DeFi",
+      progress: 75
+    };
 
   const handleCopyLink = () => {
     const url = `https://imara.com/project/${project.id}`;
