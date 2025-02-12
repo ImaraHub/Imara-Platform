@@ -92,7 +92,7 @@ function Home({ handleSignOut }) {
   const [userEmail, setUserEmail] = useState('user@example.com');
 
   const [showIdeationMenu, setShowIdeationMenu] = useState(false);
-  const [showsetIdeaPage, setIdeaPage] = useState(false);
+  const [showIdeaPage, setIdeaPage] = useState(false);
 
 
   
@@ -136,7 +136,7 @@ function Home({ handleSignOut }) {
     if (showBuilderProfile) {
     return <BuilderProfile onBack={() => setShowBuilderProfile(false)} />;
   }
-  if (setIdeaPage) {
+  if (showIdeaPage) {
     return <ViewIdea />;
   }
   const handleCopyLink = (projectId) => {
@@ -327,18 +327,18 @@ function Home({ handleSignOut }) {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-8" onClick={() => setIdeaPage(true)}>
+      <div className="container mx-auto px-4 py-8" >
         <h2 className="text-2xl font-bold text-white mb-6">Trending Projects</h2>
         <Carousel className="rounded-xl overflow-hidden">
           {trendingProjects.map((project) => (
             <Carousel.Item key={project.id}>
-              <div className="relative h-[400px]">
+              <div className="relative h-[400px]" >
                 <img
                   className="w-full h-full object-cover"
                   src={project.image}
                   alt={project.title}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" >
                   <div className="absolute bottom-0 left-0 right-0 p-8">
                     <h3 className="text-3xl font-bold text-white mb-2">{project.title}</h3>
                     <p className="text-gray-200 mb-4">{project.description}</p>
@@ -439,6 +439,7 @@ function Home({ handleSignOut }) {
                 <div
                   key={project.id}
                   className="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden hover:transform hover:scale-[1.02] transition-all"
+                  onClick={() => setIdeaPage(true)}
                 >
                   <img
                     src={project.image}
