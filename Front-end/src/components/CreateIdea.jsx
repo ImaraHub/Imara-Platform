@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Hash, Link as LinkIcon, Upload, ArrowLeft } from 'lucide-react';
-import TokenizationPage from './token';
+import Home from './Home';
 import { createClient } from '@supabase/supabase-js'
 
 import { checkIfImage } from '../utils';
@@ -56,7 +56,7 @@ const handleFileChange = async (e) => {
   };
 
   if (showTokenPage) {
-    return <TokenizationPage />;
+    return <Home/>;
   }
 
   const handleSubmit = async (e) => {
