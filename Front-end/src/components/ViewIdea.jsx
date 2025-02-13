@@ -31,7 +31,17 @@ function ViewIdea({onBack }) {
       description: "Decentralized lending platform with AI-driven risk assessment",
       image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60",
       category: "DeFi",
-      progress: 75
+      progress: 0,
+      createdAt: "2022-01-01",
+      problemStatement:"Traditional lending platforms rely on centralized entities, resulting in high fees, limited user access, and a lack of interoperability between blockchain ecosystems.",
+      solution: "Our project aims to create a decentralized lending platform that leverages AI-driven risk assessment to provide low-cost loans to users across different blockchain networks.",
+      technicalRequirements: ["Smart Contracts", "Oracles", "AI/ML Models"],
+      comments: [
+        {  "author": "John Doe", "date": "2022-01-01", "text": "Great project! Looking forward to contributing." },
+      ],
+      status: "In Progress",
+      license: "MIT",
+      tags: ["DeFi", "AI", "Blockchain"],
     };
 
   const handleCopyLink = () => {
@@ -155,7 +165,7 @@ function ViewIdea({onBack }) {
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Project Description</h2>
               <div className="prose prose-invert max-w-none">
-                <p className="text-gray-300 whitespace-pre-wrap">{project.details}</p>
+                <p className="text-gray-300 whitespace-pre-wrap">{project.description}</p>
               </div>
             </section>
 
@@ -263,7 +273,9 @@ function ViewIdea({onBack }) {
                 </button>
               </div>
               <button className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity">
-                Join Project
+                <h3 className="text-lg">
+                  Stack
+                </h3>
               </button>
             </div>
 
