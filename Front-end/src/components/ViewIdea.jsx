@@ -17,12 +17,13 @@ import {
   Check,
   X
 } from 'lucide-react';
-
+import Stake from './stake';
 function ViewIdea({onBack }) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [comment, setComment] = useState('');
+  const [showStake,setShowStake] = useState(false);
 
   const project = 
     {
@@ -50,6 +51,10 @@ function ViewIdea({onBack }) {
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
+
+  if (showStake){
+    return <Stake />
+  }
 
   const handleComment = (e) => {
     e.preventDefault();
@@ -272,9 +277,11 @@ function ViewIdea({onBack }) {
                   Share
                 </button>
               </div>
-              <button className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity">
+              <button 
+              onClick={() => setShowStake(true)}
+              className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity">
                 <h3 className="text-lg">
-                  Stack
+                  Stake
                 </h3>
               </button>
             </div>
