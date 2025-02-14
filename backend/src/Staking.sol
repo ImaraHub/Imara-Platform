@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract LiskStaking {
+contract Staking {
     uint256 public constant STAKE_AMOUNT =  0.0003 ether; // Fixed stake amount (0 ETH for testing)
     uint256 public constant ESTIMATED_APR = 1867; // 18.67% APR (scaled by 100 for precision)
     address public owner;
