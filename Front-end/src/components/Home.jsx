@@ -434,12 +434,13 @@ function Home({ handleSignOut }) {
           </div>
 
           <div className="flex-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            onClick={() => setIdeaPage(true)}>
               {projects.map((project) => (
                 <div
                   key={project.id}
                   className="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden hover:transform hover:scale-[1.02] transition-all"
-                  onClick={() => setIdeaPage(true)}
+                  
                 >
                   <img
                     src={project.image}

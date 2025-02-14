@@ -39,7 +39,7 @@ const stakingStats = {
           </div>
           <div className="text-right">
             <div className="text-gray-400 mb-1">Rewards Available</div>
-            <div className="text-xl text-white">0 LSK</div>
+            <div className="text-xl text-white">0 ETH</div>
           </div>
         </div>
 

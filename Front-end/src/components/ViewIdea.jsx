@@ -18,6 +18,8 @@ import {
   X
 } from 'lucide-react';
 import Stake from './stake';
+import stakeToken from '../utils/stake';
+
 function ViewIdea({onBack }) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -63,6 +65,21 @@ function ViewIdea({onBack }) {
     setComment('');
     setShowCommentBox(false);
   };
+
+  const handleStake = async() => {
+    try {
+      const stake = await stakeToken();
+      if (stake){
+        setShowStake(true);
+        <Stake />
+      }
+     
+      alert("Staking Successful");
+    } catch (error) {
+      console.error("Error staking token:", error);
+    }
+
+  }
 
   const ShareModal = ({ onClose }) => (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -278,12 +295,13 @@ function ViewIdea({onBack }) {
                 </button>
               </div>
               <button 
-              onClick={() => setShowStake(true)}
+              onClick={() => handleStake()}
               className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity">
                 <h3 className="text-lg">
-                  Stake
+                  Stake to Join
                 </h3>
               </button>
+             
             </div>
 
             {/* Project Links */}
@@ -352,8 +370,10 @@ function ViewIdea({onBack }) {
       {showShareModal && (
         <ShareModal onClose={() => setShowShareModal(false)} />
       )}
+      {/* {showStake && <Stake />} */}
     </div>
   );
+  
 }
 
 export default ViewIdea;
