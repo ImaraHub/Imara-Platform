@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {useAddress} from "@thirdweb-dev/react";
 import { Carousel } from 'react-bootstrap';
 import BuilderProfile from './BuilderProfile';
+import ViewIdea from './ViewIdea';
 import {
   User,
   ChevronDown,
@@ -91,6 +92,7 @@ function Home({ handleSignOut }) {
   const [userEmail, setUserEmail] = useState('user@example.com');
 
   const [showIdeationMenu, setShowIdeationMenu] = useState(false);
+  const [showIdeaPage, setIdeaPage] = useState(false);
 
 
   
@@ -133,6 +135,9 @@ function Home({ handleSignOut }) {
   }
     if (showBuilderProfile) {
     return <BuilderProfile onBack={() => setShowBuilderProfile(false)} />;
+  }
+  if (showIdeaPage) {
+    return <ViewIdea />;
   }
   const handleCopyLink = (projectId) => {
     const url = `https://imara.com/project/${projectId}`;
@@ -322,18 +327,18 @@ function Home({ handleSignOut }) {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8" >
         <h2 className="text-2xl font-bold text-white mb-6">Trending Projects</h2>
         <Carousel className="rounded-xl overflow-hidden">
           {trendingProjects.map((project) => (
             <Carousel.Item key={project.id}>
-              <div className="relative h-[400px]">
+              <div className="relative h-[400px]" >
                 <img
                   className="w-full h-full object-cover"
                   src={project.image}
                   alt={project.title}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" >
                   <div className="absolute bottom-0 left-0 right-0 p-8">
                     <h3 className="text-3xl font-bold text-white mb-2">{project.title}</h3>
                     <p className="text-gray-200 mb-4">{project.description}</p>
@@ -429,11 +434,13 @@ function Home({ handleSignOut }) {
           </div>
 
           <div className="flex-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            onClick={() => setIdeaPage(true)}>
               {projects.map((project) => (
                 <div
                   key={project.id}
                   className="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden hover:transform hover:scale-[1.02] transition-all"
+                  
                 >
                   <img
                     src={project.image}

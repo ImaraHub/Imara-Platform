@@ -37,4 +37,6 @@ async function createToken({name, symbol, initialSupply, logUrl, address}) {
     }
 }
 
+
+
 export default createToken;
