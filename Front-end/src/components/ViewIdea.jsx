@@ -54,10 +54,6 @@ function ViewIdea({onBack }) {
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  if (showStake){
-    return <Stake />
-  }
-
   const handleComment = (e) => {
     e.preventDefault();
     // Handle comment submission
@@ -65,18 +61,25 @@ function ViewIdea({onBack }) {
     setComment('');
     setShowCommentBox(false);
   };
+  const [isStaking, setIsStaking] = useState(false);
+  const [stakeSuccess, setStakeSuccess] = useState(false);
 
   const handleStake = async() => {
+    setIsStaking(true);
     try {
       const stake = await stakeToken();
-      if (stake){
-        setShowStake(true);
-        <Stake />
-      }
+      console.log("here to print");
+      // if (stake){
+        console.log(" inside stake condition; here to print");
+        setStakeSuccess(true); // set to true if stake is successful
+  
+      // }
      
       alert("Staking Successful");
     } catch (error) {
       console.error("Error staking token:", error);
+    } finally {
+      setIsStaking(false); // reset loading state
     }
 
   }
@@ -296,9 +299,10 @@ function ViewIdea({onBack }) {
               </div>
               <button 
               onClick={() => handleStake()}
+              disabled={isStaking}
               className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity">
                 <h3 className="text-lg">
-                  Stake to Join
+                  {isStaking ? "Staking..." : stakeSuccess ?"Staked successfully 🎉" : "Stake to Join"}
                 </h3>
               </button>
              
