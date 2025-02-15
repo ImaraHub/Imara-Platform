@@ -100,7 +100,7 @@ function App() {
               Transform Ideas into Reality with IMARA
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
-              A decentralized platform where brilliant ideas meet collaborative execution, powered by blockchain and a vibrant community of innovators.
+              A decentralized tool where brilliant ideas meet collaborative execution, powered by blockchain and a vibrant community of innovators.
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               <button
@@ -108,9 +108,9 @@ function App() {
               className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:scale-105 flex items-center justify-center gap-2">
                 Launch Your Idea <ChevronRight className="w-5 h-5" />
               </button>
-              <button className="bg-white/10 backdrop-blur-sm text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:bg-white/20">
+              {/* <button className="bg-white/10 backdrop-blur-sm text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:bg-white/20">
                 Explore Projects
-              </button>
+              </button> */}
             </div>
           </div>
 
