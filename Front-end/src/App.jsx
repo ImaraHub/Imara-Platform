@@ -230,28 +230,13 @@ function App() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               <FeatureCard
                 icon={<Token />}
-                title="Idea Tokenization"
-                description="Transform ideas into valuable tokens, enabling stakeholder participation and investment"
+                title="Idea Initialization"
+                description="Create your idea and state the goals and everything needed for your project"
               />
               <FeatureCard
                 icon={<MessageSquare />}
                 title="Collaboration Hub"
-                description="Connect with experts, developers, and investors in a unified workspace"
-              />
-              <FeatureCard
-                icon={<Vote />}
-                title="Democratic Governance"
-                description="Community-driven decision making through transparent voting mechanisms"
-              />
-              <FeatureCard
-                icon={<Wallet />}
-                title="Secure Payments"
-                description="Milestone-based escrow payments ensuring fair compensation"
-              />
-              <FeatureCard
-                icon={<Code />}
-                title="AI Integration"
-                description="Leverage AI for idea generation, refinement, and market analysis"
+                description="Connect with experts and developers in a unified workspace"
               />
               <FeatureCard
                 icon={<Target />}
