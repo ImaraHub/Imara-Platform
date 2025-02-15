@@ -84,6 +84,10 @@ function ViewIdea({onBack }) {
 
   }
 
+  if (showStake) {
+    return <Stake />
+  }
+
   const ShareModal = ({ onClose }) => (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
       <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md relative">
@@ -305,6 +309,18 @@ function ViewIdea({onBack }) {
                   {isStaking ? "Staking..." : stakeSuccess ?"Staked successfully 🎉" : "Stake to Join"}
                 </h3>
               </button>
+
+              {/* New Button Appears After Successful Staking */}
+            
+              {stakeSuccess && (
+                <button
+                  onClick={() => setShowStake(true)}
+                  className="w-full px-6 py-3 mt-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity">
+                <h3 className="text-lg">
+                  Continue
+                  </h3>
+                </button>
+              )}
              
             </div>
 
