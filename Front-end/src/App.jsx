@@ -166,7 +166,7 @@ function App() {
 
             {/* Phase Selector */}
             <div className="flex flex-wrap justify-center gap-4 mb-12">
-              {[1, 2, 3, 4].map((phase) => (
+              {[1, 2, 3].map((phase) => (
                 <button
                   key={phase}
                   onClick={() => setActivePhase(phase)}
@@ -188,26 +188,14 @@ function App() {
                   description="Transform your concept into a structured project within the IMARA ecosystem."
                   steps={[
                     { icon: <Lightbulb />, text: "Submit your innovative idea" },
-                    { icon: <Token />, text: "Define initial token parameters" },
                     { icon: <Target />, text: "Set project goals and vision" }
-                  ]}
-                />
-              )}
-              {activePhase === 3 && (
-                <PhaseContent
-                  title="Investor Onboarding"
-                  description="Secure backing and refine tokenomics with interested investors."
-                  steps={[
-                    { icon: <DollarSign />, text: "Attract initial investment" },
-                    { icon: <LineChart />, text: "Finalize tokenomics" },
-                    { icon: <Lock />, text: "Lock committed funds" }
                   ]}
                 />
               )}
               {activePhase === 2 && (
                 <PhaseContent
                   title="Team Building"
-                  description="Assemble your dream team through our bidding system."
+                  description="Stake to be part of a team and collaborate to build"
                   steps={[
                     { icon: <Users />, text: "Open roles for bidding" },
                     { icon: <Vote />, text: "Review and select contributors" },
@@ -215,14 +203,14 @@ function App() {
                   ]}
                 />
               )}
-              {activePhase === 4 && (
+              {activePhase === 3 && (
                 <PhaseContent
                   title="Execution"
                   description="Bring your idea to life through structured milestones."
                   steps={[
                     { icon: <Milestone />, text: "Create project milestones" },
                     { icon: <Timer />, text: "Track progress and deliverables" },
-                    { icon: <CheckCircle2 />, text: "Complete and launch" }
+                    { icon: <CheckCircle2 />, text: "Complete and move to the chosen protocal" }
                   ]}
                 />
               )}
@@ -234,9 +222,6 @@ function App() {
         <section id="features" className="py-20 bg-gradient-to-b from-gray-800/50 to-gray-900/50">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <div className="inline-block px-4 py-1 bg-purple-500/10 rounded-full text-purple-400 text-sm font-semibold mb-4">
-                Platform Features
-              </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything You Need to Succeed</h2>
               <p className="text-gray-400 max-w-2xl mx-auto">
                 Our comprehensive suite of tools and features empowers your journey from ideation to execution.
