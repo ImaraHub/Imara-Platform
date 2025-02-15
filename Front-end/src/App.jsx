@@ -251,12 +251,9 @@ function App() {
         <section id="benefits" className="py-20">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <div className="inline-block px-4 py-1 bg-indigo-500/10 rounded-full text-indigo-400 text-sm font-semibold mb-4">
-                Why Choose IMARA
-              </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">The IMARA Advantage</h2>
               <p className="text-gray-400 max-w-2xl mx-auto">
-                Experience the benefits of our decentralized ecosystem for idea development.
+                Experience the benefits of our governance tool for idea development.
               </p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -276,11 +273,6 @@ function App() {
                 description="Access to a growing ecosystem of innovators, investors, and industry experts"
               />
               <BenefitCard
-                icon={<Zap />}
-                title="AI-Powered"
-                description="Leverage artificial intelligence for idea validation and optimization"
-              />
-              <BenefitCard
                 icon={<Award />}
                 title="Quality Assurance"
                 description="Rigorous vetting process ensures high-quality projects and contributors"
@@ -295,7 +287,7 @@ function App() {
         </section>
 
         {/* CTA */}
-        <section className="py-20">
+        {/* <section className="py-20">
           <div className="container mx-auto px-6">
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 to-purple-600">
               <div className="absolute inset-0">
@@ -319,7 +311,7 @@ function App() {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Footer */}
         <footer className="bg-gray-900/80 backdrop-blur-sm py-12">
