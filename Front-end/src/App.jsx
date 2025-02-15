@@ -154,14 +154,10 @@ function App() {
             </div>
           </div>
         </section>
-        Experts who enhance projects through research, insights, and specialized knowledge.
         {/* Project Lifecycle Section */}
         <section id="process" className="py-20">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <div className="inline-block px-4 py-1 bg-blue-500/10 rounded-full text-blue-400 text-sm font-semibold mb-4">
-                Project Lifecycle
-              </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">From Concept to Reality</h2>
               <p className="text-gray-400 max-w-2xl mx-auto">
                 Experience our structured approach to bringing ideas to life through collaborative effort.
