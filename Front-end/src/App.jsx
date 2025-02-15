@@ -96,14 +96,11 @@ function App() {
           </nav>
 
           <div className="max-w-4xl mx-auto text-center py-20">
-            <div className="inline-block px-4 py-1 bg-blue-500/10 rounded-full text-blue-400 text-sm font-semibold mb-6">
-              The Future of Collaborative Innovation
-            </div>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-500 to-indigo-400 text-transparent bg-clip-text leading-tight">
               Transform Ideas into Reality with IMARA
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
-              A decentralized platform where brilliant ideas meet collaborative execution, powered by blockchain, AI technologies, and a vibrant community of innovators.
+              A decentralized platform where brilliant ideas meet collaborative execution, powered by blockchain and a vibrant community of innovators.
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               <button
