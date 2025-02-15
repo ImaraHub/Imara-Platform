@@ -323,7 +323,7 @@ function App() {
                   <span className="text-xl font-bold">IMARA</span>
                 </div>
                 <p className="text-gray-400">
-                  Transforming how ideas evolve into impactful realities through decentralized collaboration.
+                  Transforming how ideas evolve into impactful realities through collaboration.
                 </p>
               </div>
               <div>
