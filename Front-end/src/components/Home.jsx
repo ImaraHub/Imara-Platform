@@ -267,15 +267,6 @@ function Home({ handleSignOut }) {
                           <div className="text-xs text-gray-500">Lead project execution</div>
                         </div>
                       </button>
-                      <button className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group">
-                        <div className="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <Megaphone className="w-4 h-4 text-pink-400" />
-                        </div>
-                        <div>
-                          <div className="font-medium">Join as Marketer</div>
-                          <div className="text-xs text-gray-500">Promote projects</div>
-                        </div>
-                      </button>
                       <button
                         onClick={() => setShowBuilderProfile(true)}
                         className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group">

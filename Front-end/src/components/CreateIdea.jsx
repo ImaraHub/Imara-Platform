@@ -25,28 +25,28 @@ const CreateIdea = ({ onBack }) => {
     setForm({ ...formData, [fieldName]: e.target.value })
   }
 
-const makeInteraction = (e) => {
-  e.preventDefault();
-  const {title, details,link, license, image } = formData;
-  const myCall = contract.populate('create-idea+', [title, details, link, uploadedFile])
-  setIsLoading(true)
-  contract['scwerre'](myCall.calldata).then((res) => {
-    console.info("Successful Response:", res)
-}).catch((err) => {
-    console.error("Error: ", err)
-}).finally(() => {
-    setIsLoading(false)
-}) 
-}
+  const makeInteraction = (e) => {
+    e.preventDefault();
+    const { title, details, link, license, image } = formData;
+    const myCall = contract.populate('create-idea+', [title, details, link, uploadedFile])
+    setIsLoading(true)
+    contract['scwerre'](myCall.calldata).then((res) => {
+      console.info("Successful Response:", res)
+    }).catch((err) => {
+      console.error("Error: ", err)
+    }).finally(() => {
+      setIsLoading(false)
+    })
+  }
 
-const handleFileChange = async (e) => {
-  // console.log(e)
-  var file = e.target.files[0];
-  const response = await uploadToIPFS(file);
-  console.log(response);
-  setUploadedFile(response)
+  const handleFileChange = async (e) => {
+    // console.log(e)
+    var file = e.target.files[0];
+    const response = await uploadToIPFS(file);
+    console.log(response);
+    setUploadedFile(response)
 
-}
+  }
 
 
   const handleDetailsChange = (e) => {
@@ -56,7 +56,7 @@ const handleFileChange = async (e) => {
   };
 
   if (showTokenPage) {
-    return <Home/>;
+    return <Home />;
   }
 
   const handleSubmit = async (e) => {
@@ -65,7 +65,7 @@ const handleFileChange = async (e) => {
     console.log(formData);
 
     checkIfImage(formData.image, async (exists) => {
-      if(exists) {
+      if (exists) {
         setIsLoading(true)
         setIsLoading(false);
         navigate('/');
@@ -101,9 +101,9 @@ const handleFileChange = async (e) => {
         <div className="max-w-3xl mx-auto mb-12 text-center">
           <h1 className="text-3xl md:text-4xl font-bold mb-6">Create Your Idea</h1>
           <p className="text-xl text-gray-300">
-            Join the ideas community, <span className="text-blue-400">#share</span>, 
-            <span className="text-purple-400"> #connect</span>, 
-            <span className="text-green-400"> #inspire</span>, and get 
+            Join the ideas community, <span className="text-blue-400">#share</span>,
+            <span className="text-purple-400"> #connect</span>,
+            <span className="text-green-400"> #inspire</span>, and get
             <span className="text-pink-400"> #inspired</span>!
           </p>
         </div>
@@ -136,13 +136,13 @@ const handleFileChange = async (e) => {
                 Describe your idea in detail, including:
               </span>
               <ul className="list-disc list-inside text-gray-400 text-sm mb-4 space-y-2">
-                <li>Problem statement - What issue are you addressing?</li>
-                <li>Solution overview - How does your idea solve this problem?</li>
-                <li>Target audience - Who will benefit from this?</li>
-                <li>Technical requirements - What technologies will you use?</li>
-                <li>Implementation plan - How will you build this?</li>
-                <li>Success metrics - How will you measure impact?</li>
-                <li>Collaboration needs - What kind of help do you need?</li>
+                <li>Problem statement
+                  Solution overview
+                  Target audience
+                  Technical requirements
+                  Implementation plan
+                  Success metrics
+                  Collaboration needs</li>
               </ul>
               <textarea
                 value={formData.details}
