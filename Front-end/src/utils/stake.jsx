@@ -15,8 +15,10 @@ async function stakeToken() {
     const stakeFactory = new ethers.Contract(stakeContractAddress, stakeFactoryABI.abi, signer);
 
     try {
-        const tx = await stakeFactory.stake();
-    
+        const tx = await stakeFactory.stake({
+            value: ethers.utils.parseEther("0.0003"), // Correctly converts ETH to Wei
+            gasLimit: 500000 // Set manual gas limit
+        }); 
         const receipt = await tx.wait();  // Wait for transaction to be mined
         // EXtract token address from emitted event
         // const event = receipt.events?.find(e => e.event === "Staked" || e.event === null);
