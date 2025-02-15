@@ -96,14 +96,11 @@ function App() {
           </nav>
 
           <div className="max-w-4xl mx-auto text-center py-20">
-            <div className="inline-block px-4 py-1 bg-blue-500/10 rounded-full text-blue-400 text-sm font-semibold mb-6">
-              The Future of Collaborative Innovation
-            </div>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-400 via-purple-500 to-indigo-400 text-transparent bg-clip-text leading-tight">
               Transform Ideas into Reality with IMARA
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
-              A decentralized platform where brilliant ideas meet collaborative execution, powered by blockchain, AI technologies, and a vibrant community of innovators.
+              A decentralized tool where brilliant ideas meet collaborative execution, powered by blockchain and a vibrant community of innovators.
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               <button
@@ -111,18 +108,18 @@ function App() {
               className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:scale-105 flex items-center justify-center gap-2">
                 Launch Your Idea <ChevronRight className="w-5 h-5" />
               </button>
-              <button className="bg-white/10 backdrop-blur-sm text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:bg-white/20">
+              {/* <button className="bg-white/10 backdrop-blur-sm text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:bg-white/20">
                 Explore Projects
-              </button>
+              </button> */}
             </div>
           </div>
 
           {/* Stats Section */}
           <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 py-12 px-6 bg-white/5 backdrop-blur-sm rounded-2xl mb-20">
-            <StatCard number="1000+" label="Active Projects" />
-            <StatCard number="50k+" label="Community Members" />
-            <StatCard number="$2M+" label="Total Investments" />
-            <StatCard number="95%" label="Success Rate" />
+            <StatCard number="2+" label="Active Projects" />
+            <StatCard number="5+" label="Community Members" />
+            <StatCard number="$0" label="Total Investments" />
+            <StatCard number="85%" label="Success Rate" />
           </div>
         </header>
 
@@ -130,9 +127,9 @@ function App() {
         <section id="roles" className="py-20 bg-gradient-to-b from-gray-800/50 to-gray-900/50">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <div className="inline-block px-4 py-1 bg-purple-500/10 rounded-full text-purple-400 text-sm font-semibold mb-4">
+              {/* <div className="inline-block px-4 py-1 bg-purple-500/10 rounded-full text-purple-400 text-sm font-semibold mb-4">
                 Ecosystem Participants
-              </div>
+              </div> */}
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Join Our Diverse Community</h2>
               <p className="text-gray-400 max-w-2xl mx-auto">
                 IMARA brings together various stakeholders, each playing a crucial role in bringing ideas to life.
@@ -150,21 +147,6 @@ function App() {
                 description="Skilled developers and implementors who turn concepts into working solutions through their expertise."
               />
               <RoleCard
-                icon={<Megaphone />}
-                title="KOL/Marketers"
-                description="Influencers and marketing experts who drive awareness and engagement for projects."
-              />
-              <RoleCard
-                icon={<Bot />}
-                title="AI Agents"
-                description="Intelligent systems that assist in idea generation, market analysis, and project optimization."
-              />
-              <RoleCard
-                icon={<DollarSign />}
-                title="Investors"
-                description="Visionary backers who provide financial support and guidance to promising projects."
-              />
-              <RoleCard
                 icon={<UserCircle />}
                 title="Project Managers"
                 description="Professionals who monitor project milestones, verify progress, and deliver detailed reports to ensure accountability and success"
@@ -172,14 +154,10 @@ function App() {
             </div>
           </div>
         </section>
-        Experts who enhance projects through research, insights, and specialized knowledge.
         {/* Project Lifecycle Section */}
         <section id="process" className="py-20">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <div className="inline-block px-4 py-1 bg-blue-500/10 rounded-full text-blue-400 text-sm font-semibold mb-4">
-                Project Lifecycle
-              </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">From Concept to Reality</h2>
               <p className="text-gray-400 max-w-2xl mx-auto">
                 Experience our structured approach to bringing ideas to life through collaborative effort.
@@ -188,7 +166,7 @@ function App() {
 
             {/* Phase Selector */}
             <div className="flex flex-wrap justify-center gap-4 mb-12">
-              {[1, 2, 3, 4].map((phase) => (
+              {[1, 2, 3].map((phase) => (
                 <button
                   key={phase}
                   onClick={() => setActivePhase(phase)}
@@ -210,26 +188,14 @@ function App() {
                   description="Transform your concept into a structured project within the IMARA ecosystem."
                   steps={[
                     { icon: <Lightbulb />, text: "Submit your innovative idea" },
-                    { icon: <Token />, text: "Define initial token parameters" },
                     { icon: <Target />, text: "Set project goals and vision" }
-                  ]}
-                />
-              )}
-              {activePhase === 3 && (
-                <PhaseContent
-                  title="Investor Onboarding"
-                  description="Secure backing and refine tokenomics with interested investors."
-                  steps={[
-                    { icon: <DollarSign />, text: "Attract initial investment" },
-                    { icon: <LineChart />, text: "Finalize tokenomics" },
-                    { icon: <Lock />, text: "Lock committed funds" }
                   ]}
                 />
               )}
               {activePhase === 2 && (
                 <PhaseContent
                   title="Team Building"
-                  description="Assemble your dream team through our bidding system."
+                  description="Stake to be part of a team and collaborate to build"
                   steps={[
                     { icon: <Users />, text: "Open roles for bidding" },
                     { icon: <Vote />, text: "Review and select contributors" },
@@ -237,14 +203,14 @@ function App() {
                   ]}
                 />
               )}
-              {activePhase === 4 && (
+              {activePhase === 3 && (
                 <PhaseContent
                   title="Execution"
                   description="Bring your idea to life through structured milestones."
                   steps={[
                     { icon: <Milestone />, text: "Create project milestones" },
                     { icon: <Timer />, text: "Track progress and deliverables" },
-                    { icon: <CheckCircle2 />, text: "Complete and launch" }
+                    { icon: <CheckCircle2 />, text: "Complete and move to the chosen protocal" }
                   ]}
                 />
               )}
@@ -256,9 +222,6 @@ function App() {
         <section id="features" className="py-20 bg-gradient-to-b from-gray-800/50 to-gray-900/50">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <div className="inline-block px-4 py-1 bg-purple-500/10 rounded-full text-purple-400 text-sm font-semibold mb-4">
-                Platform Features
-              </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything You Need to Succeed</h2>
               <p className="text-gray-400 max-w-2xl mx-auto">
                 Our comprehensive suite of tools and features empowers your journey from ideation to execution.
@@ -267,28 +230,13 @@ function App() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               <FeatureCard
                 icon={<Token />}
-                title="Idea Tokenization"
-                description="Transform ideas into valuable tokens, enabling stakeholder participation and investment"
+                title="Idea Initialization"
+                description="Create your idea and state the goals and everything needed for your project"
               />
               <FeatureCard
                 icon={<MessageSquare />}
                 title="Collaboration Hub"
-                description="Connect with experts, developers, and investors in a unified workspace"
-              />
-              <FeatureCard
-                icon={<Vote />}
-                title="Democratic Governance"
-                description="Community-driven decision making through transparent voting mechanisms"
-              />
-              <FeatureCard
-                icon={<Wallet />}
-                title="Secure Payments"
-                description="Milestone-based escrow payments ensuring fair compensation"
-              />
-              <FeatureCard
-                icon={<Code />}
-                title="AI Integration"
-                description="Leverage AI for idea generation, refinement, and market analysis"
+                description="Connect with experts and developers in a unified workspace"
               />
               <FeatureCard
                 icon={<Target />}
@@ -303,12 +251,9 @@ function App() {
         <section id="benefits" className="py-20">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <div className="inline-block px-4 py-1 bg-indigo-500/10 rounded-full text-indigo-400 text-sm font-semibold mb-4">
-                Why Choose IMARA
-              </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">The IMARA Advantage</h2>
               <p className="text-gray-400 max-w-2xl mx-auto">
-                Experience the benefits of our decentralized ecosystem for idea development.
+                Experience the benefits of our governance tool for idea development.
               </p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -328,11 +273,6 @@ function App() {
                 description="Access to a growing ecosystem of innovators, investors, and industry experts"
               />
               <BenefitCard
-                icon={<Zap />}
-                title="AI-Powered"
-                description="Leverage artificial intelligence for idea validation and optimization"
-              />
-              <BenefitCard
                 icon={<Award />}
                 title="Quality Assurance"
                 description="Rigorous vetting process ensures high-quality projects and contributors"
@@ -347,7 +287,7 @@ function App() {
         </section>
 
         {/* CTA */}
-        <section className="py-20">
+        {/* <section className="py-20">
           <div className="container mx-auto px-6">
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 to-purple-600">
               <div className="absolute inset-0">
@@ -371,7 +311,7 @@ function App() {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Footer */}
         <footer className="bg-gray-900/80 backdrop-blur-sm py-12">
@@ -383,7 +323,7 @@ function App() {
                   <span className="text-xl font-bold">IMARA</span>
                 </div>
                 <p className="text-gray-400">
-                  Transforming how ideas evolve into impactful realities through decentralized collaboration.
+                  Transforming how ideas evolve into impactful realities through collaboration.
                 </p>
               </div>
               <div>

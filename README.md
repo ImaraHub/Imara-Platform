@@ -2,7 +2,8 @@
 
 ## Overview
 
-IMARA is a decentralized platform that leverages blockchain and AI technologies to revolutionize the execution of ideas through collaborative effort. The platform facilitates idea generation, tokenization, collaboration, investment, and project implementation with transparency and efficiency.
+IMARA is a governance tool to help serious blockchain builders across the world connect and collaborate by using existing staking systems as a commitment mechanism.
+
 
 ## Current Status
 
@@ -12,9 +13,8 @@ IMARA is a decentralized platform that leverages blockchain and AI technologies 
 
 ### Core Features
 
-- **Idea Creation and Tokenization**
-  - Users can input their own concepts or utilize an AI agent to generate and refine ideas.
-  - Each idea launches a unique token representing equity or value in the project.
+- **Idea Creation**
+  - Users can input their own concepts and ideas.
 
 - **Collaboration and Contribution**
   - Contributors add value by conducting research, providing expertise, and enhancing the idea’s feasibility.
@@ -22,7 +22,6 @@ IMARA is a decentralized platform that leverages blockchain and AI technologies 
 
 - **Project Growth and Ranking**
   - Ideas gain popularity with community engagement.
-  - Projects are ranked based on community votes, contribution quality, and market capitalization.
 
 - **Investment and Budgeting**
   - Projects reaching high engagement attract investors who lock in capital for development.
