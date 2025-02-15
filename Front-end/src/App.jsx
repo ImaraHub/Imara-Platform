@@ -116,10 +116,10 @@ function App() {
 
           {/* Stats Section */}
           <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 py-12 px-6 bg-white/5 backdrop-blur-sm rounded-2xl mb-20">
-            <StatCard number="1000+" label="Active Projects" />
-            <StatCard number="50k+" label="Community Members" />
-            <StatCard number="$2M+" label="Total Investments" />
-            <StatCard number="95%" label="Success Rate" />
+            <StatCard number="2+" label="Active Projects" />
+            <StatCard number="5+" label="Community Members" />
+            <StatCard number="$0" label="Total Investments" />
+            <StatCard number="85%" label="Success Rate" />
           </div>
         </header>
 
@@ -127,9 +127,9 @@ function App() {
         <section id="roles" className="py-20 bg-gradient-to-b from-gray-800/50 to-gray-900/50">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <div className="inline-block px-4 py-1 bg-purple-500/10 rounded-full text-purple-400 text-sm font-semibold mb-4">
+              {/* <div className="inline-block px-4 py-1 bg-purple-500/10 rounded-full text-purple-400 text-sm font-semibold mb-4">
                 Ecosystem Participants
-              </div>
+              </div> */}
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Join Our Diverse Community</h2>
               <p className="text-gray-400 max-w-2xl mx-auto">
                 IMARA brings together various stakeholders, each playing a crucial role in bringing ideas to life.
@@ -145,21 +145,6 @@ function App() {
                 icon={<Building2 />}
                 title="Builders"
                 description="Skilled developers and implementors who turn concepts into working solutions through their expertise."
-              />
-              <RoleCard
-                icon={<Megaphone />}
-                title="KOL/Marketers"
-                description="Influencers and marketing experts who drive awareness and engagement for projects."
-              />
-              <RoleCard
-                icon={<Bot />}
-                title="AI Agents"
-                description="Intelligent systems that assist in idea generation, market analysis, and project optimization."
-              />
-              <RoleCard
-                icon={<DollarSign />}
-                title="Investors"
-                description="Visionary backers who provide financial support and guidance to promising projects."
               />
               <RoleCard
                 icon={<UserCircle />}
