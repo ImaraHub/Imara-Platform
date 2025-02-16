@@ -1,19 +1,19 @@
 import React, { useState, useRef } from 'react';
 import { ArrowLeft, Upload, X, Github, Linkedin, Twitter, FileText, Globe, MessageSquare } from 'lucide-react';
-
+import  Home  from './Home';
 // Tech stack options
 const techStackOptions = [
-  'JavaScript', 'TypeScript', 'Python', 'Java', 'Solidity',
-  'React', 'Vue.js', 'Angular', 'Node.js', 'Express',
-  'MongoDB', 'PostgreSQL', 'AWS', 'Docker', 'Kubernetes',
+  'JavaScript', 'TypeScript', 'Solidity',
+  'React',
+  'MongoDB', 'PostgreSQL',
   'Web3.js', 'Ethers.js', 'Hardhat', 'Truffle', 'Smart Contracts'
 ];
 
 // Interest options
 const interestOptions = [
   'Web3', 'Blockchain', 'DeFi', 'NFTs', 'DAOs',
-  'AI/ML', 'Cloud Computing', 'DevOps', 'Open Source',
-  'Cybersecurity', 'IoT', 'Mobile Development', 'UI/UX Design'
+  'AI/ML', 
+  'Cybersecurity','Mobile Development', 'UI/UX Design'
 ];
 
 function BuilderProfile({ onBack }) {
@@ -44,6 +44,7 @@ function BuilderProfile({ onBack }) {
   const [bioCharCount, setBioCharCount] = useState(0);
   const fileInputRef = useRef(null);
   const resumeInputRef = useRef(null);
+  const [showHomePage, setHomePage] = useState(false);
 
   const handleProfilePicture = (e) => {
     const file = e.target.files[0];
@@ -112,7 +113,12 @@ function BuilderProfile({ onBack }) {
     e.preventDefault();
     // Handle form submission
     console.log('Form submitted:', formData);
+    setHomePage(true); // Show the Home page
   };
+
+  if (showHomePage) {
+    return <Home/>;
+    }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -229,7 +235,7 @@ function BuilderProfile({ onBack }) {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Wallet Address */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Wallet Address
                 </label>
@@ -240,10 +246,10 @@ function BuilderProfile({ onBack }) {
                   className="w-full px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="0x..."
                 />
-              </div>
+              </div> */}
 
               {/* Website */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Personal Website/Portfolio
                 </label>
@@ -254,10 +260,10 @@ function BuilderProfile({ onBack }) {
                   className="w-full px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="https://"
                 />
-              </div>
+              </div> */}
 
               {/* Resume Upload */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Resume/CV
                 </label>
@@ -280,7 +286,7 @@ function BuilderProfile({ onBack }) {
                     </span>
                   </button>
                 </div>
-              </div>
+              </div> */}
 
               {/* Years of Experience */}
               <div>
@@ -396,7 +402,7 @@ function BuilderProfile({ onBack }) {
               </div>
 
               {/* Twitter */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Twitter URL
                 </label>
@@ -410,10 +416,10 @@ function BuilderProfile({ onBack }) {
                   />
                   <Twitter className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" />
                 </div>
-              </div>
+              </div> */}
 
               {/* Medium */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Medium URL
                 </label>
@@ -427,10 +433,10 @@ function BuilderProfile({ onBack }) {
                   />
                   <MessageSquare className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" />
                 </div>
-              </div>
+              </div> */}
 
               {/* Dev.to */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Dev.to URL
                 </label>
@@ -444,10 +450,10 @@ function BuilderProfile({ onBack }) {
                   />
                   <Globe className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" />
                 </div>
-              </div>
+              </div> */}
 
               {/* Telegram */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Telegram URL
                 </label>
@@ -461,7 +467,7 @@ function BuilderProfile({ onBack }) {
                   />
                   <MessageSquare className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" />
                 </div>
-              </div>
+              </div> */}
             </div>
           </section>
 
@@ -482,7 +488,7 @@ function BuilderProfile({ onBack }) {
           </section>
 
           {/* Additional Links */}
-          <section className="space-y-6">
+          {/* <section className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-semibold">Additional Links</h2>
               <button
@@ -531,7 +537,7 @@ function BuilderProfile({ onBack }) {
                 </div>
               ))}
             </div>
-          </section>
+          </section> */}
 
           {/* Interests */}
           <section className="space-y-6">

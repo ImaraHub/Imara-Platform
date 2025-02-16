@@ -64,7 +64,7 @@ const trendingProjects = [
 
 const allProjects = Array.from({ length: 9 }, (_, i) => ({
   id: i + 1,
-  title: `Project ${i + 1}`,
+  title: `Project Imara`,
   description: "An innovative blockchain project revolutionizing the industry",
   category: ["DeFi", "NFT", "Gaming", "DAO"][Math.floor(Math.random() * 4)],
   progress: Math.floor(Math.random() * 100),
