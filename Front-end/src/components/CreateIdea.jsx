@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Hash, Link as LinkIcon, Upload, ArrowLeft, Plus, X, HelpCircle, Users, Brain } from 'lucide-react';
+import { Hash, Link as LinkIcon, Upload, ArrowLeft, Plus, X, HelpCircle, Users, Brain, Clock, Check } from 'lucide-react';
 import Home from './Home';
 import { createClient } from '@supabase/supabase-js'
 
@@ -14,6 +14,9 @@ const CreateIdea = ({ onBack }) => {
   const [showTokenPage, setTokenPage] = useState(false);
   const [newResource, setNewResource] = useState({ role: '', count: 1, description: '' });
   const [showResourceForm, setShowResourceForm] = useState(false);
+  const [customDuration, setCustomDuration] = useState('');
+  const [showCustomDurationForm, setShowCustomDurationForm] = useState(false);
+
 
   const [formData, setFormData] = useState({
     title: '',
@@ -22,7 +25,8 @@ const CreateIdea = ({ onBack }) => {
     license: 'cc0',
       image: null,
     resources: [],
-    needsProjectManager: false
+     needsProjectManager: false,
+    timeline: null
   });
 
   const handleDetailsChange = (e) => {
@@ -53,6 +57,31 @@ const CreateIdea = ({ onBack }) => {
     e.preventDefault();
     // Handle form submission
     console.log('Form submitted:', formData);
+  };
+
+    const timelineOptions = [
+    '1-3 months',
+    '3-6 months',
+    '6-12 months',
+    '1-2 years',
+    'Custom'
+    ];
+  
+    const handleTimelineChange = (value) => {
+    if (value === 'Custom') {
+      setShowCustomDurationForm(true);
+      setFormData(prev => ({ ...prev, timeline: null }));
+    } else {
+      setShowCustomDurationForm(false);
+      setFormData(prev => ({ ...prev, timeline: value }));
+      setCustomDuration('');
+    }
+  };
+const handleCustomDurationSubmit = () => {
+    if (customDuration.trim()) {
+      setFormData(prev => ({ ...prev, timeline: customDuration }));
+      setShowCustomDurationForm(false);
+    }
   };
 
   return (
@@ -127,6 +156,86 @@ const CreateIdea = ({ onBack }) => {
             </label>
           </div>
 
+              {/* Project Timeline Section */}
+          <div className="space-y-4 bg-gray-800/30 rounded-xl p-6 border border-gray-700/50">
+            <div className="flex items-center gap-2 mb-4">
+              <Clock className="w-5 h-5 text-green-400" />
+              <h2 className="text-lg font-semibold">Project Timeline</h2>
+            </div>
+            
+            {formData.timeline ? (
+              <div className="flex items-center justify-between bg-gray-700/30 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-green-400" />
+                  <span className="font-medium text-white">{formData.timeline}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, timeline: null }))}
+                  className="p-1.5 text-gray-400 hover:text-red-400 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Expected Duration
+                  </label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {timelineOptions.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => handleTimelineChange(option)}
+                        className="px-4 py-2 rounded-lg text-sm font-medium transition-all bg-white/5 text-gray-300 border border-gray-700 hover:bg-white/10"
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {showCustomDurationForm && (
+                  <div className="bg-gray-700/30 rounded-lg p-4 space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Specify Custom Duration
+                      </label>
+                      <input
+                        type="text"
+                        value={customDuration}
+                        onChange={(e) => setCustomDuration(e.target.value)}
+                        className="w-full px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
+                        placeholder="e.g., 18 months, 2.5 years"
+                      />
+                    </div>
+                    <div className="flex justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowCustomDurationForm(false);
+                          setCustomDuration('');
+                        }}
+                        className="px-4 py-2 text-gray-400 hover:text-gray-300 transition-colors text-sm"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCustomDurationSubmit}
+                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm flex items-center gap-2"
+                      >
+                        <Check className="w-4 h-4" />
+                        Set Duration
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           {/* Required Resources Section */}
           <div className="space-y-4 bg-gray-800/30 rounded-xl p-6 border border-gray-700/50">
             <div className="flex items-center justify-between mb-4">
@@ -312,7 +421,7 @@ const CreateIdea = ({ onBack }) => {
           </div> */}
 
           {/* License Section */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <label className="block">
               <span className="text-lg font-semibold block mb-2">License</span>
               <select
@@ -337,7 +446,7 @@ const CreateIdea = ({ onBack }) => {
                 </a>
               </span>
             </label>
-          </div>
+          </div> */}
 
           {/* Submit Button */}
           <div className="pt-6">
