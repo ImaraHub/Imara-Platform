@@ -91,7 +91,8 @@ function Home({ handleSignOut }) {
 
   // const navigate = useNavigate();
   const address = useAddress();
-  const [userEmail, setUserEmail] = useState('user@example.com');
+  const email = localStorage.getItem("userEmail");
+  const [userEmail, setUserEmail] = useState(email);
 
   const [showIdeationMenu, setShowIdeationMenu] = useState(false);
   const [showIdeaPage, setIdeaPage] = useState(false);
