@@ -12,15 +12,28 @@ export const addIdea = async (formData, user) => {
     try {
     
         // Insert idea along with the authenticated user's UID
-        const { title, details, link, license, image } = formData;
+        const { title, details, link, license,image, resources, timeline } = formData;
+        const needsprojectmanager = formData.needsProjectManager; 
+
+        // Ensure resources is formatted correctly
+        const formattedResources = resources ? JSON.stringify(resources) : null;
 
         // Insert Data into Database
         const { data, error } = await supabase.
         from('ideas')
-        .insert([{title, details, link, license, image, uid: user.id}]);
+        .insert([{
+            title, 
+            details, 
+            link, 
+            license, 
+            image,
+            resources : formattedResources,
+            needsprojectmanager,
+            timeline, 
+            uid: user.id}]);
     
         if (error) {
-          console.error("Insert error:", error);
+          console.error("Insert error:", error.message, error.details, error.hint);
           return null;
         }
     
@@ -43,6 +56,17 @@ export const uploadImageToSupabase = async (image, user) => {
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `${fileName}`;
 
+    // Upload image
+    const { data: uploadData, error: uploadError } = await supabase
+    .storage
+    .from('ideaImages')
+    .upload(filePath, image);
+
+    if (uploadError) {
+        console.error("Error uploading image:", uploadError);
+        return null;
+    }
+
     // Fetch public URL correctly
     const { data: publicUrlData, error: urlError } = supabase
         .storage
@@ -63,19 +87,21 @@ export const uploadImageToSupabase = async (image, user) => {
 
 export const displayIdeas = () => {
 
-    const[data, setData] = useState([]);
-    
+    const [data, setData] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
             const { data, error } = await supabase.from('ideas').select('*');
+            if (error) {
+                console.error("Error fetching ideas:", error);
+                return;
+            }
             setData(data);
-        }
+        };
         fetchData();
-
-        console.log(data);
     }, []);
 
+    return data;
 }
 
 
