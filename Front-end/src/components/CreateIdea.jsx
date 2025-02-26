@@ -402,52 +402,6 @@ const handleCustomDurationSubmit = () => {
               </div>
             </label>
           </div>
-
-          {/* Link Section */}
-          {/* <div className="space-y-4">
-            <label className="block">
-              <span className="text-lg font-semibold block mb-2">Link (Optional)</span>
-              <div className="relative">
-                <input
-                  type="url"
-                  value={formData.link}
-                  onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))}
-                  className="w-full pl-10 pr-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
-                  placeholder="https://example.com"
-                />
-                <LinkIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-              </div>
-            </label>
-          </div> */}
-
-          {/* License Section */}
-          {/* <div className="space-y-4">
-            <label className="block">
-              <span className="text-lg font-semibold block mb-2">License</span>
-              <select
-                value={formData.license}
-                onChange={(e) => setFormData(prev => ({ ...prev, license: e.target.value }))}
-                className="w-full px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
-              >
-                <option value="cc0">CC0 (Public Domain)</option>
-                <option value="cc-by">CC BY</option>
-                <option value="cc-by-sa">CC BY-SA</option>
-                <option value="cc-by-nc">CC BY-NC</option>
-              </select>
-              <span className="text-gray-400 text-sm block mt-2">
-                Creative Commons licenses give everyone from individual creators to large institutions a standardized way to grant the public permission to use their creative work under copyright law.{' '}
-                <a
-                  href="https://creativecommons.org/licenses/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  Learn more about Creative Commons licenses »
-                </a>
-              </span>
-            </label>
-          </div> */}
-
           {/* Submit Button */}
           <div className="pt-6">
             <button
