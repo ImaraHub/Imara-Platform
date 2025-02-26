@@ -64,7 +64,7 @@ const trendingProjects = [
 
 const allProjects = Array.from({ length: 9 }, (_, i) => ({
   id: i + 1,
-  title: `Project ${i + 1}`,
+  title: `Project Imara`,
   description: "An innovative blockchain project revolutionizing the industry",
   category: ["DeFi", "NFT", "Gaming", "DAO"][Math.floor(Math.random() * 4)],
   progress: Math.floor(Math.random() * 100),
@@ -136,12 +136,8 @@ function Home({ handleSignOut }) {
   if (showIdeationMenu) {
     return <CreateIdea />;
   }
-    if (showBuilderProfile) {
-    return <BuilderProfile onBack={() => setShowBuilderProfile(false)} />;
-    }
-   if (showProjectManager) {
-    return <ProjectManager onBack={() => setshowProjectManager(false)} />;
-  }
+  
+  
   if (showIdeaPage) {
     return <ViewIdea />;
   }
@@ -223,65 +219,14 @@ function Home({ handleSignOut }) {
             <div className="flex items-center gap-4">
               <div className="relative">
                 <button
-                  onClick={() => setShowRoleMenu(!showRoleMenu)}
+                  onClick={() => setShowIdeationMenu(true)}
                   className="flex items-center gap-2 bg-blue-500/20 px-4 py-2 rounded-lg hover:bg-blue-500/30 transition-all duration-200"
-                >
-                  <span className="text-sm font-medium text-blue-400">Join As</span>
-                  <ChevronDown className={`w-4 h-4 text-blue-400 transition-transform duration-200 ${showRoleMenu ? 'rotate-180' : ''}`} />
+                > <PlusCircle className="w-4 h-4 text-purple-400" />
+                  <span className="text-sm font-medium text-purple-400">Create an Idea</span>
+                
                 </button>
                 
-                {showRoleMenu && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setShowRoleMenu(false)} />
-                    <div className="absolute right-0 mt-2 w-64 bg-gray-800/95 backdrop-blur-sm rounded-xl shadow-lg py-2 z-50 border border-gray-700/50 transform transition-all duration-200 origin-top-right">
-                      <div className="px-4 py-2 border-b border-gray-700/50">
-                        <h3 className="text-sm font-semibold text-gray-400">Choose your role</h3>
-                      </div>
-                      <button className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group"
-                      onClick={()=> setShowIdeationMenu(true)}>
-                        <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <PlusCircle className="w-4 h-4 text-purple-400" />
-                        </div>
-                        <div>
-                          <div className="font-medium">Create an Idea</div>
-                          <div className="text-xs text-gray-500">Start your own project</div>
-                        </div>
-                      </button>
-                      <button className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group">
-                        <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <Briefcase className="w-4 h-4 text-blue-400" />
-                        </div>
-                        <div>
-                          <div className="font-medium">Join as Investor</div>
-                          <div className="text-xs text-gray-500">Fund promising projects</div>
-                        </div>
-                      </button >
-                     <button 
-                        onClick={() => setShowProjectManager(true)}
-                        className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <UserCog className="w-4 h-4 text-green-400" />
-                        </div>
-                        <div>
-                          <div className="font-medium">Project Manager</div>
-                          <div className="text-xs text-gray-500">Lead project execution</div>
-                        </div>
-                      </button>
-                      <button
-                        onClick={() => setShowBuilderProfile(true)}
-                        className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3 group">
-                        <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <Wrench className="w-4 h-4 text-orange-400" />
-                        </div>
-                        <div>
-                          <div className="font-medium">Join as Builder</div>
-                          <div className="text-xs text-gray-500">Develop solutions</div>
-                        </div>
-                      </button>
-                    </div>
-                  </>
-                )}
+           
               </div>
 
               <div className="relative">

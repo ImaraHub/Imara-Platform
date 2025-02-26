@@ -2,7 +2,7 @@
 
 ## Overview
 
-IMARA is a governance tool to help serious blockchain builders across the world connect and collaborate by using existing staking systems as a commitment mechanism.
+IMARA helps serious blockchain builders across the world connect and collaborate by leveraging existing staking systems as a commitment mechanism, ensuring only dedicated contributors join projects.
 
 
 ## Current Status
