@@ -1,52 +1,53 @@
 import React, { useState } from 'react';
 import { Hash, Link as LinkIcon, Upload, ArrowLeft } from 'lucide-react';
 import Home from './Home';
-import { createClient } from '@supabase/supabase-js'
-
-import { checkIfImage } from '../utils';
-import { uploadToIPFS } from '../Infura';
-
+import { uploadImageToSupabase, addIdea } from './SupabaseClient';
+import { useAuth } from "../AuthContext";
 
 
 const CreateIdea = ({ onBack }) => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [charCount, setCharCount] = useState(0);
-  const [showTokenPage, setTokenPage] = useState(false);
-
+  const [showHomePage, setHomePage] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     details: '',
     link: '',
-    license: 'cc0',
-    image: ''
+    license: '',
+    image: '',
   });
 
-  const handleFormFieldChange = (fieldName, e) => {
-    setForm({ ...formData, [fieldName]: e.target.value })
-  }
+  // const handleFormFieldChange = (fieldName, e) => {
+  //   setForm({ ...formData, [fieldName]: e.target.value })
+  // }
 
-  const makeInteraction = (e) => {
-    e.preventDefault();
-    const { title, details, link, license, image } = formData;
-    const myCall = contract.populate('create-idea+', [title, details, link, uploadedFile])
-    setIsLoading(true)
-    contract['scwerre'](myCall.calldata).then((res) => {
-      console.info("Successful Response:", res)
-    }).catch((err) => {
-      console.error("Error: ", err)
-    }).finally(() => {
-      setIsLoading(false)
-    })
-  }
+  // const makeInteraction = (e) => {
+  //   e.preventDefault();
+  //   const { title, details, link, license, image } = formData;
+  //   const myCall = contract.populate('create-idea+', [title, details, link, uploadedFile])
+  //   setIsLoading(true)
+  //   contract['scwerre'](myCall.calldata).then((res) => {
+  //     console.info("Successful Response:", res)
+  //   }).catch((err) => {
+  //     console.error("Error: ", err)
+  //   }).finally(() => {
+  //     setIsLoading(false)
+  //   })
+  // }
+
+  const { user } = useAuth();
 
   const handleFileChange = async (e) => {
-    // console.log(e)
     var file = e.target.files[0];
-    const response = await uploadToIPFS(file);
-    console.log(response);
-    setUploadedFile(response)
+    if (!file) return;
 
-  }
+    const imageUrl = await uploadImageToSupabase(file, user);
+
+    if (imageUrl){
+      setUploadedFile(imageUrl);
+      setFormData(prev => ({ ...prev, image: imageUrl }));
+    }
+  };
 
 
   const handleDetailsChange = (e) => {
@@ -55,26 +56,21 @@ const CreateIdea = ({ onBack }) => {
     setFormData(prev => ({ ...prev, details: text }));
   };
 
-  if (showTokenPage) {
-    return <Home />;
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    //prove to see whether the form submits the data
-    console.log(formData);
 
-    checkIfImage(formData.image, async (exists) => {
-      if (exists) {
-        setIsLoading(true)
-        setIsLoading(false);
-        navigate('/');
-      } else {
-        alert('Provide valid image URL')
-        setForm({ ...formData, image: '' });
-        console.log('Form submitted:', formData);
-      }
-    })
+    console.log('Form submitted:', formData);
+
+    const result = await addIdea(formData, user);
+
+    if (result) {
+      console.log('Idea added successfully', result);
+      setHomePage(true);
+    }
+  }
+
+  if (showHomePage) {
+    return <Home />;
   }
 
   // const handleSubmit = (e) => {
@@ -168,21 +164,19 @@ const CreateIdea = ({ onBack }) => {
               <div className="relative">
                 <input
                   type="file"
-                  accept=".png"
-                  value={formData.image}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.files[0] }))}
-                  // handleChange={handleFileChange}
+                  accept="image/*"
+                  // value={formData.image}
+                  onChange={handleFileChange}
                   className="hidden"
                   id="image-upload"
                 />
                 <label
                   htmlFor="image-upload"
-                  className="flex items-center justify-center w-full h-32 px-4 transition bg-white/5 border-2 border-gray-700 border-dashed rounded-lg appearance-none cursor-pointer hover:border-gray-500 focus:outline-none"
-                >
+                  className="flex items-center justify-center w-full h-32 px-4 transition bg-white/5 border-2 border-gray-700 border-dashed rounded-lg appearance-none cursor-pointer hover:border-gray-500 focus:outline-none">
                   <div className="flex flex-col items-center space-y-2">
                     <Upload className="w-8 h-8 text-gray-400" />
                     <span className="text-sm text-gray-400">
-                      {formData.image ? formData.image.name : 'Drop your image here or click to upload'}
+                      {formData.image ? formData.image.name : 'Click to upload an image'}
                     </span>
                   </div>
                 </label>
@@ -240,7 +234,7 @@ const CreateIdea = ({ onBack }) => {
             <button
               type="submit"
               className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90"
-              onClick={() => setTokenPage(true)}
+              // onClick={() => setHomePage(true)}
             >
               Publish Idea
             </button>
