@@ -4,6 +4,7 @@ import { Carousel } from 'react-bootstrap';
 import BuilderProfile from './BuilderProfile';
 import ViewIdea from './ViewIdea';
 import ProjectManager from './ProjectManager';
+import ProfileSettings from './ProfileSettings'; // Correct import path
 
 import {
   User,
@@ -86,13 +87,10 @@ function Home({ handleSignOut }) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [projects, setProjects] = useState(allProjects);
   const [copiedLink, setCopiedLink] = useState(false);
-   const [showBuilderProfile, setShowBuilderProfile] = useState(false);
-  const [showProjectManager, setShowProjectManager] = useState(false);
-
+  const [showProfileSettings, setShowProfileSettings] = useState(false);
   // const navigate = useNavigate();
   const address = useAddress();
   const [userEmail, setUserEmail] = useState('user@example.com');
-
   const [showIdeationMenu, setShowIdeationMenu] = useState(false);
   const [showIdeaPage, setIdeaPage] = useState(false);
     
@@ -135,7 +133,9 @@ function Home({ handleSignOut }) {
   if (showIdeationMenu) {
     return <CreateIdea />;
   }
-  
+  if (showProfileSettings) {
+    return <ProfileSettings onBack={() => setShowProfileSettings(false)} />;
+  }
   
   if (showIdeaPage) {
     return <ViewIdea />;
@@ -247,10 +247,16 @@ function Home({ handleSignOut }) {
                       <div className="px-4 py-2 border-b border-gray-700/50">
                         <h3 className="text-sm font-semibold text-gray-400">Account</h3>
                       </div>
-                      <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
-                        <User className="w-4 h-4" />
-                        Profile Settings
-                      </button>
+                      <button
+  onClick={() => {
+    setShowProfileMenu(false); // Close the dropdown
+    setShowProfileSettings(true); // Show the ProfileSettings page
+  }}
+  className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3"
+>
+  <User className="w-4 h-4" />
+  Profile Settings
+</button>
                       <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
                         <Briefcase className="w-4 h-4" />
                         My Projects
