@@ -1,32 +1,107 @@
 import React, { useState , useEffect} from 'react';
 import { Github, Wallet, Mail, ArrowRight } from 'lucide-react';
-import {ConnectWallet, useAddress} from "@thirdweb-dev/react";
+import {ConnectWallet, useAddress, useSigner} from "@thirdweb-dev/react";
 // import {useNavigate} from "react-router-dom";
+import { supabase } from './SupabaseClient';
 
-function Auth({ setShowAuth, setShowHome }) {  
+export function Auth({ setShowAuth, setShowHome }) {  
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const address = useAddress();
-  // const navigate = useNavigate();
+  const signer = useSigner();
+  const [signature, setSignature] = useState(null);
 
   useEffect(() => {
     if (address) {
+      signMessage();
       console.log("Connected wallet address:", address);
       setShowAuth(false);  // Hide the Auth page
       setShowHome(true);    // Show the Home page
     }
   }, [address]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission
-    console.log('Form submitted:', { email, password });
-    //simulate login page success
-        setShowAuth(false);  // Hide the Auth page
-    setShowHome(true);    // Show the Home page
+  const signMessage = async () => {
+
+    if (!signer) {
+      console.error("Signer not found");
+      return;
+    }
+    const message = "Sign this message to sign into Imara";
+    const signature = await signer.signMessage(message);
+    setSignature(signature);
+    console.log("Signature:", signature);
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (isLogin) {
+      await signInWithEmail();
+    } else {
+      await signUpNewUser();
+    }
+  };
+
+  const signUpNewUser = async () => {
+    setLoading(true);
+    setErrorMsg('');
+    const { user, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: 'http://localhost:3000',
+      }
+    });
+    setLoading(false);
+
+    if (error) {
+      setErrorMsg(error.message);
+    } else {
+      console.log('User created successfully:', user);
+    }
+
+  }
+
+  const signInWithEmail = async () => {
+    setLoading(true);
+    setErrorMsg('');
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    setLoading(false);
+
+    if (error) {
+      setErrorMsg(error.message);
+    } else {
+      console.log('User signed in successfully:', data);
+
+          // Fetch user details
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+
+      localStorage.setItem("userEmail", userData.user.email);
+
+      setShowAuth(false);  // Hide the Auth page
+      setShowHome(true);    // Show the Home page
+    }
+  }
+
+  // const authWithSupabase = async (signature) => {
+  //   const { data, error} =  await supabase.auth.signInWithIdToken({
+  //     provider: 'walletconnect',
+  //     token: signature
+  //   });
+  //   if (error) {
+  //     console.error("Error signing in:", error);
+  //   } else {
+  //     console.log("User signed in:", data);
+  //   }
+  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center px-4">
@@ -68,6 +143,7 @@ function Auth({ setShowAuth, setShowHome }) {
             <ArrowRight className="w-4 h-4 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
           </button> */}
           <ConnectWallet />
+          {address && <button onClick={signMessage}>Sign In with Wallet</button>}
         </div>
 
         {/* Divider */}
