@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Hash, Link as LinkIcon, Upload, ArrowLeft, Plus, X, HelpCircle, Users, Brain, Clock, Check } from 'lucide-react';
 import Home from './Home';
-import { uploadImageToSupabase, addIdea } from './SupabaseClient';
+import {uploadImageToSupabase, addIdea } from '../utils/SupabaseClient';
 import { useAuth } from "../AuthContext";
 
 
 const CreateIdea = ({ onBack }) => {
+
+  const { user } = useAuth();
   const [uploadedFile, setUploadedFile] = useState(null);
   const [charCount, setCharCount] = useState(0);
   const [showTokenPage, setTokenPage] = useState(false);
@@ -20,14 +22,11 @@ const CreateIdea = ({ onBack }) => {
     title: '',
     details: '',
     link: '',
-    license: 'cc0',
-      image: null,
+    // license: 'cc0',
+      image: '',
     resources: [],
      needsProjectManager: false,
     timeline: null
-  });
-    license: '',
-    image: '',
   });
 
   // const handleFormFieldChange = (fieldName, e) => {
@@ -47,8 +46,6 @@ const CreateIdea = ({ onBack }) => {
   //     setIsLoading(false)
   //   })
   // }
-
-  const { user } = useAuth();
 
   const handleFileChange = async (e) => {
     var file = e.target.files[0];
@@ -87,10 +84,14 @@ const CreateIdea = ({ onBack }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Handle form submission
     console.log('Form submitted:', formData);
+
+    const result = await addIdea(formData, user);
+    console.log('Idea added successfully', result);
+    setHomePage(true);
   };
 
     const timelineOptions = [
@@ -117,16 +118,7 @@ const handleCustomDurationSubmit = () => {
       setShowCustomDurationForm(false);
     }
   };
-
-    console.log('Form submitted:', formData);
-
-    const result = await addIdea(formData, user);
-
-    if (result) {
-      console.log('Idea added successfully', result);
-      setHomePage(true);
-    }
-  }
+ 
 
   if (showHomePage) {
     return <Home />;
@@ -439,8 +431,6 @@ const handleCustomDurationSubmit = () => {
               <div className="relative">
                 <input
                   type="file"
-                  accept=".png"
-                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.files[0] }))}
                   accept="image/*"
                   // value={formData.image}
                   onChange={handleFileChange}
@@ -453,7 +443,7 @@ const handleCustomDurationSubmit = () => {
                   <div className="flex flex-col items-center space-y-2">
                     <Upload className="w-8 h-8 text-gray-400" />
                     <span className="text-sm text-gray-400">
-                      {formData.image ? formData.image.name : 'Click to upload an image'}
+                      {formData.image ? 'Image attached' : 'Click to upload an image'}
                     </span>
                   </div>
                 </label>
