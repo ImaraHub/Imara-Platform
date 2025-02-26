@@ -2,7 +2,7 @@ import React, { useState , useEffect} from 'react';
 import { Github, Wallet, Mail, ArrowRight } from 'lucide-react';
 import {ConnectWallet, useAddress, useSigner} from "@thirdweb-dev/react";
 // import {useNavigate} from "react-router-dom";
-import { supabase } from './SupabaseClient';
+import { supabase } from '../utils/SupabaseClient';
 
 export function Auth({ setShowAuth, setShowHome }) {  
 
