@@ -85,23 +85,18 @@ export const uploadImageToSupabase = async (image, user) => {
 
 }
 
-export const displayIdeas = () => {
-
-    const [data, setData] = useState([]);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            const { data, error } = await supabase.from('ideas').select('*');
-            if (error) {
-                console.error("Error fetching ideas:", error);
-                return;
-            }
-            setData(data);
-        };
-        fetchData();
-    }, []);
-
-    return data;
-}
+export const displayIdeas = async () => {
+    try {
+        const { data, error } = await supabase.from('ideas').select('*');
+        if (error) {
+            console.error("Error fetching ideas:", error);
+            return [];
+        }
+        return data; // Return the fetched ideas
+    } catch (err) {
+        console.error("Unexpected error:", err);
+        return [];
+    }
+};
 
 
