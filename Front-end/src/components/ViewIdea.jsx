@@ -20,32 +20,36 @@ import {
 import Stake from './stake';
 import stakeToken from '../utils/stake';
 
-function ViewIdea({onBack }) {
+function ViewIdea({project, onBack }) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [comment, setComment] = useState('');
   const [showStake,setShowStake] = useState(false);
 
-  const project = 
-    {
-      id: 1,
-      title: "DeFi Lending Platform",
-      description: "Decentralized lending platform with AI-driven risk assessment",
-      image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60",
-      category: "DeFi",
-      progress: 0,
-      createdAt: "2022-01-01",
-      problemStatement:"Traditional lending platforms rely on centralized entities, resulting in high fees, limited user access, and a lack of interoperability between blockchain ecosystems.",
-      solution: "Our project aims to create a decentralized lending platform that leverages AI-driven risk assessment to provide low-cost loans to users across different blockchain networks.",
-      technicalRequirements: ["Smart Contracts", "Oracles", "AI/ML Models"],
-      comments: [
-        {  "author": "John Doe", "date": "2022-01-01", "text": "Great project! Looking forward to contributing." },
-      ],
-      status: "In Progress",
-      license: "MIT",
-      tags: ["DeFi", "AI", "Blockchain"],
-    };
+
+  console.log("Project in view idea", project.title);
+  if (!project) return null;
+
+  // const project = 
+  //   {
+  //     id: 1,
+  //     title: "DeFi Lending Platform",
+  //     description: "Decentralized lending platform with AI-driven risk assessment",
+  //     image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60",
+  //     category: "DeFi",
+  //     progress: 0,
+  //     createdAt: "2022-01-01",
+  //     problemStatement:"Traditional lending platforms rely on centralized entities, resulting in high fees, limited user access, and a lack of interoperability between blockchain ecosystems.",
+  //     solution: "Our project aims to create a decentralized lending platform that leverages AI-driven risk assessment to provide low-cost loans to users across different blockchain networks.",
+  //     technicalRequirements: ["Smart Contracts", "Oracles", "AI/ML Models"],
+  //     comments: [
+  //       {  "author": "John Doe", "date": "2022-01-01", "text": "Great project! Looking forward to contributing." },
+  //     ],
+  //     status: "In Progress",
+  //     license: "MIT",
+  //     tags: ["DeFi", "AI", "Blockchain"],
+  //   };
 
   const handleCopyLink = () => {
     const url = `https://imara.com/project/${project.id}`;
@@ -163,10 +167,10 @@ function ViewIdea({onBack }) {
                 </span>
                 <div className="flex items-center gap-2">
                   <div className="w-32 h-2 bg-gray-700 rounded-full">
-                    <div
+                    {/* <div
                       className="h-full bg-blue-500 rounded-full"
                       style={{ width: `${project.progress}%` }}
-                    />
+                    /> */}
                   </div>
                   <span className="text-gray-400 text-sm">{project.progress}% Complete</span>
                 </div>
@@ -175,7 +179,7 @@ function ViewIdea({onBack }) {
               <div className="flex items-center gap-6 text-gray-300">
                 <div className="flex items-center gap-2">
                   <User className="w-5 h-5" />
-                  <span>By {project.author}</span>
+                  <span>By Author</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
@@ -194,20 +198,20 @@ function ViewIdea({onBack }) {
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Project Description</h2>
               <div className="prose prose-invert max-w-none">
-                <p className="text-gray-300 whitespace-pre-wrap">{project.description}</p>
+                <p className="text-gray-300 whitespace-pre-wrap">{project.details}</p>
               </div>
             </section>
 
             {/* Problem Statement */}
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Problem Statement</h2>
-              <p className="text-gray-300">{project.problemStatement}</p>
+              <p className="text-gray-300">{project.details}</p>
             </section>
 
             {/* Solution */}
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Solution</h2>
-              <p className="text-gray-300">{project.solution}</p>
+              <p className="text-gray-300">Project Solution</p>
             </section>
 
             {/* Technical Requirements */}
@@ -372,15 +376,26 @@ function ViewIdea({onBack }) {
             <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h3 className="text-lg font-semibold mb-4">Team Needed</h3>
               <div className="space-y-3">
-                {project.teamNeeded?.map((role, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-lg"
-                  >
-                    <span className="text-gray-300">{role.title}</span>
-                    <span className="text-sm text-gray-400">{role.count} needed</span>
-                  </div>
-                ))}
+              
+              {Array.isArray(project.resources)
+    ? project.resources.map((role, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-lg"
+        >
+          <span className="text-gray-300">{role.role}</span>
+          <span className="text-sm text-gray-400">{role.count} needed</span>
+        </div>
+      ))
+    : JSON.parse(project.resources || "[]").map((role, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-lg"
+        >
+          <span className="text-gray-300">{role.role}</span>
+          <span className="text-sm text-gray-400">{role.count} needed</span>
+        </div>
+      ))}
               </div>
             </div>
           </div>

@@ -99,7 +99,7 @@ function Home({ handleSignOut }) {
   const [userEmail, setUserEmail] = useState(email);
 
   const [showIdeationMenu, setShowIdeationMenu] = useState(false);
-  const [showIdeaPage, setIdeaPage] = useState(false);
+  const [selectedIdea, setSelectedIdea] = useState(null);
 
   // call displayIdea from supabaseClient to retrieve posts
 
@@ -124,6 +124,15 @@ function Home({ handleSignOut }) {
     }
   }, [address]);
 
+  if (selectedIdea){
+    return <ViewIdea project={selectedIdea}  onClose={() => setSelectedIdea(null)}/>;
+  }
+
+  const handleIdeaClick = (idea) => {
+    setSelectedIdea(idea);
+  };
+  
+
   // Handle voting
 
 
@@ -131,10 +140,6 @@ function Home({ handleSignOut }) {
     return <CreateIdea />;
   }
   
-  
-  if (showIdeaPage) {
-    return <ViewIdea />;
-  }
   const handleCopyLink = (projectId) => {
     const url = `https://imara.com/project/${projectId}`;
     navigator.clipboard.writeText(url);
@@ -375,13 +380,13 @@ function Home({ handleSignOut }) {
 
 {/* AllProject */}
           <div className="flex-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              onClick={() => setIdeaPage(true)}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map((project) => (
+                
                 <div
                   key={project.id}
                   className="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden hover:transform hover:scale-[1.02] transition-all"
-                  
+                  onClick={() => handleIdeaClick(project)}
                 >
                   <img
                     src={project.image}
