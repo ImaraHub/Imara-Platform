@@ -33,6 +33,8 @@ import {
 } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import CreateIdea from './CreateIdea';
+import { displayIdeas } from '../utils/SupabaseClient';
+import { use } from 'react';
 
 
 const trendingProjects = [
@@ -62,14 +64,14 @@ const trendingProjects = [
   }
 ];
 
-const allProjects = Array.from({ length: 9 }, (_, i) => ({
-  id: i + 1,
-  title: `Project Imara`,
-  description: "An innovative blockchain project revolutionizing the industry",
-  category: ["DeFi", "NFT", "Gaming", "DAO"][Math.floor(Math.random() * 4)],
-  progress: Math.floor(Math.random() * 100),
-  image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60"
-}));
+// const allProjects = Array.from({ length: 9 }, (_, i) => ({
+//   id: i + 1,
+//   title: `Project Imara`,
+//   description: "An innovative blockchain project revolutionizing the industry",
+//   category: ["DeFi", "NFT", "Gaming", "DAO"][Math.floor(Math.random() * 4)],
+//   progress: Math.floor(Math.random() * 100),
+//   image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60"
+// }));
 
 const categories = ["All", "DeFi", "NFT", "Gaming", "DAO", "Infrastructure"];
 const stages = ["All Stages", "Ideation", "Development", "Launch Ready"];
@@ -84,11 +86,13 @@ function Home({ handleSignOut }) {
   const [showRoleMenu, setShowRoleMenu] = useState(false);
    const [selectedProject, setSelectedProject] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [projects, setProjects] = useState(allProjects);
+  const [projects, setProjects] = useState([]);
   const [copiedLink, setCopiedLink] = useState(false);
    const [showBuilderProfile, setShowBuilderProfile] = useState(false);
   const [showProjectManager, setShowProjectManager] = useState(false);
 
+
+  const allProjects = displayIdeas();
   // const navigate = useNavigate();
   const address = useAddress();
   const email = localStorage.getItem("userEmail");
@@ -96,6 +100,20 @@ function Home({ handleSignOut }) {
 
   const [showIdeationMenu, setShowIdeationMenu] = useState(false);
   const [showIdeaPage, setIdeaPage] = useState(false);
+
+  // call displayIdea from supabaseClient to retrieve posts
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const projects = await displayIdeas();
+      setProjects(projects || []);
+    };
+
+    fetchProjects();
+  }, []);
+    projects.forEach(project => {
+      console.log(project.title);
+    });
     
 
   
@@ -105,33 +123,9 @@ function Home({ handleSignOut }) {
       setUserEmail(address.slice(0, 6) + '...' + address.slice(-4) );
     }
   }, [address]);
-   const handleVote = (projectId, voteType) => {
-    setProjects(projects.map(project => {
-      if (project.id === projectId) {
-        const currentVote = project.userVote;
-        let voteDelta = 0;
 
-        if (currentVote === voteType) {
-          voteDelta = voteType === 'up' ? -1 : 1;
-          return {
-            ...project,
-            userVote: null,
-            votes: project.votes + voteDelta
-          };
-        } else {
-          voteDelta = voteType === 'up' ? 
-            (currentVote === 'down' ? 2 : 1) : 
-            (currentVote === 'up' ? -2 : -1);
-          return {
-            ...project,
-            userVote: voteType,
-            votes: project.votes + voteDelta
-          };
-        }
-      }
-      return project;
-    }));
-  };
+  // Handle voting
+
 
   if (showIdeationMenu) {
     return <CreateIdea />;
@@ -240,7 +234,7 @@ function Home({ handleSignOut }) {
                   <span className="text-sm font-medium text-gray-300">{userEmail}</span>
                   <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`} />
                 </button>
-                
+        {/* Menu NavBar */}
                 {showProfileMenu && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
@@ -271,7 +265,7 @@ function Home({ handleSignOut }) {
           </div>
         </div>
       </nav>
-
+{/* Carousel */}
       <div className="container mx-auto px-4 py-8" >
         <h2 className="text-2xl font-bold text-white mb-6">Trending Projects</h2>
         <Carousel className="rounded-xl overflow-hidden">
@@ -309,6 +303,7 @@ function Home({ handleSignOut }) {
         </Carousel>
       </div>
 
+{/* Left side bar */}
       <div className="container mx-auto px-4 py-8">
         <div className="flex gap-8">
           <div className="w-64 flex-shrink-0">
@@ -378,9 +373,10 @@ function Home({ handleSignOut }) {
             </div>
           </div>
 
+{/* AllProject */}
           <div className="flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            onClick={() => setIdeaPage(true)}>
+              onClick={() => setIdeaPage(true)}>
               {projects.map((project) => (
                 <div
                   key={project.id}
@@ -394,19 +390,19 @@ function Home({ handleSignOut }) {
                   />
                   <div className="p-6">
                     <h3 className="text-xl font-semibold text-white mb-2">{project.title}</h3>
-                    <p className="text-gray-400 mb-4">{project.description}</p>
+                    <p className="text-gray-400 mb-4">{project.details}</p>
                     <div className="flex items-center justify-between mb-4">
                       <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
-                        {project.category}
+                        {project.categories}
                       </span>
                       <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-gray-700 rounded-full">
+                        {/* <div className="w-24 h-2 bg-gray-700 rounded-full">
                           <div
                             className="h-full bg-blue-500 rounded-full"
                             style={{ width: `${project.progress}%` }}
                           />
-                        </div>
-                        <span className="text-gray-400 text-sm">{project.progress}%</span>
+                        </div> */}
+                        {/* <span className="text-gray-400 text-sm">{project.progress}%</span> */}
                       </div>
                     </div>
 
