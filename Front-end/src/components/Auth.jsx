@@ -54,7 +54,7 @@ export function Auth({ setShowAuth, setShowHome }) {
       email,
       password,
       options: {
-        emailRedirectTo: 'http://localhost:3000',
+        emailRedirectTo: 'https://imara-platform.onrender.com',
       }
     });
     setLoading(false);
