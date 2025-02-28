@@ -25,6 +25,18 @@ export function Auth({ setShowAuth, setShowHome }) {
     }
   }, [address]);
 
+    // a const that shows pop-up message
+
+    const WarningPopup = ({ message }) => {
+      return (
+        <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
+          {message}
+        </div>
+      );
+    };
+
+  // const errorMsgPopup = errorMsg ? <WarningPopup message={errorMsg} /> : null;
+
   const signMessage = async () => {
 
     if (!signer) {
@@ -62,10 +74,19 @@ export function Auth({ setShowAuth, setShowHome }) {
     if (error) {
       setErrorMsg(error.message);
     } else {
+      setErrorMsg('Please check your email to confirm your account.');
+      setIsLogin(true);
       console.log('User created successfully:', user);
     }
 
   }
+
+  // if (errorMsg) {
+  //   <errorMsgPopup />
+  //   setErrorMsg('');
+  // }
+
+  
 
   const signInWithEmail = async () => {
     setLoading(true);
@@ -77,7 +98,10 @@ export function Auth({ setShowAuth, setShowHome }) {
     setLoading(false);
 
     if (error) {
-      setErrorMsg(error.message);
+    
+      setErrorMsg('User not found. Please sign up.');      
+      console.log('Error signing in:', error.message)
+      
     } else {
       console.log('User signed in successfully:', data);
 
@@ -90,6 +114,7 @@ export function Auth({ setShowAuth, setShowHome }) {
       setShowHome(true);    // Show the Home page
     }
   }
+
 
   // const authWithSupabase = async (signature) => {
   //   const { data, error} =  await supabase.auth.signInWithIdToken({
@@ -106,6 +131,8 @@ export function Auth({ setShowAuth, setShowHome }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center px-4">
         
+
+        {errorMsg && <WarningPopup message={errorMsg}/>}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-4 -left-4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl" />
         <div className="absolute top-1/4 -right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
