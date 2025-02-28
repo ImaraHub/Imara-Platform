@@ -4,12 +4,21 @@ export const stakeContractAddress = "0x65225a4E25977A00E766dF66269774e5f24b2d55"
 
 async function stakeToken() { 
     // Initialize ethers.js provider (e.g., using MetaMask's provider)
+    if (!window.ethereum) {
+        console.error("MetaMask is not installed");
+        return;
+    }
+
     const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    // Request account access if needed
+    await provider.send("eth_requestAccounts", []);
+
     const signer = provider.getSigner();
 
     console.log("Staking token with the following parameters:");
     // print signer address
-    console.log("Signer address:", await signer.getAddress());
+    // console.log("Signer address:", await signer.getAddress());
 
     // Initialize contract
     const stakeFactory = new ethers.Contract(stakeContractAddress, stakeFactoryABI.abi, signer);
