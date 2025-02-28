@@ -12,13 +12,15 @@ export default defineConfig({
     'process.env': process.env,
   },
   server: {
-    host: "0.0.0.0", // Allow external connections
-    port: Number(process.env.PORT) || 10000, // Ensure Vite listens on the expected port
-    strictPort: true, // Prevents Vite from switching ports
+    host: "0.0.0.0", // Allows external access
+    port: Number(process.env.PORT) || 10000, // Use Render's expected port
+    strictPort: true, // Prevents fallback to another port
+    allowedHosts: ['imara-platform-1.onrender.com'], // Allow Render host
   },
   preview: {
-    host: "0.0.0.0", // Allow external connections
-    port: Number(process.env.PORT) || 10000, // Ensure `vite preview` runs on the expected port
+    host: "0.0.0.0",
+    port: Number(process.env.PORT) || 10000,
     strictPort: true,
+    allowedHosts: ['imara-platform-1.onrender.com'], // Allow Render host
   },
 });
