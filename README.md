@@ -63,7 +63,8 @@ We welcome developers, contributors, and investors to join us on this journey to
 - Commit your changes (`git commit -m 'Add your feature'`)
 - Push to the branch (`git push origin feature/your-feature-name`)
 - Open a pull request
-
+### View Demo Product
+[Imara-Product-Demo](https://youtu.be/ndFxwwpFGFM)
 ### Contact
 
 If you have any questions, suggestions, or want to get involved, feel free to mailto: imarahub@gmail.com.
