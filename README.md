@@ -66,6 +66,10 @@ We welcome developers, contributors, and investors to join us on this journey to
 - Open a pull request
 ### View Demo Product
 [Imara-Product-Demo](https://youtu.be/ndFxwwpFGFM)
+
+### socials
+Connect with us on twitter and get the lates updates about Imara
+[connect](https://x.com/imarahub)
 ### Contact
 
 If you have any questions, suggestions, or want to get involved, feel free to mailto: imarahub@gmail.com.
