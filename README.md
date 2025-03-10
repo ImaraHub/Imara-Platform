@@ -7,7 +7,8 @@ IMARA helps serious blockchain builders across the world connect and collaborate
 
 ## Current Status
 
-🚧 **We are currently in the production stage, working tirelessly to bring IMARA to life! Stay tuned for more updates.**
+🚧 **We are currently in the production stage, working tirelessly to bring IMARA to life!
+Stay tuned for more updates.**
 
 ## Features
 
