@@ -37,7 +37,6 @@ import CreateIdea from './CreateIdea';
 import { displayIdeas } from '../utils/SupabaseClient';
 import { use } from 'react';
 
-
 const trendingProjects = [
   {
     id: 1,
@@ -101,6 +100,7 @@ function Home({ handleSignOut }) {
 
   const [showIdeationMenu, setShowIdeationMenu] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState(null);
+  const [showProfileSettings,setShowProfileSettings] = useState(false);
 
   // call displayIdea from supabaseClient to retrieve posts
 
@@ -135,6 +135,9 @@ function Home({ handleSignOut }) {
   
 
   // Handle voting
+  if (showProfileSettings){
+    return <ProfileSettings/>
+  }
 
 
   if (showIdeationMenu) {

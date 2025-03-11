@@ -31,26 +31,6 @@ function ViewIdea({project, onBack }) {
   console.log("Project in view idea", project.title);
   if (!project) return null;
 
-  // const project = 
-  //   {
-  //     id: 1,
-  //     title: "DeFi Lending Platform",
-  //     description: "Decentralized lending platform with AI-driven risk assessment",
-  //     image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60",
-  //     category: "DeFi",
-  //     progress: 0,
-  //     createdAt: "2022-01-01",
-  //     problemStatement:"Traditional lending platforms rely on centralized entities, resulting in high fees, limited user access, and a lack of interoperability between blockchain ecosystems.",
-  //     solution: "Our project aims to create a decentralized lending platform that leverages AI-driven risk assessment to provide low-cost loans to users across different blockchain networks.",
-  //     technicalRequirements: ["Smart Contracts", "Oracles", "AI/ML Models"],
-  //     comments: [
-  //       {  "author": "John Doe", "date": "2022-01-01", "text": "Great project! Looking forward to contributing." },
-  //     ],
-  //     status: "In Progress",
-  //     license: "MIT",
-  //     tags: ["DeFi", "AI", "Blockchain"],
-  //   };
-
   const handleCopyLink = () => {
     const url = `https://imara.com/project/${project.id}`;
     navigator.clipboard.writeText(url);
@@ -89,7 +69,7 @@ function ViewIdea({project, onBack }) {
   }
 
   if (showStake) {
-    return <Stake />
+    return <BuilderProfile />
   }
 
   const ShareModal = ({ onClose }) => (

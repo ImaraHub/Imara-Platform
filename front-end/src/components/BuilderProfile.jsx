@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { ArrowLeft, Upload, X, Github, Linkedin, Twitter, FileText, Globe, MessageSquare } from 'lucide-react';
-import  Home  from './Home';
+// import  Home  from './Home';
+import { useNavigate } from 'react-router-dom';
 // Tech stack options
 const techStackOptions = [
   'JavaScript', 'TypeScript', 'Solidity',
@@ -39,7 +40,7 @@ function BuilderProfile({ onBack }) {
     additionalLinks: [{ platform: '', url: '' }],
     interests: []
   });
-
+  const navigate = useNavigate();
   const [profilePreview, setProfilePreview] = useState(null);
   const [bioCharCount, setBioCharCount] = useState(0);
   const fileInputRef = useRef(null);
@@ -117,7 +118,8 @@ function BuilderProfile({ onBack }) {
   };
 
   if (showHomePage) {
-    return <Home/>;
+    // return <Home/>;
+    Navigate('/home')
     }
 
   return (
