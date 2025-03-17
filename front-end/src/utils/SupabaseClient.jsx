@@ -6,8 +6,8 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-console.log('Supabase URL:', supabaseUrl);
-console.log('Supabase Key:', supabaseKey);
+// console.log('Supabase URL:', supabaseUrl);
+// console.log('Supabase Key:', supabaseKey);
 
 
 export const addIdea = async (formData, user) => {
@@ -51,7 +51,7 @@ export const addIdea = async (formData, user) => {
 export const uploadImageToSupabase = async (image, user) => {
     // const user = supabase.auth.getUser(); // Check if user is authenticated
     // console.log("Uploading Image:", image);
-    console.log("Current user in uploadImage:", user);
+    // console.log("Current user in uploadImage:", user);
 
     // upload image to storage
 
