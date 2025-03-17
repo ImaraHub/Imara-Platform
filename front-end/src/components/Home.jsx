@@ -112,15 +112,15 @@ function Home({ handleSignOut }) {
 
     fetchProjects();
   }, []);
-    projects.forEach(project => {
-      console.log(project.title);
-    });
+    // projects.forEach(project => {
+    //   console.log(project.title);
+    // });
     
 
   
   useEffect(() => { 
     if (address) {
-      console.log("Connected wallet address:", address);
+      // console.log("Connected wallet address:", address);
       setUserEmail(address.slice(0, 6) + '...' + address.slice(-4) );
     }
   }, [address]);
