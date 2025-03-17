@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   ArrowLeft, 
   Share2, 
@@ -17,18 +17,28 @@ import {
   Check,
   X
 } from 'lucide-react';
-import Stake from './stake';
-import stakeToken from '../utils/stake';
+
+import StakingProfile from './StakingProfile';
+import { useNavigate } from 'react-router-dom';
 
 function ViewIdea({project, onBack }) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [comment, setComment] = useState('');
-  const [showStake,setShowStake] = useState(false);
+  // const [showStake,setShowStake] = useState(false);
+  const [showIdeaSignUp, setIdeaSIgnUp] = useState(false);
+  const navigate = useNavigate();
 
 
-  console.log("Project in view idea", project.title);
+
+  useEffect(() => {
+    if (showIdeaSignUp){
+      navigate ('staking-profile')
+    }
+  }, [showIdeaSignUp,navigate]);
+
+  // console.log("Project in view idea", project.title);
   if (!project) return null;
 
   const handleCopyLink = () => {
@@ -45,32 +55,6 @@ function ViewIdea({project, onBack }) {
     setComment('');
     setShowCommentBox(false);
   };
-  const [isStaking, setIsStaking] = useState(false);
-  const [stakeSuccess, setStakeSuccess] = useState(false);
-
-  const handleStake = async() => {
-    setIsStaking(true);
-    try {
-      const stake = await stakeToken();
-      console.log("here to print");
-      // if (stake){
-        console.log(" inside stake condition; here to print");
-        setStakeSuccess(true); // set to true if stake is successful
-  
-      // }
-     
-      alert("Staking Successful");
-    } catch (error) {
-      console.error("Error staking token:", error);
-    } finally {
-      setIsStaking(false); // reset loading state
-    }
-
-  }
-
-  if (showStake) {
-    return <BuilderProfile />
-  }
 
   const ShareModal = ({ onClose }) => (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -286,17 +270,18 @@ function ViewIdea({project, onBack }) {
                 </button>
               </div>
               <button 
-              onClick={() => handleStake()}
-              disabled={isStaking}
+              onClick={() => setIdeaSIgnUp(true)}
+              // disabled={isStaking}
               className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity">
                 <h3 className="text-lg">
-                  {isStaking ? "Staking..." : stakeSuccess ?"Staked successfully 🎉" : "Stake to Join"}
+                  {/* {isStaking ? "Staking..." : stakeSuccess ?"Staked successfully 🎉 Waiting for approval" : "Join"} */}
+                  Join
                 </h3>
               </button>
 
               {/* New Button Appears After Successful Staking */}
             
-              {stakeSuccess && (
+              {/* {stakeSuccess && (
                 <button
                   onClick={() => setShowStake(true)}
                   className="w-full px-6 py-3 mt-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity">
@@ -304,7 +289,7 @@ function ViewIdea({project, onBack }) {
                   Continue
                   </h3>
                 </button>
-              )}
+              )} */}
              
             </div>
 
