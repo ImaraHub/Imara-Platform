@@ -10,6 +10,7 @@ import ProjectManager from './components/ProjectManager';
 import Stake from './components/stake';
 import TokenizationPage from './components/token';
 import ViewIdea from './components/ViewIdea';
+import StakingProfile from './components/StakingProfile';
 
 function App() {
   // const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -29,6 +30,7 @@ function App() {
         <Route path="/stake" element={<Stake />} />
         <Route path="/token" element={<TokenizationPage />} />
         <Route path="/view-idea" element={<ViewIdea />} />
+        <Route path="/staking-profile" element={<StakingProfile/>} />
 
       </Routes>
     </Router>
