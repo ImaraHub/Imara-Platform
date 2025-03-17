@@ -5,7 +5,7 @@ import './index.css';
 import { ThirdwebProvider } from '@thirdweb-dev/react';
 import { AuthProvider } from './AuthContext.jsx';
 
-const clientId = import.meta.env.VITE_CLIENT_ID;
+const clientId = import.meta.env.VITE_THIRDWEB_CLIENT_ID;
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <StrictMode>
