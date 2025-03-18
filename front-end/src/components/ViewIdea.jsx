@@ -20,7 +20,7 @@ import {
 
 import StakingProfile from './StakingProfile';
 import { useNavigate } from 'react-router-dom';
-
+import JoinGroup from './joinGroup';
 function ViewIdea({project, onBack }) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -29,16 +29,42 @@ function ViewIdea({project, onBack }) {
   // const [showStake,setShowStake] = useState(false);
   const [showIdeaSignUp, setIdeaSIgnUp] = useState(false);
   const navigate = useNavigate();
+  const [showJoinGroup, setShowJoinGroup] = useState(false);
 
 
-
-  useEffect(() => {
-    if (showIdeaSignUp){
-      navigate ('staking-profile')
+  const handleJoinGroupComplete = ({ success }) => {
+    if (success) {
+      setShowJoinGroup(false);
+      setJoinStatus('pending');
+      
+      // Simulate confirmation after 30 seconds
+      setTimeout(() => {
+        setJoinStatus('confirmed');
+        setShowConfirmation(true);
+        
+        // Hide confirmation after 5 seconds
+        setTimeout(() => {
+          setShowConfirmation(false);
+        }, 5000);
+      }, 30000);
+    } else {
+      setShowJoinGroup(false);
     }
-  }, [showIdeaSignUp,navigate]);
+  };
 
-  // console.log("Project in view idea", project.title);
+
+  // useEffect(() => {
+  //   if (showIdeaSignUp){
+  //     navigate ('join-group');
+  //   }
+  // }, [showIdeaSignUp,navigate]);
+  
+  // }
+  if (showJoinGroup) {
+    return < JoinGroup/>;
+  }
+
+  console.log("Project in view idea", project.title);
   if (!project) return null;
 
   const handleCopyLink = () => {
@@ -162,31 +188,31 @@ function ViewIdea({project, onBack }) {
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Project Description</h2>
               <div className="prose prose-invert max-w-none">
-                <p className="text-gray-300 whitespace-pre-wrap">{project.details}</p>
+                <p className="text-gray-300 whitespace-pre-wrap">{project.projectDescription}</p>
               </div>
             </section>
 
             {/* Problem Statement */}
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Problem Statement</h2>
-              <p className="text-gray-300">{project.details}</p>
+              <p className="text-gray-300">{project.problemStatement}</p>
             </section>
 
             {/* Solution */}
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Solution</h2>
-              <p className="text-gray-300">Project Solution</p>
+              <p className="text-gray-300">{project.solution}</p>
             </section>
 
-            {/* Technical Requirements */}
+            {/* Technical Requirements
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Technical Requirements</h2>
               <ul className="list-disc list-inside text-gray-300 space-y-2">
-                {project.technicalRequirements?.map((req, index) => (
+                {project.resources?.map((req, index) => (
                   <li key={index}>{req}</li>
                 ))}
               </ul>
-            </section>
+            </section> */}
 
             {/* Comments Section */}
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
@@ -269,15 +295,12 @@ function ViewIdea({project, onBack }) {
                   Share
                 </button>
               </div>
-              <button 
-              onClick={() => setIdeaSIgnUp(true)}
-              // disabled={isStaking}
-              className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity">
-                <h3 className="text-lg">
-                  {/* {isStaking ? "Staking..." : stakeSuccess ?"Staked successfully 🎉 Waiting for approval" : "Join"} */}
-                  Join
-                </h3>
-              </button>
+              <button
+                  onClick={() => setShowJoinGroup(true)}
+                  className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+                >
+                  Join Project
+                </button>
 
               {/* New Button Appears After Successful Staking */}
             
