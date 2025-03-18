@@ -1,8 +1,14 @@
 <!-- IDEA -->
 - votes
 - progress
-- categories
-- image
-- title
-- decription
 - stages
+
+<!-- Create an idea fields -->
+- title
+- projectDescription
+- problemStatement
+- solution
+- timeline
+- resources
+- needsProjectManager
+- image <handled differently>
