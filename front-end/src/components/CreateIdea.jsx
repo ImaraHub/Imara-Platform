@@ -22,7 +22,6 @@ const CreateIdea = ({ onBack }) => {
     title: '',
     details: '',
     link: '',
-    // license: 'cc0',
       image: '',
     resources: [],
      needsProjectManager: false,
@@ -82,6 +81,11 @@ const CreateIdea = ({ onBack }) => {
       ...prev,
       resources: prev.resources.filter(resource => resource.id !== id)
     }));
+  };
+  const handleTextChange = (e, field) => {
+    const text = e.target.value;
+    setCharCount(prev => ({ ...prev, [field]: text.length }));
+    setFormData(prev => ({ ...prev, [field]: text }));
   };
 
   const handleSubmit = async (e) => {
@@ -175,35 +179,71 @@ const handleCustomDurationSubmit = () => {
             </label>
           </div>
 
-          {/* Details Section */}
-          <div className="space-y-4">
+      
+
+           {/* Problem Description */}
+           <div className="space-y-4 bg-gray-800/30 rounded-xl p-6 border border-gray-700/50">
             <label className="block">
-              <span className="text-lg font-semibold block mb-2">Details</span>
+              <span className="text-lg font-semibold block mb-2">Project Description</span>
               <span className="text-gray-400 text-sm block mb-2">
-                Describe your idea in detail, including:
+                Describe the project idea in detail.  What is the goal of the project?
               </span>
-              <ul className="list-disc list-inside text-gray-400 text-sm mb-4 space-y-2">
-                <li>Problem statement - What issue are you addressing?</li>
-                <li>Solution overview - How does your idea solve this problem?</li>
-                <li>Target audience - Who will benefit from this?</li>
-                <li>Technical requirements - What technologies will you use?</li>
-                <li>Implementation plan - How will you build this?</li>
-                <li>Success metrics - How will you measure impact?</li>
-              </ul>
               <textarea
-                value={formData.details}
-                onChange={handleDetailsChange}
-                className="w-full h-64 px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white resize-none"
-                placeholder="Describe the details of your idea..."
-                maxLength={1500}
+                value={formData.problemDescription}
+                onChange={(e) => handleTextChange(e, 'problemDescription')}
+                className="w-full h-32 px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white resize-none"
+                placeholder="Describe the project in detail..."
+                maxLength={500}
                 required
               />
               <div className="text-right text-sm text-gray-400 mt-2">
-                {charCount}/1500
+                {charCount.projectDescription}/500
+              </div>
+            </label>
+          </div>
+   {/* Problem Statement */}
+   <div className="space-y-4 bg-gray-800/30 rounded-xl p-6 border border-gray-700/50">
+            <label className="block">
+              <span className="text-lg font-semibold block mb-2">Problem Statement</span>
+              <span className="text-gray-400 text-sm block mb-2">
+                Provide a clear, concise statement of the problem. What specific challenge are you addressing?
+              </span>
+              <textarea
+                value={formData.problemStatement}
+                onChange={(e) => handleTextChange(e, 'problemStatement')}
+                className="w-full h-24 px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white resize-none"
+                placeholder="State the problem clearly and concisely..."
+                maxLength={300}
+                required
+              />
+              <div className="text-right text-sm text-gray-400 mt-2">
+                {charCount.problemStatement}/300
               </div>
             </label>
           </div>
 
+          {/* Solution */}
+          <div className="space-y-4 bg-gray-800/30 rounded-xl p-6 border border-gray-700/50">
+            <label className="block">
+              <span className="text-lg font-semibold block mb-2">Solution</span>
+              <span className="text-gray-400 text-sm block mb-2">
+                How does your idea solve the problem? What makes your solution unique and effective?
+              </span>
+              <textarea
+                value={formData.solution}
+                onChange={(e) => handleTextChange(e, 'solution')}
+                className="w-full h-32 px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white resize-none"
+                placeholder="Describe your solution in detail..."
+                maxLength={500}
+                required
+              />
+              <div className="text-right text-sm text-gray-400 mt-2">
+                {charCount.solution}/500
+              </div>
+            </label>
+          </div>
+
+     
               {/* Project Timeline Section */}
           <div className="space-y-4 bg-gray-800/30 rounded-xl p-6 border border-gray-700/50">
             <div className="flex items-center gap-2 mb-4">
