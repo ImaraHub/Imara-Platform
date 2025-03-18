@@ -26,9 +26,9 @@ export const addIdea = async (formData, user) => {
         from('ideas')
         .insert([{
             title, 
-            details, 
-            link, 
-            license, 
+            projectDescription,
+            problemStatement,
+            solution,
             image,
             resources : formattedResources,
             needsprojectmanager,
