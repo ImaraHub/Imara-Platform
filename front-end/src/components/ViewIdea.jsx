@@ -162,27 +162,27 @@ function ViewIdea({project, onBack }) {
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Project Description</h2>
               <div className="prose prose-invert max-w-none">
-                <p className="text-gray-300 whitespace-pre-wrap">{project.details}</p>
+                <p className="text-gray-300 whitespace-pre-wrap">{project.projectDescription}</p>
               </div>
             </section>
 
             {/* Problem Statement */}
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Problem Statement</h2>
-              <p className="text-gray-300">{project.details}</p>
+              <p className="text-gray-300">{project.problemStatement}</p>
             </section>
 
             {/* Solution */}
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Solution</h2>
-              <p className="text-gray-300">Project Solution</p>
+              <p className="text-gray-300">{project.solution}</p>
             </section>
 
             {/* Technical Requirements */}
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Technical Requirements</h2>
               <ul className="list-disc list-inside text-gray-300 space-y-2">
-                {project.technicalRequirements?.map((req, index) => (
+                {project.resources?.map((req, index) => (
                   <li key={index}>{req}</li>
                 ))}
               </ul>
