@@ -20,8 +20,9 @@ const CreateIdea = ({ onBack }) => {
   const [showHomePage, setHomePage] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
-    details: '',
-    link: '',
+    projectDescription: '',
+    problemStatement: '',
+    solution: '',
       image: '',
     resources: [],
      needsProjectManager: false,
@@ -189,8 +190,8 @@ const handleCustomDurationSubmit = () => {
                 Describe the project idea in detail.  What is the goal of the project?
               </span>
               <textarea
-                value={formData.problemDescription}
-                onChange={(e) => handleTextChange(e, 'problemDescription')}
+                value={formData.projectDescription}
+                onChange={(e) => handleTextChange(e, 'projectDescription')}
                 className="w-full h-32 px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white resize-none"
                 placeholder="Describe the project in detail..."
                 maxLength={500}

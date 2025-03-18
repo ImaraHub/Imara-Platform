@@ -11,7 +11,7 @@ import Stake from './components/stake';
 import TokenizationPage from './components/token';
 import ViewIdea from './components/ViewIdea';
 import StakingProfile from './components/StakingProfile';
-
+import JoinGroup from './components/joinGroup';
 function App() {
   // const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -31,7 +31,7 @@ function App() {
         <Route path="/token" element={<TokenizationPage />} />
         <Route path="/view-idea" element={<ViewIdea />} />
         <Route path="/staking-profile" element={<StakingProfile/>} />
-
+        <Route path="/join-group" element={<JoinGroup />} />
       </Routes>
     </Router>
 

@@ -15,7 +15,7 @@ export const addIdea = async (formData, user) => {
     try {
     
         // Insert idea along with the authenticated user's UID
-        const { title, details, link, license,image, resources, timeline } = formData;
+        const { title, solution, projectDescription, problemStatement,image, resources, timeline } = formData;
         const needsprojectmanager = formData.needsProjectManager; 
 
         // Ensure resources is formatted correctly
@@ -26,9 +26,9 @@ export const addIdea = async (formData, user) => {
         from('ideas')
         .insert([{
             title, 
-            details, 
-            link, 
-            license, 
+            problemStatement, 
+            projectDescription, 
+            solution,
             image,
             resources : formattedResources,
             needsprojectmanager,
