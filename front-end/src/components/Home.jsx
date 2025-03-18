@@ -405,7 +405,7 @@ function Home({ handleSignOut }) {
                   />
                   <div className="p-6">
                     <h3 className="text-xl font-semibold text-white mb-2">{project.title}</h3>
-                    <p className="text-gray-400 mb-4">{project.details}</p>
+                    <p className="text-gray-400 mb-4">{project.projectDescription}</p>
                     <div className="flex items-center justify-between mb-4">
                       <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
                         {project.categories}
