@@ -1,4 +1,4 @@
-<!-- IDEA -->
+<!-- IDEA on viewIdea Page-->
 - votes
 - progress
 - stages
