@@ -15,7 +15,9 @@ import {
   Twitter,
   Copy,
   Check,
-  X
+  X,
+  Loader,
+  Users
 } from 'lucide-react';
 
 import StakingProfile from './StakingProfile';
@@ -30,8 +32,39 @@ function ViewIdea({project, onBack }) {
   const [showIdeaSignUp, setIdeaSIgnUp] = useState(false);
   const navigate = useNavigate();
   const [showJoinGroup, setShowJoinGroup] = useState(false);
+  const [joinStatus, setJoinStatus] = useState(null); // null, 'pending', 'confirmed'
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [selectedIdea, setSelectedIdea] = useState(null);
 
+  useEffect(() => {
+    if (joinStatus === 'confirmed') {
+      // Add the current user to team members
+      setTeamMembers(prev => [...prev, {
+        name: 'Current User',
+        role: 'Frontend Developer',
+        avatar: null
+      }]);
+    }
+  }, [joinStatus]);
 
+   // Success Confirmation Modal
+   const ConfirmationModal = () => (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md relative animate-fade-in">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Check className="w-8 h-8 text-green-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">Successfully Joined!</h3>
+          <p className="text-gray-300">
+            You are now a member of the project team. You can start collaborating with other team members.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+  
   const handleJoinGroupComplete = ({ success }) => {
     if (success) {
       setShowJoinGroup(false);
@@ -52,16 +85,19 @@ function ViewIdea({project, onBack }) {
     }
   };
 
-
   // useEffect(() => {
-  //   if (showIdeaSignUp){
-  //     navigate ('join-group');
+  //   if (showIdeaSignUp) {
+  //     navigate('join-group');
   //   }
-  // }, [showIdeaSignUp,navigate]);
-  
+  // }, [showIdeaSignUp, navigate]);
+
+  // if (showJoinGroup) {
+  //   return < JoinGroup/>;
   // }
-  if (showJoinGroup) {
-    return < JoinGroup/>;
+  
+
+  if (showJoinGroup){
+     return <JoinGroup project={project}  onClose={() => setSelectedIdea(null)}/>;
   }
 
   console.log("Project in view idea", project.title);
@@ -243,7 +279,8 @@ function ViewIdea({project, onBack }) {
                       Cancel
                     </button>
                     <button
-                      type="submit"
+                      onClick={() => setShowJoinGroup(true)}
+                      // type="submit"
                       className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                     >
                       Submit

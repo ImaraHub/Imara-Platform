@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, Github, Linkedin, Twitter, Globe, Check, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ViewIdea from './ViewIdea';
+import stakeToken from '../utils/stake';
 function JoinGroup({ project, onBack }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -30,32 +31,34 @@ function JoinGroup({ project, onBack }) {
       setFormData(prev => ({ ...prev, cv: file }));
     }
   };
-  const handleStake = async() => {
-    setIsLoading(true);
+
+  const resourcesArray = Array.isArray(project.resources)
+  ? project.resources
+  : typeof project.resources === "string"
+  ? JSON.parse(project.resources)
+  : [];
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    console.log("Staking token with the following parameters:");
+
     try {
       await stakeToken();
       alert("Staking Successful");
       <ViewIdea/>
-      
-    } catch (error) {
+    }
+    catch (error) {
       console.error("Error staking token:", error);
       alert('Staking failed')
-    } finally {
-      setIsLoading(false);
+    }
+    finally {
+      setIsStaking(false);
     }
 
-  }
+   // Navigate back to ViewIdea with success state
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsStaking(true);
-
-    // Simulate staking process
-    setTimeout(() => {
-      setIsStaking(false);
-      // Navigate back to ViewIdea with success state
-      onBack({ success: true });
-    }, 3000);
   };
 
   return (
@@ -81,22 +84,25 @@ function JoinGroup({ project, onBack }) {
         {/* Form */}
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-8">
           {/* Role Selection */}
-          {/* <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
             <label className="block">
               <span className="text-lg font-semibold block mb-2">Select Your Role</span>
               <select
-                value={formData.role}
-                onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
-                className="w-full px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
-                required
-              >
-                <option value="">Select a role</option>
-                {project.teamNeeded?.map((role, index) => (
-                  <option key={index} value={role.title}>{role.title}</option>
-                ))}
+                  value={formData.role}
+                  onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+                  className="w-full px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
+                  required>
+                  <option value="">Select a role</option>
+                  {resourcesArray.map((role) => (
+                    <option key={role.id} value={role.role}>
+                      {role.role}
+                    </option>
+                  ))}
               </select>
+
+
             </label>
-          </div> */}
+          </div>
 
           {/* Contact Information */}
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 space-y-6">
