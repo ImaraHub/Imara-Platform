@@ -23,88 +23,81 @@ import {
 import StakingProfile from './StakingProfile';
 import { useNavigate } from 'react-router-dom';
 import JoinGroup from './joinGroup';
-function ViewIdea({project, onBack }) {
+import { useLocation } from "react-router-dom";
+
+function ViewIdea({ project: propProject = {}, onBack }) {
+  const location = useLocation();
+  const project = location.state?.project || propProject;
+
+  console.log("Received project prop:", project);
+
+  if (!project || Object.keys(project).length === 0) {
+    console.log("Project is empty or undefined!");
+    return <p>Loading project...</p>;
+  }
+
+  console.log("Project in view idea", project?.title);
+
   const [showShareModal, setShowShareModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [comment, setComment] = useState('');
-  // const [showStake,setShowStake] = useState(false);
   const [showIdeaSignUp, setIdeaSIgnUp] = useState(false);
   const navigate = useNavigate();
   const [showJoinGroup, setShowJoinGroup] = useState(false);
-  const [joinStatus, setJoinStatus] = useState(null); // null, 'pending', 'confirmed'
+  const [joinStatus, setJoinStatus] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [teamMembers, setTeamMembers] = useState([]);
   const [selectedIdea, setSelectedIdea] = useState(null);
 
   useEffect(() => {
-    if (joinStatus === 'confirmed') {
-      // Add the current user to team members
-      setTeamMembers(prev => [...prev, {
-        name: 'Current User',
-        role: 'Frontend Developer',
-        avatar: null
-      }]);
+    console.log("Project state updated", project);
+  }, [project]);
+
+  useEffect(() => {
+    if (joinStatus === 'confirmed' && !teamMembers.some(member => member.name === 'Current User')) {
+      setTeamMembers(prev => [...prev, { name: 'Current User', role: 'Frontend Developer', avatar: null }]);
     }
   }, [joinStatus]);
 
-   // Success Confirmation Modal
-   const ConfirmationModal = () => (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md relative animate-fade-in">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check className="w-8 h-8 text-green-400" />
-          </div>
-          <h3 className="text-xl font-semibold text-white mb-2">Successfully Joined!</h3>
-          <p className="text-gray-300">
-            You are now a member of the project team. You can start collaborating with other team members.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-  
+  if (!joinStatus) {
+    setJoinStatus('confirmed');
+  }
+
   const handleJoinGroupComplete = ({ success }) => {
     if (success) {
       setShowJoinGroup(false);
-      setJoinStatus('pending');
-      
-      // Simulate confirmation after 30 seconds
+      setJoinStatus("pending");
+  
+      // Show the first message
+      setShowConfirmation(true);
+  
+      // Wait 30 seconds before confirming
       setTimeout(() => {
-        setJoinStatus('confirmed');
-        setShowConfirmation(true);
-        
-        // Hide confirmation after 5 seconds
-        setTimeout(() => {
-          setShowConfirmation(false);
-        }, 5000);
-      }, 30000);
-    } else {
-      setShowJoinGroup(false);
+        setShowConfirmation(false);
+      
+        // Ensure UI update before fetching members
+        setTimeout(async () => {
+          try {
+            const response = await fetch(`/api/team-members?projectId=${project.id}`);
+            const data = await response.json();
+            setTeamMembers(data.members);
+          } catch (error) {
+            console.error("Failed to fetch team members:", error);
+          }
+        }, 100); // Add a short delay before fetching members
+      }, 5000);
+      
     }
   };
-
-  // useEffect(() => {
-  //   if (showIdeaSignUp) {
-  //     navigate('join-group');
-  //   }
-  // }, [showIdeaSignUp, navigate]);
-
-  // if (showJoinGroup) {
-  //   return < JoinGroup/>;
-  // }
   
 
   if (showJoinGroup){
-     return <JoinGroup project={project}  onClose={() => setSelectedIdea(null)}/>;
+    return <JoinGroup project={project}  onClose={() => setSelectedIdea(null)}/>;
   }
 
-  console.log("Project in view idea", project.title);
-  if (!project) return null;
-
   const handleCopyLink = () => {
-    const url = `https://imara.com/project/${project.id}`;
+    const url = `https://imara.com/project/${project?.id || "unknown"}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -112,60 +105,11 @@ function ViewIdea({project, onBack }) {
 
   const handleComment = (e) => {
     e.preventDefault();
-    // Handle comment submission
     console.log('Comment submitted:', comment);
     setComment('');
     setShowCommentBox(false);
   };
-
-  const ShareModal = ({ onClose }) => (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white"
-        >
-          <X className="w-6 h-6" />
-        </button>
-        
-        <h3 className="text-xl font-semibold text-white mb-6">Share Project</h3>
-        
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <button className="flex items-center gap-3 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-            <Facebook className="w-5 h-5" />
-            Facebook
-          </button>
-          <button className="flex items-center gap-3 bg-sky-500 text-white px-4 py-3 rounded-lg hover:bg-sky-600 transition-colors">
-            <Twitter className="w-5 h-5" />
-            Twitter
-          </button>
-        </div>
-
-        <div className="bg-gray-700/50 p-3 rounded-lg flex items-center gap-3">
-          <div className="flex-1 truncate text-gray-300 text-sm">
-            https://imara.com/project/{project.id}
-          </div>
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center gap-2 bg-gray-600 text-white px-3 py-1.5 rounded-lg hover:bg-gray-500 transition-colors"
-          >
-            {copiedLink ? (
-              <>
-                <Check className="w-4 h-4" />
-                Copied!
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4" />
-                Copy
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
       <div className="container mx-auto px-4 py-8">
@@ -352,6 +296,38 @@ function ViewIdea({project, onBack }) {
               )} */}
              
             </div>
+            <div className="mt-4">
+    {/* Display join status messages */}
+{joinStatus === "pending" && (
+  <p className="text-yellow-400">Staking successful! Waiting for confirmation...</p>
+)}
+{joinStatus === "confirmed" && showConfirmation && (
+  <p className="text-green-400">You have successfully joined the group!</p>
+)}
+
+/* Show team members ONLY when confirmation message disappears */
+{joinStatus === "confirmed" && !showConfirmation && (
+  <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mt-6">
+    <h2 className="text-2xl font-semibold mb-4">Team Members</h2>
+    <ul className="space-y-3">
+      {teamMembers.length > 0 ? (
+        teamMembers.map((member, index) => (
+          <li key={index} className="flex items-center gap-4 bg-gray-900 p-3 rounded-lg">
+            <User className="w-6 h-6 text-gray-300" />
+            <div>
+              <p className="text-white">{member.username}</p>
+              <p className="text-gray-400 text-sm">{member.email}</p>
+            </div>
+          </li>
+        ))
+      ) : (
+        <p className="text-gray-400">No members yet...</p>
+      )}
+    </ul>
+  </section>
+)}
+
+  </div>
 
             {/* Project Links */}
             {project.link && (
