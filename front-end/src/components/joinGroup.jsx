@@ -38,27 +38,22 @@ function JoinGroup({ project, onBack }) {
   ? JSON.parse(project.resources)
   : [];
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    console.log("Staking token with the following parameters:");
+    setIsStaking(true);
 
     try {
-      await stakeToken();
+      await stakeToken(); // Wait for staking transaction
       alert("Staking Successful");
-      <ViewIdea/>
-    }
-    catch (error) {
+
+      // Redirect to ViewIdea page
+      navigate("/view-idea", { state: { project } }); // Ensure '/viewidea' is the correct route
+    } catch (error) {
       console.error("Error staking token:", error);
-      alert('Staking failed')
-    }
-    finally {
+      alert("Staking failed");
+    } finally {
       setIsStaking(false);
     }
-
-   // Navigate back to ViewIdea with success state
-
   };
 
   return (
@@ -228,20 +223,14 @@ function JoinGroup({ project, onBack }) {
           </div>
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isStaking}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isStaking ? (
-              <>
-                <Loader className="w-5 h-5 animate-spin" />
-                Staking to Join...
-              </>
-            ) : (
-              'Stake to Join'
-            )}
-          </button>
+         {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={isStaking}
+          className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {isStaking ? "Staking to Join..." : "Stake to Join"}
+        </button>
         </form>
       </div>
     </div>
