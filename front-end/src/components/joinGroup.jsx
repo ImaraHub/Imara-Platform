@@ -3,6 +3,12 @@ import { ArrowLeft, Upload, Github, Linkedin, Twitter, Globe, Check, Loader } fr
 import { useNavigate } from 'react-router-dom';
 import ViewIdea from './ViewIdea';
 import stakeToken from '../utils/stake';
+import {updateUser, uploadCvToSupabase} from '../utils/SupabaseClient';
+import { useAddress } from "@thirdweb-dev/react";
+import { useAuth } from '../AuthContext';
+import { addUserData, getUserData } from '../utils/SupabaseClient';
+
+
 function JoinGroup({ project, onBack }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -12,25 +18,56 @@ function JoinGroup({ project, onBack }) {
     linkedin: '',
     twitter: '',
     portfolio: '',
-    cv: null
+    cv: '',
   });
   const [isStaking, setIsStaking] = useState(false);
+  const address = useAddress();
+  const [stakingAddress,setStakingAddress] = useState(null);
+  const { user } = useAuth();
 
-  // Simulate getting user email from database
+  // retrieve user data from db
   useEffect(() => {
-    // This would be replaced with actual database fetch
-    setFormData(prev => ({
-      ...prev,
-      email: 'user@example.com' // Replace with actual user email from DB
-    }));
-  }, []);
+      const fetchUserData = async () => {
+        if (!user) return;
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData(prev => ({ ...prev, cv: file }));
+        console.log("Fetching user data for user:", user);
+
+              // Call getUserData to fetch user details from DB
+        const data = await getUserData(user); 
+    
+        if (!data || data.length === 0) {
+          console.log("No user data found in DB.");
+          return;
+        }
+    
+        console.log("User data fetched:", data[0]); // Assuming only one record per user
+        setFormData(prev => ({
+          ...prev,
+          email: user.email || "",
+          github: data[0].github || "",
+          linkedin: data[0].linkedin_profile || "",
+          twitter: data[0].twitter_handle || "",
+          portfolio: data[0].portfolio_link || "",
+        }));
+  };
+
+  fetchUserData();
+}, [user]);  
+
+
+  const handleFileChange = async (e) => {
+    var file = e.target.files[0];
+    if (!file) return;
+
+    const cvUrl = await uploadCvToSupabase(file, user);
+
+    if (cvUrl){
+      // setUploadedFile(cvUrl);
+      setFormData(prev => ({ ...prev, cv: cvUrl }));
     }
   };
+
+
 
   const resourcesArray = Array.isArray(project.resources)
   ? project.resources
@@ -45,8 +82,18 @@ function JoinGroup({ project, onBack }) {
     console.log("Staking token with the following parameters:");
 
     try {
-      await stakeToken();
+      const stakerAddress = await stakeToken();
+      setStakingAddress(stakerAddress);
+
+      if (!stakingAddress) {
+        setStakingAddress(address);
+      }
       alert("Staking Successful");
+      const result = await addUserData(formData, user, stakerAddress);
+
+      if (result !== true) {
+        await updateUser(user, formData, stakerAddress);
+    }
       <ViewIdea/>
     }
     catch (error) {
@@ -60,6 +107,12 @@ function JoinGroup({ project, onBack }) {
    // Navigate back to ViewIdea with success state
 
   };
+
+    // Simulate getting user email from database
+    // useEffect(() => {
+    //   // This would be replaced with actual database fetch
+      
+    // }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -219,7 +272,7 @@ function JoinGroup({ project, onBack }) {
                   <div className="flex flex-col items-center space-y-2">
                     <Upload className="w-8 h-8 text-gray-400" />
                     <span className="text-sm text-gray-400">
-                      {formData.cv ? formData.cv.name : 'Drop your CV here or click to upload'}
+                      {formData.cv ? "CV attached" : 'Drop your CV here or click to upload'}
                     </span>
                   </div>
                 </label>
