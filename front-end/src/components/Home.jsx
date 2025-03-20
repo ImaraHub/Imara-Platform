@@ -64,14 +64,6 @@ const trendingProjects = [
   }
 ];
 
-// const allProjects = Array.from({ length: 9 }, (_, i) => ({
-//   id: i + 1,
-//   title: `Project Imara`,
-//   description: "An innovative blockchain project revolutionizing the industry",
-//   category: ["DeFi", "NFT", "Gaming", "DAO"][Math.floor(Math.random() * 4)],
-//   progress: Math.floor(Math.random() * 100),
-//   image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60"
-// }));
 
 const categories = ["All", "DeFi", "NFT", "Gaming", "DAO", "Infrastructure"];
 const stages = ["All Stages", "Ideation", "Development", "Launch Ready"];
@@ -92,7 +84,6 @@ function Home({ handleSignOut }) {
   const [showProjectManager, setShowProjectManager] = useState(false);
 
 
-  const allProjects = displayIdeas();
   // const navigate = useNavigate();
   const address = useAddress();
   const email = localStorage.getItem("userEmail");
