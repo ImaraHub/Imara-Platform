@@ -127,12 +127,12 @@ function Home({ handleSignOut }) {
 
   // Handle voting
   if (showProfile){
-    return <Profile/>
+    return <Profile onBack={() => setShowProfile(false)}/>
   }
 
 
   if (showIdeationMenu) {
-    return <CreateIdea />;
+    return <CreateIdea onBack={() => setShowIdeationMenu(false)}/>;
     
   }
   

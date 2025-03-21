@@ -23,7 +23,7 @@ import { getUserData } from '../utils/SupabaseClient';
 import { useAuth } from '../AuthContext';
 import { retrieveJoinedProjects,retrieveCreatedProjects } from '../utils/SupabaseClient';
 
-function Profile() {
+function Profile({onback}) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('joined'); // 'joined', 'created'
   const [userData, setUserData] = useState(null);
@@ -73,7 +73,7 @@ function Profile() {
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <button
-          onClick={() => navigate('/')}
+          onClick={() => success(false)}
           className="mb-8 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
