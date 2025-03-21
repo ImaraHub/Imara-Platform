@@ -9,7 +9,7 @@ export function Auth({ setShowAuth, setShowHome }) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  const [userName, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const address = useAddress();
@@ -67,7 +67,10 @@ export function Auth({ setShowAuth, setShowHome }) {
       password,
       options: {
         emailRedirectTo: 'https://imara-platform.onrender.com',
-      }
+        data: {
+        display_name: userName, // Replace `fullName` with the actual state/input
+      },
+      },
     });
     setLoading(false);
 
@@ -183,8 +186,26 @@ export function Auth({ setShowAuth, setShowHome }) {
           </div>
         </div>
 
-        {/* Email Form */}
+        {/* Username Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+        {!isLogin  && (
+           <div>
+           <label htmlFor="userName" className="block text-sm font-medium text-gray-400 mb-2">
+             User Name
+           </label>
+           <input
+             id="username"
+             type="text"
+             value={userName} 
+             onChange={(e) => setUsername(e.target.value)}
+             className="w-full px-4 py-3 bg-white/5 border border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
+             placeholder="Enter your username"
+             required
+           />
+         </div>
+
+        )
+      };
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
               Email address
