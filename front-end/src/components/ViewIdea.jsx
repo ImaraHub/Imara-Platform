@@ -241,7 +241,9 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
               <button
                   onClick={() => setShowJoinGroup(true)}
                   className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+                  disabled={!!joinStatus}
                 >
+                  
                     {joinStatus === "confirmed"
                       ? "Joined"
                       : joinStatus === "pending"
