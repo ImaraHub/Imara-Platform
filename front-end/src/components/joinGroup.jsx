@@ -6,7 +6,7 @@ import stakeToken from '../utils/stake';
 import {updateUser, uploadCvToSupabase} from '../utils/SupabaseClient';
 import { useAddress } from "@thirdweb-dev/react";
 import { useAuth } from '../AuthContext';
-import { addUserData, getUserData } from '../utils/SupabaseClient';
+import { addUserData, getUserData,addProjectContributor } from '../utils/SupabaseClient';
 
 
 function JoinGroup({ project, onBack }) {
@@ -92,7 +92,11 @@ function JoinGroup({ project, onBack }) {
 
       if (result !== true) {
         await updateUser(user, formData, stakerAddress);
-    }
+      }
+
+    // call user to contribute to the project
+    await addProjectContributor(project, user, formData.role);
+
       // Redirect to ViewIdea page
       navigate("/view-idea", { state: { project, stakeSuccess: true } }); // Ensure '/viewidea' is the correct route
     } catch (error) {
