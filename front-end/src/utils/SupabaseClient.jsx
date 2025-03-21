@@ -238,7 +238,7 @@ export const updateUser = async (user, formData, address) => {
 };
   
 // function to update contributors for a project
-export const addProjectContributors = async (project, user, role) => {
+export const addProjectContributor = async (project, user, role) => {
     try {
         if (!project || !project.id) {
             console.error("Project ID is missing!");
@@ -252,7 +252,9 @@ export const addProjectContributors = async (project, user, role) => {
                 {
                     idea_id: project.id,
                     user_id: user.id,
-                    role
+                    role,
+                    approved_status: "pending",
+                    stake_status:"staked"
                 }
             ]);
         } catch (err) {
@@ -260,3 +262,74 @@ export const addProjectContributors = async (project, user, role) => {
             return null;
         }
     }   
+
+    //  retrieve project contributors from db based on project id and user.id
+    export const getProjectContributors = async (project, user) => {
+        try {
+            if (!project || !project.id) {
+                console.error("Project ID is missing!");
+                return "Project ID is required";
+            }
+            if (!user || !user.id) {
+                console.error("User ID is missing!");
+                return "User ID is required";
+            }
+            // Retrieve project contributors from the database      
+            const { data, error } = await supabase
+            .from('idea_contributors')
+            .select('*')
+            .eq('idea_id', project.id)
+            .eq('user_id', user.id);
+            if (error) {
+                console.error("Error fetching project contributors:", error);
+                return null;
+            }
+            return data;
+        }
+
+        catch (err) {
+            console.error("Unexpected error:", err);
+            return null;
+        }
+    }   
+
+  export const  retrieveJoinedProjects = async (userId) => {   
+    try {
+        // Retrieve project contributors from the database      
+        const { data, error } = await supabase
+        .from('idea_contributors')
+        .select('*')
+        .eq('user_id', user.id);
+        if (error) {
+            console.error("Error fetching project contributors:", error);
+            return null;
+        }
+        return data;
+    }
+
+    catch (err) {
+        console.error("Unexpected error:", err);
+        return null;
+    }
+}  
+
+
+export const retrieveCreatedProjects = async (userId) => {
+    try {
+        // Retrieve project contributors from the database      
+        const { data, error } = await supabase
+        .from('ideas')
+        .select('*')
+        .eq('auth_id', user.id);
+        if (error) {
+            console.error("Error fetching project contributors:", error);
+            return null;
+        }
+        return data;
+    }
+
+    catch (err) {
+        console.error("Unexpected error:", err);
+        return null;
+    }
+}
