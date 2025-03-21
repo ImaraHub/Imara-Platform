@@ -4,7 +4,7 @@ import { Carousel } from 'react-bootstrap';
 import BuilderProfile from './BuilderProfile';
 import ViewIdea from './ViewIdea';
 import ProjectManager from './ProjectManager';
-import ProfileSettings from './ProfileSettings'; // Correct import path
+import Profile from './Profile'; // Correct import path
 
 import {
   User,
@@ -91,7 +91,7 @@ function Home({ handleSignOut }) {
 
   const [showIdeationMenu, setShowIdeationMenu] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState(null);
-  const [showProfileSettings,setShowProfileSettings] = useState(false);
+  const [showProfile,setShowProfile] = useState(false);
 
   // call displayIdea from supabaseClient to retrieve posts
 
@@ -126,8 +126,8 @@ function Home({ handleSignOut }) {
   
 
   // Handle voting
-  if (showProfileSettings){
-    return <ProfileSettings/>
+  if (showProfile){
+    return <Profile/>
   }
 
 
@@ -245,7 +245,7 @@ function Home({ handleSignOut }) {
                       <button
   onClick={() => {
     setShowProfileMenu(false); // Close the dropdown
-    setShowProfileSettings(true); // Show the ProfileSettings page
+    setShowProfile(true); // Show the ProfileSettings page
   }}
   className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3"
 >
