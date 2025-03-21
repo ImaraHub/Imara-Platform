@@ -23,7 +23,7 @@ import { getUserData } from '../utils/SupabaseClient';
 import { useAuth } from '../AuthContext';
 import { retrieveJoinedProjects,retrieveCreatedProjects } from '../utils/SupabaseClient';
 
-function Profile({onback}) {
+function Profile({allProjects,onBack}) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('joined'); // 'joined', 'created'
   const [userData, setUserData] = useState(null);
@@ -33,13 +33,20 @@ function Profile({onback}) {
 
   const { user } = useAuth();
 
-  console.log("User:", user);
+  
+
+  // console.log("User:", user);
+  
 
   useEffect(() => {
     if (user) {
       const fetchUserData = async () => {
         const data = await getUserData(user);
-        setUserData(data);
+        if (data) {
+          setUserData(data);
+        } else {
+          console.error("Failed to fetch user data");
+        }
       };
       fetchUserData();
     }
@@ -50,8 +57,17 @@ function Profile({onback}) {
   useEffect(() => {
     if (user?.id) {
       const fetchJoinedProjects = async () => {
-        const projects = await retrieveJoinedProjects(user.id);
-        setJoinedProjects(projects);
+        const projects = await retrieveJoinedProjects(user);
+
+        // loop through projects retrirving the project.idea_id and matching it to the allProjects array[project.id]
+        //  add the project to the joinedProjects array
+        const enrichedProjects = projects.map((project) => {
+          const projectData = allProjects.find((p) => p.id === project.idea_id);
+          return projectData ? { ...project, ...projectData } : project;
+        });
+        
+        
+        setJoinedProjects(enrichedProjects);
       };
       fetchJoinedProjects();
     }
@@ -60,20 +76,30 @@ function Profile({onback}) {
   useEffect(() => {
     if (user?.id) {
       const fetchCreatedProjects = async () => {
-        const projects = await retrieveCreatedProjects(user.id);
+        const projects = await retrieveCreatedProjects(user);
         setCreatedProjects(projects);
       };
       fetchCreatedProjects();
     }
   }, [user]);
   
+    // Add Loading state check
+    if (!userData) {
+      return <p>Loading profile...</p>;
+    }
+
+    // Add Loading state check
+    if (createdProjects === null&& joinedProjects === null) {
+      return <p>Loading projects...</p>;
+    }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+      
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <button
-          onClick={() => success(false)}
+           onClick={() => onBack({ success: false })}
           className="mb-8 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
@@ -125,7 +151,7 @@ function Profile({onback}) {
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">
                   <Calendar className="w-4 h-4 text-gray-400" />
-                  Joined {new Date(userData.created_at).toLocaleDateString()}
+                  Joined {userData?.created_at ? new Date(userData.created_at).toLocaleDateString() : "N/A"}
                 </div>
               </div>
 

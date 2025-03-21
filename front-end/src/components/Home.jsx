@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {useAddress} from "@thirdweb-dev/react";
 import { Carousel } from 'react-bootstrap';
-import BuilderProfile from './BuilderProfile';
+// import BuilderProfile from './BuilderProfile';
 import ViewIdea from './ViewIdea';
-import ProjectManager from './ProjectManager';
+// import ProjectManager from './ProjectManager';
 import Profile from './Profile'; // Correct import path
 
 import {
@@ -125,9 +125,9 @@ function Home({ handleSignOut }) {
   };
   
 
-  // Handle voting
+  
   if (showProfile){
-    return <Profile onBack={() => setShowProfile(false)}/>
+    return <Profile allProjects={projects} onBack={() => setShowProfile(false)}/>
   }
 
 
