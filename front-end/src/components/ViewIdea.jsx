@@ -20,20 +20,18 @@ import {
   Users
 } from 'lucide-react';
 
-import StakingProfile from './StakingProfile';
 import { useNavigate } from 'react-router-dom';
 import JoinGroup from './joinGroup';
 import { useLocation } from "react-router-dom";
 
-function ViewIdea({ project: propProject = {}, onBack }) {
+function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const location = useLocation();
   const project = location.state?.project || propProject;
-
-  console.log("Received project prop:", project);
+  const stakingSuccess = stakeSuccess || location.state?.stakeSuccess || false;
 
   if (!project || Object.keys(project).length === 0) {
     console.log("Project is empty or undefined!");
-    return <p>Loading project...</p>;
+    return
   }
 
   console.log("Project in view idea", project?.title);
@@ -42,57 +40,29 @@ function ViewIdea({ project: propProject = {}, onBack }) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [comment, setComment] = useState('');
-  const [showIdeaSignUp, setIdeaSIgnUp] = useState(false);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [showJoinGroup, setShowJoinGroup] = useState(false);
-  const [joinStatus, setJoinStatus] = useState(null);
-  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [joinStatus, setJoinStatus] = useState("");
   const [teamMembers, setTeamMembers] = useState([]);
   const [selectedIdea, setSelectedIdea] = useState(null);
 
-  useEffect(() => {
-    console.log("Project state updated", project);
-  }, [project]);
 
-  useEffect(() => {
-    if (joinStatus === 'confirmed' && !teamMembers.some(member => member.name === 'Current User')) {
-      setTeamMembers(prev => [...prev, { name: 'Current User', role: 'Frontend Developer', avatar: null }]);
-    }
-  }, [joinStatus]);
-
-  if (!joinStatus) {
-    setJoinStatus('confirmed');
-  }
-
-  const handleJoinGroupComplete = ({ success }) => {
-    if (success) {
-      setShowJoinGroup(false);
-      setJoinStatus("pending");
-  
-      // Show the first message
-      setShowConfirmation(true);
-  
-      // Wait 30 seconds before confirming
-      setTimeout(() => {
-        setShowConfirmation(false);
-      
-        // Ensure UI update before fetching members
-        setTimeout(async () => {
-          try {
-            const response = await fetch(`/api/team-members?projectId=${project.id}`);
-            const data = await response.json();
-            setTeamMembers(data.members);
-          } catch (error) {
-            console.error("Failed to fetch team members:", error);
-          }
-        }, 100); // Add a short delay before fetching members
-      }, 5000);
-      
-    }
+  // a function that sets the join status to pending and then confirmed after 5 seconds
+  const handleJoinGroup = () => {
+    setJoinStatus("pending");
+    setTimeout(() => {
+      setJoinStatus("confirmed");
+    }, 10000);
   };
   
+  // Run handleJoinGroup() only when stakingSuccess changes to true
+  useEffect(() => {
+    if (stakingSuccess) {
+      handleJoinGroup();
+    }
+  }, [stakingSuccess]); 
 
-  if (showJoinGroup){
+  if (showJoinGroup && !stakeSuccess){
     return <JoinGroup project={project}  onClose={() => setSelectedIdea(null)}/>;
   }
 
@@ -136,12 +106,12 @@ function ViewIdea({ project: propProject = {}, onBack }) {
                   {project.category}
                 </span>
                 <div className="flex items-center gap-2">
-                  <div className="w-32 h-2 bg-gray-700 rounded-full">
+                  {/* <div className="w-32 h-2 bg-gray-700 rounded-full"> */}
                     {/* <div
                       className="h-full bg-blue-500 rounded-full"
                       style={{ width: `${project.progress}%` }}
                     /> */}
-                  </div>
+                  {/* </div> */}
                   <span className="text-gray-400 text-sm">{project.progress}% Complete</span>
                 </div>
               </div>
@@ -184,15 +154,7 @@ function ViewIdea({ project: propProject = {}, onBack }) {
               <p className="text-gray-300">{project.solution}</p>
             </section>
 
-            {/* Technical Requirements
-            <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
-              <h2 className="text-2xl font-semibold mb-4">Technical Requirements</h2>
-              <ul className="list-disc list-inside text-gray-300 space-y-2">
-                {project.resources?.map((req, index) => (
-                  <li key={index}>{req}</li>
-                ))}
-              </ul>
-            </section> */}
+
 
             {/* Comments Section */}
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
@@ -280,54 +242,63 @@ function ViewIdea({ project: propProject = {}, onBack }) {
                   onClick={() => setShowJoinGroup(true)}
                   className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
                 >
-                  Join Project
+                    {joinStatus === "confirmed"
+                      ? "Joined"
+                      : joinStatus === "pending"
+                      ? "Staking successful! Pending"
+                      : stakeSuccess
+                      ? "Waiting to Join"
+                      : "Join Project"}
+
                 </button>
 
-              {/* New Button Appears After Successful Staking */}
-            
-              {/* {stakeSuccess && (
-                <button
-                  onClick={() => setShowStake(true)}
-                  className="w-full px-6 py-3 mt-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity">
-                <h3 className="text-lg">
-                  Continue
-                  </h3>
-                </button>
-              )} */}
-             
+
             </div>
             <div className="mt-4">
-    {/* Display join status messages */}
-{joinStatus === "pending" && (
-  <p className="text-yellow-400">Staking successful! Waiting for confirmation...</p>
-)}
-{joinStatus === "confirmed" && showConfirmation && (
-  <p className="text-green-400">You have successfully joined the group!</p>
-)}
+            
 
-/* Show team members ONLY when confirmation message disappears */
-{joinStatus === "confirmed" && !showConfirmation && (
-  <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mt-6">
-    <h2 className="text-2xl font-semibold mb-4">Team Members</h2>
-    <ul className="space-y-3">
-      {teamMembers.length > 0 ? (
-        teamMembers.map((member, index) => (
-          <li key={index} className="flex items-center gap-4 bg-gray-900 p-3 rounded-lg">
-            <User className="w-6 h-6 text-gray-300" />
-            <div>
-              <p className="text-white">{member.username}</p>
-              <p className="text-gray-400 text-sm">{member.email}</p>
+                { /* Show team members ONLY when confirmation message disappears  */}
+                {(joinStatus === "confirmed" )&&(
+                  <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mt-6">
+                    <h2 className="text-2xl font-semibold mb-4">Team Members</h2>
+                    <ul className="space-y-3">
+                      {teamMembers.length > 0 ? (
+                        teamMembers.map((member, index) => (
+                          <li key={index} className="flex items-center gap-4 bg-gray-900 p-3 rounded-lg">
+                            <User className="w-6 h-6 text-gray-300" />
+                            <div>
+                              <p className="text-white">{member.username}</p>
+                              <p className="text-gray-400 text-sm">{member.email}</p>
+                            </div>
+                          </li>
+                        ))
+                      ) : (
+                        <p className="text-gray-400">No members yet...</p>
+                      )}
+                    </ul>
+                  </section>
+                )}
+
+                {!(joinStatus === "confirmed") && (
+                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mt-6">
+                    <h3 className="text-lg font-semibold mb-4">Team Needed</h3>
+                    <div className="space-y-3">
+                      {(project.resources 
+                        ? (Array.isArray(project.resources) ? project.resources : JSON.parse(project.resources || "[]")) 
+                        : []
+                      ).map((role, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-lg"
+                        >
+                          <span className="text-gray-300">{role.role}</span>
+                          <span className="text-sm text-gray-400">{role.count} needed</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
             </div>
-          </li>
-        ))
-      ) : (
-        <p className="text-gray-400">No members yet...</p>
-      )}
-    </ul>
-  </section>
-)}
-
-  </div>
 
             {/* Project Links */}
             {project.link && (
@@ -373,32 +344,7 @@ function ViewIdea({ project: propProject = {}, onBack }) {
               </div>
             </div>
 
-            {/* Team Needed */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
-              <h3 className="text-lg font-semibold mb-4">Team Needed</h3>
-              <div className="space-y-3">
-              
-              {Array.isArray(project.resources)
-    ? project.resources.map((role, index) => (
-        <div
-          key={index}
-          className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-lg"
-        >
-          <span className="text-gray-300">{role.role}</span>
-          <span className="text-sm text-gray-400">{role.count} needed</span>
-        </div>
-      ))
-    : JSON.parse(project.resources || "[]").map((role, index) => (
-        <div
-          key={index}
-          className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-lg"
-        >
-          <span className="text-gray-300">{role.role}</span>
-          <span className="text-sm text-gray-400">{role.count} needed</span>
-        </div>
-      ))}
-              </div>
-            </div>
+
           </div>
         </div>
       </div>
@@ -406,7 +352,7 @@ function ViewIdea({ project: propProject = {}, onBack }) {
       {showShareModal && (
         <ShareModal onClose={() => setShowShareModal(false)} />
       )}
-      {/* {showStake && <Stake />} */}
+  
     </div>
   );
   
