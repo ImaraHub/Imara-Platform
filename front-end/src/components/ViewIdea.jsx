@@ -63,7 +63,7 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   }, [stakingSuccess]); 
 
   if (showJoinGroup && !stakeSuccess){
-    return <JoinGroup project={project}  onClose={() => setSelectedIdea(null)}/>;
+    return <JoinGroup project={project}  onBack={() => setShowJoinGroup(false)}/>;
   }
 
   const handleCopyLink = () => {
