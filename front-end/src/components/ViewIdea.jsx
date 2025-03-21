@@ -85,7 +85,7 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <button
-          onClick={onBack}
+          onClick={() => onBack({ success: false })}
           className="mb-8 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />

@@ -117,7 +117,7 @@ function Home({ handleSignOut }) {
   }, [address]);
 
   if (selectedIdea){
-    return <ViewIdea project={selectedIdea}  onClose={() => setSelectedIdea(null)}/>;
+    return <ViewIdea project={selectedIdea}  onBack={() => setSelectedIdea(null)}/>;
   }
 
   const handleIdeaClick = (idea) => {
@@ -133,6 +133,7 @@ function Home({ handleSignOut }) {
 
   if (showIdeationMenu) {
     return <CreateIdea />;
+    
   }
   
   const handleCopyLink = (projectId) => {
