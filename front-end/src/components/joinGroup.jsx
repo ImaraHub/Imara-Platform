@@ -94,7 +94,7 @@ function JoinGroup({ project, onBack }) {
         await updateUser(user, formData, stakerAddress);
     }
       // Redirect to ViewIdea page
-      navigate("/view-idea", { state: { project } }); // Ensure '/viewidea' is the correct route
+      navigate("/view-idea", { state: { project, stakeSuccess: true } }); // Ensure '/viewidea' is the correct route
     } catch (error) {
       console.error("Error staking token:", error);
       alert("Staking failed");
@@ -106,11 +106,7 @@ function JoinGroup({ project, onBack }) {
 
   };
 
-    // Simulate getting user email from database
-    // useEffect(() => {
-    //   // This would be replaced with actual database fetch
-      
-    // }, []);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
