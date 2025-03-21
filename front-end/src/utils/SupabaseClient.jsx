@@ -77,7 +77,7 @@ export const uploadCvToSupabase = async (cv, user) => {
         return null;
     }
 
-    console.log("Public URL Response:", publicUrlData);
+    // console.log("Public URL Response:", publicUrlData);
 
     return publicUrlData.publicUrl;
 
@@ -117,7 +117,7 @@ export const uploadImageToSupabase = async (image, user) => {
         return null;
     }
 
-    console.log("Public URL Response:", publicUrlData);
+    // console.log("Public URL Response:", publicUrlData);
    
 
     return publicUrlData.publicUrl;
@@ -146,7 +146,7 @@ export const addUserData = async (formData, user, address) => {
         // Insert idea along with the authenticated user's UID
 
         // retrieve user auth id
-        console.log("User in addUserData:", user);
+        // console.log("User in addUserData:", user);
 
         const { github, linkedin, twitter, portfolio,cv } = formData;
         const { data, error } = await supabase
@@ -179,7 +179,7 @@ export const addUserData = async (formData, user, address) => {
 //  retrieve details from db for user based on their user.id (auth_id) or user.email
 export const getUserData = async (user) => {
     try {
-        console.log("User in getUserData:", user);
+        // console.log("User in getUserData:", user);
         // Retrieve user data from the database
         const { data, error } = await supabase
         .from('users')
@@ -206,7 +206,7 @@ export const updateUser = async (user, formData, address) => {
 
         const { github, linkedin, twitter, portfolio, cv } = formData;
 
-        console.log("Updating user:", user.id, "with data:", formData);  
+        // console.log("Updating user:", user.id, "with data:", formData);  
 
         // Construct updated data object
         const updatedData = {
@@ -293,7 +293,7 @@ export const addProjectContributor = async (project, user, role) => {
         }
     }   
 
-  export const  retrieveJoinedProjects = async (userId) => {   
+  export const  retrieveJoinedProjects = async (user) => {   
     try {
         // Retrieve project contributors from the database      
         const { data, error } = await supabase
@@ -314,13 +314,13 @@ export const addProjectContributor = async (project, user, role) => {
 }  
 
 
-export const retrieveCreatedProjects = async (userId) => {
+export const retrieveCreatedProjects = async (user) => {
     try {
         // Retrieve project contributors from the database      
         const { data, error } = await supabase
         .from('ideas')
         .select('*')
-        .eq('auth_id', user.id);
+        .eq('uid', user.id);
         if (error) {
             console.error("Error fetching project contributors:", error);
             return null;
