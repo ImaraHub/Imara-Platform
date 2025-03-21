@@ -237,3 +237,26 @@ export const updateUser = async (user, formData, address) => {
     }
 };
   
+// function to update contributors for a project
+export const addProjectContributors = async (project, user, role) => {
+    try {
+        if (!project || !project.id) {
+            console.error("Project ID is missing!");
+            return "Project ID is required";
+        }   
+
+        // add to supabase db
+        const { data, error } = await supabase
+            .from('idea_contributors')
+            .insert([
+                {
+                    idea_id: project.id,
+                    user_id: user.id,
+                    role
+                }
+            ]);
+        } catch (err) {
+            console.error("Unexpected error:", err);
+            return null;
+        }
+    }   
