@@ -258,28 +258,30 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
             </div>
             <div className="mt-4">
             
-
-                { /* Show team members ONLY when confirmation message disappears  */}
-                {(joinStatus === "confirmed" )&&(
-                  <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mt-6">
-                    <h2 className="text-2xl font-semibold mb-4">Team Members</h2>
-                    <ul className="space-y-3">
-                      {teamMembers.length > 0 ? (
-                        teamMembers.map((member, index) => (
-                          <li key={index} className="flex items-center gap-4 bg-gray-900 p-3 rounded-lg">
-                            <User className="w-6 h-6 text-gray-300" />
-                            <div>
-                              <p className="text-white">{member.username}</p>
-                              <p className="text-gray-400 text-sm">{member.email}</p>
-                            </div>
-                          </li>
-                        ))
-                      ) : (
-                        <p className="text-gray-400">No members yet...</p>
-                      )}
-                    </ul>
-                  </section>
-                )}
+{/* Show team members ONLY when confirmation message disappears */}
+{(joinStatus === "confirmed") && (
+  <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mt-6">
+    <h2 className="text-2xl font-semibold mb-4">Team Members</h2>
+    <ul className="space-y-3">
+      {/* Replace your teamMembers with this predefined array */}
+      {[
+        { username: "Ai project manager", email: "no contact till succcessful team creation", role: "project manager" },
+        { username: "Allan Robinson", email: "allangithaiga5@gmail.com", role: "front-end developer" },
+        { username: "Doreen Onyango", email: "datieno001@gmail.com", role: "Go -backend developer" },
+        { username: "(waitng for confirmation)", email: "(nill)", role: "cloud server developer" }
+      ].map((member, index) => (
+        <li key={index} className="flex items-center gap-4 bg-gray-900 p-3 rounded-lg">
+          <User className="w-6 h-6 text-gray-300" />
+          <div>
+            <p className="text-white">{member.username}</p>
+            <p className="text-gray-400 text-sm">{member.email}</p>
+            <p className="text-gray-400 text-sm italic">{member.role}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
 
                 {!(joinStatus === "confirmed") && (
                   <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mt-6">
