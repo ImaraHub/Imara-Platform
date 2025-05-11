@@ -33,24 +33,6 @@ const CreateIdea = ({ onBack }) => {
     timeline: null
   });
 
-  // const handleFormFieldChange = (fieldName, e) => {
-  //   setForm({ ...formData, [fieldName]: e.target.value })
-  // }
-
-  // const makeInteraction = (e) => {
-  //   e.preventDefault();
-  //   const { title, details, link, license, image } = formData;
-  //   const myCall = contract.populate('create-idea+', [title, details, link, uploadedFile])
-  //   setIsLoading(true)
-  //   contract['scwerre'](myCall.calldata).then((res) => {
-  //     console.info("Successful Response:", res)
-  //   }).catch((err) => {
-  //     console.error("Error: ", err)
-  //   }).finally(() => {
-  //     setIsLoading(false)
-  //   })
-  // }
-
   const handleFileChange = async (e) => {
     var file = e.target.files[0];
     if (!file) return;

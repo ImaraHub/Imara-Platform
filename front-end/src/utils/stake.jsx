@@ -6,6 +6,9 @@ async function stakeToken() {
     // Initialize ethers.js provider (e.g., using MetaMask's provider)
     if (!window.ethereum) {
         console.error("MetaMask is not installed");
+        // is there another function to send a payment request for the user wallet to receive a request for payment?
+
+        
         return;
     }
 
@@ -20,6 +23,7 @@ async function stakeToken() {
     // print signer address
     // console.log("Signer address:", await signer.getAddress());
 
+    const address = await signer.getAddress();
     // Initialize contract
     const stakeFactory = new ethers.Contract(stakeContractAddress, stakeFactoryABI.abi, signer);
 
@@ -40,8 +44,10 @@ async function stakeToken() {
         // console.log("Token address:", tokenAddress);
 
         // return tokenAddress;
+        return address;
     } catch (error) {
         console.error("Error staking token:", error);
+        return null;
     }
 
 }

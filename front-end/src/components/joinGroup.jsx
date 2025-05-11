@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, Github, Linkedin, Twitter, Globe, Check, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ViewIdea from './ViewIdea';
+import stakeToken from '../utils/stake';
+import {updateUser, uploadCvToSupabase} from '../utils/SupabaseClient';
+import { useAddress } from "@thirdweb-dev/react";
+import { useAuth } from '../AuthContext';
+import { addUserData, getUserData,addProjectContributor } from '../utils/SupabaseClient';
+
+
 function JoinGroup({ project, onBack }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -11,52 +18,99 @@ function JoinGroup({ project, onBack }) {
     linkedin: '',
     twitter: '',
     portfolio: '',
-    cv: null
+    cv: '',
   });
   const [isStaking, setIsStaking] = useState(false);
+  const address = useAddress();
+  const [stakingAddress,setStakingAddress] = useState(null);
+  const { user } = useAuth();
 
-  // Simulate getting user email from database
+  // retrieve user data from db
   useEffect(() => {
-    // This would be replaced with actual database fetch
-    setFormData(prev => ({
-      ...prev,
-      email: 'user@example.com' // Replace with actual user email from DB
-    }));
-  }, []);
+      const fetchUserData = async () => {
+        if (!user) return;
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFormData(prev => ({ ...prev, cv: file }));
+        console.log("Fetching user data for user:", user);
+
+              // Call getUserData to fetch user details from DB
+        const data = await getUserData(user); 
+    
+        if (!data || data.length === 0) {
+          console.log("No user data found in DB.");
+          return;
+        }
+    
+        console.log("User data fetched:", data[0]); // Assuming only one record per user
+        setFormData(prev => ({
+          ...prev,
+          email: user.email || "",
+          github: data[0].github || "",
+          linkedin: data[0].linkedin_profile || "",
+          twitter: data[0].twitter_handle || "",
+          portfolio: data[0].portfolio_link || "",
+        }));
+  };
+
+  fetchUserData();
+}, [user]);  
+
+
+  const handleFileChange = async (e) => {
+    var file = e.target.files[0];
+    if (!file) return;
+
+    const cvUrl = await uploadCvToSupabase(file, user);
+
+    if (cvUrl){
+      // setUploadedFile(cvUrl);
+      setFormData(prev => ({ ...prev, cv: cvUrl }));
     }
   };
-  const handleStake = async() => {
-    setIsLoading(true);
-    try {
-      await stakeToken();
-      alert("Staking Successful");
-      <ViewIdea/>
-      
-    } catch (error) {
-      console.error("Error staking token:", error);
-      alert('Staking failed')
-    } finally {
-      setIsLoading(false);
-    }
 
-  }
+
+
+  const resourcesArray = Array.isArray(project.resources)
+  ? project.resources
+  : typeof project.resources === "string"
+  ? JSON.parse(project.resources)
+  : [];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsStaking(true);
 
-    // Simulate staking process
-    setTimeout(() => {
+    try {
+      const stakerAddress = await stakeToken();
+      setStakingAddress(stakerAddress);
+
+      if (!stakingAddress) {
+        setStakingAddress(address);
+      }
+      alert("Staking Successful");
+
+      const result = await addUserData(formData, user, stakerAddress);
+
+      if (result !== true) {
+        await updateUser(user, formData, stakerAddress);
+      }
+
+    // call user to contribute to the project
+    await addProjectContributor(project, user, formData.role);
+
+      // Redirect to ViewIdea page
+      navigate("/view-idea", { state: { project, stakeSuccess: true } }); // Ensure '/viewidea' is the correct route
+    } catch (error) {
+      console.error("Error staking token:", error);
+      alert("Staking failed");
+    } finally {
       setIsStaking(false);
-      // Navigate back to ViewIdea with success state
-      onBack({ success: true });
-    }, 3000);
+    }
+
+   // Navigate back to ViewIdea with success state
+
   };
+
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -81,22 +135,25 @@ function JoinGroup({ project, onBack }) {
         {/* Form */}
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-8">
           {/* Role Selection */}
-          {/* <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
+          <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
             <label className="block">
               <span className="text-lg font-semibold block mb-2">Select Your Role</span>
               <select
-                value={formData.role}
-                onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
-                className="w-full px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
-                required
-              >
-                <option value="">Select a role</option>
-                {project.teamNeeded?.map((role, index) => (
-                  <option key={index} value={role.title}>{role.title}</option>
-                ))}
+                  value={formData.role}
+                  onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+                  className="w-full px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
+                  required>
+                  <option value="">Select a role</option>
+                  {resourcesArray.map((role) => (
+                    <option key={role.id} value={role.role}>
+                      {role.role}
+                    </option>
+                  ))}
               </select>
+
+
             </label>
-          </div> */}
+          </div>
 
           {/* Contact Information */}
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 space-y-6">
@@ -213,7 +270,7 @@ function JoinGroup({ project, onBack }) {
                   <div className="flex flex-col items-center space-y-2">
                     <Upload className="w-8 h-8 text-gray-400" />
                     <span className="text-sm text-gray-400">
-                      {formData.cv ? formData.cv.name : 'Drop your CV here or click to upload'}
+                      {formData.cv ? "CV attached" : 'Drop your CV here or click to upload'}
                     </span>
                   </div>
                 </label>
@@ -222,20 +279,14 @@ function JoinGroup({ project, onBack }) {
           </div>
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isStaking}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isStaking ? (
-              <>
-                <Loader className="w-5 h-5 animate-spin" />
-                Staking to Join...
-              </>
-            ) : (
-              'Stake to Join'
-            )}
-          </button>
+         {/* Submit Button */}
+        <button
+          type="submit"
+          disabled={isStaking}
+          className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {isStaking ? "Staking to Join..." : "Stake to Join"}
+        </button>
         </form>
       </div>
     </div>

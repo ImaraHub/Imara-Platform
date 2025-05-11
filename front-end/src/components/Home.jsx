@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {useAddress} from "@thirdweb-dev/react";
 import { Carousel } from 'react-bootstrap';
-import BuilderProfile from './BuilderProfile';
+// import BuilderProfile from './BuilderProfile';
 import ViewIdea from './ViewIdea';
-import ProjectManager from './ProjectManager';
-import ProfileSettings from './ProfileSettings'; // Correct import path
+// import ProjectManager from './ProjectManager';
+import Profile from './Profile'; // Correct import path
 
 import {
   User,
@@ -64,14 +64,6 @@ const trendingProjects = [
   }
 ];
 
-// const allProjects = Array.from({ length: 9 }, (_, i) => ({
-//   id: i + 1,
-//   title: `Project Imara`,
-//   description: "An innovative blockchain project revolutionizing the industry",
-//   category: ["DeFi", "NFT", "Gaming", "DAO"][Math.floor(Math.random() * 4)],
-//   progress: Math.floor(Math.random() * 100),
-//   image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60"
-// }));
 
 const categories = ["All", "DeFi", "NFT", "Gaming", "DAO", "Infrastructure"];
 const stages = ["All Stages", "Ideation", "Development", "Launch Ready"];
@@ -92,7 +84,6 @@ function Home({ handleSignOut }) {
   const [showProjectManager, setShowProjectManager] = useState(false);
 
 
-  const allProjects = displayIdeas();
   // const navigate = useNavigate();
   const address = useAddress();
   const email = localStorage.getItem("userEmail");
@@ -100,7 +91,7 @@ function Home({ handleSignOut }) {
 
   const [showIdeationMenu, setShowIdeationMenu] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState(null);
-  const [showProfileSettings,setShowProfileSettings] = useState(false);
+  const [showProfile,setShowProfile] = useState(false);
 
   // call displayIdea from supabaseClient to retrieve posts
 
@@ -126,7 +117,7 @@ function Home({ handleSignOut }) {
   }, [address]);
 
   if (selectedIdea){
-    return <ViewIdea project={selectedIdea}  onClose={() => setSelectedIdea(null)}/>;
+    return <ViewIdea project={selectedIdea}  onBack={() => setSelectedIdea(null)}/>;
   }
 
   const handleIdeaClick = (idea) => {
@@ -134,14 +125,15 @@ function Home({ handleSignOut }) {
   };
   
 
-  // Handle voting
-  if (showProfileSettings){
-    return <ProfileSettings/>
+  
+  if (showProfile){
+    return <Profile allProjects={projects} onBack={() => setShowProfile(false)}/>
   }
 
 
   if (showIdeationMenu) {
-    return <CreateIdea />;
+    return <CreateIdea onBack={() => setShowIdeationMenu(false)}/>;
+    
   }
   
   const handleCopyLink = (projectId) => {
@@ -254,12 +246,12 @@ function Home({ handleSignOut }) {
                       <button
   onClick={() => {
     setShowProfileMenu(false); // Close the dropdown
-    setShowProfileSettings(true); // Show the ProfileSettings page
+    setShowProfile(true); // Show the ProfileSettings page
   }}
   className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3"
 >
   <User className="w-4 h-4" />
-  Profile Settings
+  Profile
 </button>
                       <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
                         <Briefcase className="w-4 h-4" />
