@@ -37,6 +37,42 @@ export function Auth({ setShowAuth, setShowHome }) {
 
   // const errorMsgPopup = errorMsg ? <WarningPopup message={errorMsg} /> : null;
 
+  const signInGithub = async () => {
+    try {
+      setLoading(true);
+      setErrorMsg('');
+      
+      console.log('Initiating GitHub sign-in...');
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        }
+      });
+
+      console.log('GitHub sign-in response:', {
+        hasData: !!data,
+        hasError: !!error,
+        errorMessage: error?.message,
+        url: data?.url
+      });
+
+      if (error) {
+        console.error('Error signing in with GitHub:', error.message);
+        setErrorMsg(error.message);
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Unexpected error during GitHub sign in:', err);
+      setErrorMsg('An unexpected error occurred. Please try again.');
+      setLoading(false);
+    }
+  }
+
   const signMessage = async () => {
 
     if (!signer) {
@@ -76,7 +112,7 @@ export function Auth({ setShowAuth, setShowHome }) {
     } else {
       setErrorMsg('Please check your email to confirm your account.');
       setIsLogin(true);
-      console.log('User created successfully:', user);
+      console.log('confirmation email sent to :', email);
     }
 
   }
@@ -116,17 +152,7 @@ export function Auth({ setShowAuth, setShowHome }) {
   }
 
 
-  // const authWithSupabase = async (signature) => {
-  //   const { data, error} =  await supabase.auth.signInWithIdToken({
-  //     provider: 'walletconnect',
-  //     token: signature
-  //   });
-  //   if (error) {
-  //     console.error("Error signing in:", error);
-  //   } else {
-  //     console.log("User signed in:", data);
-  //   }
-  // }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center px-4">
@@ -159,7 +185,7 @@ export function Auth({ setShowAuth, setShowHome }) {
         </button>
         {/* Auth Options */}
         <div className="space-y-4 mb-8">
-          <button className="w-full bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-lg transition-all flex items-center justify-center gap-3 group">
+          <button onClick={signInGithub} className="w-full bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-lg transition-all flex items-center justify-center gap-3 group">
             <Github className="w-5 h-5" />
             Continue with GitHub
             <ArrowRight className="w-4 h-4 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
@@ -169,8 +195,8 @@ export function Auth({ setShowAuth, setShowHome }) {
             
             <ArrowRight className="w-4 h-4 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
           </button> */}
-          <ConnectWallet />
-          {address && <button onClick={signMessage}>Sign In with Wallet</button>}
+          {/* <ConnectWallet /> */}
+          {/* {address && <button onClick={signMessage}>Sign In with Wallet</button>} */}
         </div>
 
         {/* Divider */}

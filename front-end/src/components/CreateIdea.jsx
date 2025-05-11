@@ -3,11 +3,15 @@ import { Hash, Link as LinkIcon, Upload, ArrowLeft, Plus, X, HelpCircle, Users, 
 import Home from './Home';
 import {uploadImageToSupabase, addIdea } from '../utils/SupabaseClient';
 import { useAuth } from "../AuthContext";
-
+import {useAddress} from "@thirdweb-dev/react";
+import CheckEmailForWallet from '../utils/walletEmailLinking';
+import {LoginWithWallet} from '../utils/sessionGenerate';
+import RequestEmail from './EmailRequest';
 
 const CreateIdea = ({ onBack }) => {
 
   const { user } = useAuth();
+  const walletAddress = useAddress();
   const [uploadedFile, setUploadedFile] = useState(null);
   const [charCount, setCharCount] = useState(0);
   const [showTokenPage, setTokenPage] = useState(false);
@@ -15,7 +19,7 @@ const CreateIdea = ({ onBack }) => {
   const [showResourceForm, setShowResourceForm] = useState(false);
   const [customDuration, setCustomDuration] = useState('');
   const [showCustomDurationForm, setShowCustomDurationForm] = useState(false);
-
+  const [ShowEmailComponent ,setShowEmailComponent] = useState(false);
 
   const [showHomePage, setHomePage] = useState(false);
   const [formData, setFormData] = useState({
@@ -94,10 +98,34 @@ const CreateIdea = ({ onBack }) => {
     // Handle form submission
     console.log('Form submitted:', formData);
 
-    const result = await addIdea(formData, user);
-    console.log('Idea added successfully', result);
-    setHomePage(true);
+    // check wallet is linked to an email, if not load email component
+    const user = await CheckEmailForWallet(walletAddress);
+
+    if (!user){
+      console.log('No user linked to this wallet address.');
+      setShowEmailComponent(true);
+      return;
+    }
+
+    try {
+
+      await LoginWithWallet(user);
+      const result = await addIdea(formData, user);
+      console.log('Idea added successfully', result);
+      setHomePage(true);
+
+
+    }catch (err) {
+      console.error('Unexpected error:', err.message);
+
+    }  
   };
+
+  if (ShowEmailComponent){
+    return <RequestEmail/>
+  }
+
+
 
     const timelineOptions = [
     '1-3 months',
