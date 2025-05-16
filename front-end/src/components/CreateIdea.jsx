@@ -27,10 +27,11 @@ const CreateIdea = ({ onBack }) => {
     projectDescription: '',
     problemStatement: '',
     solution: '',
-      image: '',
+    image: '',
     resources: [],
-     needsProjectManager: false,
-    timeline: null
+    needsProjectManager: false,
+    timeline: null,
+    stakeAmount: '' // Simplified to just store the amount
   });
 
   const handleFileChange = async (e) => {
@@ -468,6 +469,44 @@ const handleCustomDurationSubmit = () => {
                     </span>
                   </label>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stake Amount Section */}
+          <div className="space-y-4 bg-gray-800/30 rounded-xl p-6 border border-gray-700/50">
+            <div className="flex items-center gap-2 mb-4">
+              <Hash className="w-5 h-5 text-yellow-400" />
+              <h2 className="text-lg font-semibold">Required USDT Stake Amount</h2>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  USDT Stake Amount
+                </label>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={formData.stakeAmount}
+                      onChange={(e) => setFormData(prev => ({
+                        ...prev,
+                        stakeAmount: e.target.value
+                      }))}
+                      className="w-full px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
+                      placeholder="Enter USDT stake amount"
+                      required
+                    />
+                  </div>
+                  <div className="flex items-center px-4 bg-white/5 border border-gray-700 rounded-lg">
+                    <span className="text-white font-medium">USDT</span>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-400 mt-2">
+                  This is the amount of USDT that contributors will need to stake to participate in your project.
+                </p>
               </div>
             </div>
           </div>
