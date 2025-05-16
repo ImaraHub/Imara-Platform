@@ -25,6 +25,7 @@ import JoinGroup from './joinGroup';
 import { useLocation } from "react-router-dom";
 
 function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
+  const navigate = useNavigate();
   const location = useLocation();
   const project = location.state?.project || propProject;
   const stakingSuccess = stakeSuccess || location.state?.stakeSuccess || false;
@@ -40,7 +41,6 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [comment, setComment] = useState('');
-  // const navigate = useNavigate();
   const [showJoinGroup, setShowJoinGroup] = useState(false);
   const [joinStatus, setJoinStatus] = useState("");
   const [teamMembers, setTeamMembers] = useState([]);
@@ -80,12 +80,20 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
     setShowCommentBox(false);
   };
   
+  const handleBack = () => {
+    if (onBack) {
+      onBack({ success: false });
+    } else {
+      navigate(-1); // Go back to previous page if onBack is not provided
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <button
-          onClick={() => onBack({ success: false })}
+          onClick={handleBack}
           className="mb-8 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
