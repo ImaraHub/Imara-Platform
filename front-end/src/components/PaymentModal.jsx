@@ -54,7 +54,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
     // Start new polling
     const interval = setInterval(async () => {
       try {
-        const result = await pollPaymentStatus(orderID);
+        const result = await pollPaymentStatus(orderID, userAddress);
         if (result.success) {
           // Payment successful
           clearInterval(interval);

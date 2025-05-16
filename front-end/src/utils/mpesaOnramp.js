@@ -6,8 +6,8 @@ export const stakeContractAddress = "";  // to launch on mainnet???
 export const userAddress = "0x42772299247aDd126151ADe909e36A8f4975437e";  // for testing deposut into wallet(swypt )
 // Helper function to get auth headers
 const getAuthHeaders = () => ({
-  'x-api-key': "d557259be5dde12d084070dda41d2097",
-  'x-api-secret': "0bcd45c5c2b57c68b11c0003968e16cd21cc4fde1524c4c5942779ddbdebad80"
+  'x-api-key': "process.env.REACT_APP_SWYPT_API_KEY",
+  'x-api-secret': "process.env.REACT_APP_SWYPT_API_SECRET)"
 });
 
 console.log('API Key exists:', !!process.env.REACT_APP_SWYPT_API_KEY);
