@@ -7,6 +7,7 @@ import {updateUser, uploadCvToSupabase} from '../utils/SupabaseClient';
 import { useAddress } from "@thirdweb-dev/react";
 import { useAuth } from '../AuthContext';
 import { addUserData, getUserData,addProjectContributor } from '../utils/SupabaseClient';
+import PaymentModal from './PaymentModal';
 
 
 function JoinGroup({ project, onBack }) {
@@ -21,10 +22,13 @@ function JoinGroup({ project, onBack }) {
     cv: '',
   });
   const [isStaking, setIsStaking] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [stakingAmount] = useState(14); // Set your staking amount here
   const address = useAddress();
   const [stakingAddress,setStakingAddress] = useState(null);
   const { user } = useAuth();
 
+  
   // retrieve user data from db
   useEffect(() => {
       const fetchUserData = async () => {
@@ -75,18 +79,22 @@ function JoinGroup({ project, onBack }) {
   ? JSON.parse(project.resources)
   : [];
 
-  const handleSubmit = async (e) => {
+  const handleStakeClick = (e) => {
     e.preventDefault();
-    setIsStaking(true);
+    setShowPaymentModal(true);
+  };
 
+  const handlePaymentComplete = async (paymentData) => {
+    setIsStaking(true);
     try {
-      const stakerAddress = await stakeToken();
-      setStakingAddress(stakerAddress);
+      // If payment was successful, proceed with staking
+      
+      const stakerAddress = address;
+      // setStakingAddress(stakerAddress);
 
       if (!stakingAddress) {
         setStakingAddress(address);
       }
-      alert("Staking Successful");
 
       const result = await addUserData(formData, user, stakerAddress);
 
@@ -94,20 +102,17 @@ function JoinGroup({ project, onBack }) {
         await updateUser(user, formData, stakerAddress);
       }
 
-    // call user to contribute to the project
-    await addProjectContributor(project, user, formData.role);
+      // Add user as project contributor
+      await addProjectContributor(project, user, formData.role);
 
       // Redirect to ViewIdea page
-      navigate("/view-idea", { state: { project, stakeSuccess: true } }); // Ensure '/viewidea' is the correct route
+      navigate("/view-idea", { state: { project, stakeSuccess: true } });
     } catch (error) {
       console.error("Error staking token:", error);
       alert("Staking failed");
     } finally {
       setIsStaking(false);
     }
-
-   // Navigate back to ViewIdea with success state
-
   };
 
 
@@ -133,7 +138,7 @@ function JoinGroup({ project, onBack }) {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-8">
+        <form onSubmit={handleStakeClick} className="max-w-2xl mx-auto space-y-8">
           {/* Role Selection */}
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
             <label className="block">
@@ -282,13 +287,31 @@ function JoinGroup({ project, onBack }) {
          {/* Submit Button */}
         <button
           type="submit"
+          onClick={handleStakeClick}
           disabled={isStaking}
           className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {isStaking ? "Staking to Join..." : "Stake to Join"}
+          {isStaking ? (
+            <>
+              <Loader className="w-5 h-5 animate-spin" />
+              Staking to Join...
+            </>
+          ) : (
+            <>
+              Stake to Join (KES {stakingAmount.toLocaleString()})
+            </>
+          )}
         </button>
         </form>
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        amount={stakingAmount}
+        onPaymentComplete={handlePaymentComplete}
+      />
     </div>
   );
 }
