@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const SWYPT_API_URL = 'https://pool.swypt.io/api/';
-const USDT_TOKEN_ADDRESS = '0x2816a02000B9845C464796b8c36B2D5D199525d5';
+const USDT_TOKEN_ADDRESS = '0x05D032ac25d322df992303dCa074EE7392C117b9';
 export const stakeContractAddress = "";  // to launch on mainnet???
 export const userAddress = "0x42772299247aDd126151ADe909e36A8f4975437e";  // for testing deposut into wallet(swypt )
 // Helper function to get auth headers
