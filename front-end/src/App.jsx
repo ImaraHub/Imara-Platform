@@ -1,3 +1,4 @@
+import ThemeToggle from './components/ThemeToggle';
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './components/Home';
@@ -17,6 +18,11 @@ function App() {
 
   return (
     <Router>
+     <div className="min-h-screen bg-background text-text">
+        <header className="p-4 fixed top-4 right-4 justify-end">
+          <ThemeToggle />
+        </header>
+        
       <Routes>
         {/* Redirect unauthenticated users to Auth */}
 
@@ -33,9 +39,11 @@ function App() {
         <Route path="/staking-profile" element={<StakingProfile/>} />
         <Route path="/join-group" element={<JoinGroup />} />
       </Routes>
+      </div>
     </Router>
+    
 
-  )
+  );
 }
 
 export default App;
