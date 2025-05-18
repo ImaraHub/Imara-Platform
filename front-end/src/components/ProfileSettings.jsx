@@ -21,9 +21,11 @@ const ProfileSettings = ({ onBack }) => {
     goals: '',
   });
 
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPreview, setShowPreview] = useState(false); // State to toggle preview
+  const navigate = useNavigate();
 
   // Fetch user profile data on component mount
   useEffect(() => {
@@ -58,7 +60,7 @@ const ProfileSettings = ({ onBack }) => {
     setProfile((prev) => ({ ...prev, tools: tools || [] })); // Default to an empty array
   };
 
-  const navigate = useNavigate();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -89,11 +91,15 @@ const ProfileSettings = ({ onBack }) => {
     }
   };
 
+  const handleBackToHome = () => {
+    navigate('/'); // Navigate back to the home page
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       {/* Back Button */}
       <button
-        onClick={onBack}
+        onClick={handleBackToHome}
         className="mb-8 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 group"
       >
         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
@@ -284,11 +290,10 @@ const ProfileSettings = ({ onBack }) => {
           <div className="flex items-center justify-between">
             <button
               type="submit"
-              disabled={loading}
               className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all disabled:opacity-50"
             >
               <Save className="w-5 h-5" />
-              {loading ? 'Saving...' : 'Save Changes'}
+              Save changes
             </button>
 
             <button
