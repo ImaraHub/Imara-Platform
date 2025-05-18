@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Briefcase, Award, Globe, Link, Edit, Save, X, ArrowLeft, Eye } from 'lucide-react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const ProfileSettings = ({ onBack }) => {
   const [profile, setProfile] = useState({
@@ -57,18 +58,32 @@ const ProfileSettings = ({ onBack }) => {
     setProfile((prev) => ({ ...prev, tools: tools || [] })); // Default to an empty array
   };
 
+  const navigate = useNavigate();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      const response = await axios.put('/api/profile', profile); // Replace with your API endpoint
+      const response = await axios.put('/api/profile', profile); // Ensure endpoint and method are correct
       console.log('Profile updated:', response.data);
-      setShowPreview(true); // Show preview after saving
+
       alert('Profile updated successfully!');
+      navigate('/api/profile'); // Navigate to the profile page
     } catch (err) {
-      setError('Failed to update profile. Please try again.');
+      console.error('Error updating profile:', err);
+
+      if (err.response) {
+        // The request was made and the server responded with a status code outside 2xx
+        setError(`Error ${err.response.status}: ${err.response.data.message || 'Something went wrong.'}`);
+      } else if (err.request) {
+        // The request was made but no response was received
+        setError('No response from server. Please check your connection.');
+      } else {
+        // Something else happened
+        setError('An unexpected error occurred.');
+      }
     } finally {
       setLoading(false);
     }
@@ -266,67 +281,57 @@ const ProfileSettings = ({ onBack }) => {
           </div>
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {loading ? 'Saving...' : (
-              <>
-                <Save className="w-5 h-5" /> Save Profile
-              </>
-            )}
-          </button>
-        </form>
-      ) : (
-        /* Preview Section */
-        <div className="bg-gray-800/50 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Eye className="w-5 h-5" /> Profile Preview
-          </h2>
-          <div className="space-y-6">
-            {/* Basic Information */}
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Basic Information</h3>
-              <p><strong>Full Name:</strong> {profile.fullName}</p>
-              <p><strong>Location:</strong> {profile.location}</p>
-              <p><strong>Phone Number:</strong> {profile.phoneNumber}</p>
-            </div>
-
-            {/* Professional Details */}
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Professional Details</h3>
-              <p><strong>Professional Title:</strong> {profile.professionalTitle}</p>
-              <p><strong>Industry:</strong> {profile.industry}</p>
-              <p><strong>Years of Experience:</strong> {profile.yearsOfExperience}</p>
-              <p><strong>Current Role:</strong> {profile.currentRole}</p>
-              <p><strong>LinkedIn:</strong> {profile.linkedIn}</p>
-              <p><strong>Portfolio:</strong> {profile.portfolio}</p>
-            </div>
-
-            {/* Skills and Expertise */}
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Skills and Expertise</h3>
-              <p><strong>Skills:</strong> {profile.skills?.join(', ')}</p>
-              <p><strong>Certifications:</strong> {profile.certifications}</p>
-              <p><strong>Tools:</strong> {profile.tools?.join(', ')}</p>
-            </div>
-
-            {/* Personal Introduction */}
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Personal Introduction</h3>
-              <p><strong>About:</strong> {profile.about}</p>
-              <p><strong>Goals:</strong> {profile.goals}</p>
-            </div>
-
-            {/* Back to Edit Button */}
+          <div className="flex items-center justify-between">
             <button
-              onClick={() => setShowPreview(false)}
-              className="w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+              type="submit"
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all disabled:opacity-50"
             >
-              <Edit className="w-5 h-5" /> Edit Profile
+              <Save className="w-5 h-5" />
+              {loading ? 'Saving...' : 'Save Changes'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowPreview(true)}
+              className="text-blue-400 hover:underline flex items-center gap-2"
+            >
+              <Eye className="w-5 h-5" />
+              Preview Profile
             </button>
           </div>
+        </form>
+      ) : (
+        // Profile Preview
+        <div className="bg-gray-800/40 p-6 rounded-lg space-y-4">
+          <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
+            <Eye className="w-6 h-6" /> Profile Preview
+          </h2>
+
+          <div className="space-y-2">
+            <p><strong>Full Name:</strong> {profile.fullName}</p>
+            <p><strong>Location:</strong> {profile.location}</p>
+            <p><strong>Phone Number:</strong> {profile.phoneNumber}</p>
+            <p><strong>Professional Title:</strong> {profile.professionalTitle}</p>
+            <p><strong>Industry:</strong> {profile.industry}</p>
+            <p><strong>Years of Experience:</strong> {profile.yearsOfExperience}</p>
+            <p><strong>Current Role:</strong> {profile.currentRole}</p>
+            <p><strong>LinkedIn:</strong> <a href={profile.linkedIn} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">{profile.linkedIn}</a></p>
+            <p><strong>Portfolio:</strong> <a href={profile.portfolio} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">{profile.portfolio}</a></p>
+            <p><strong>Skills:</strong> {profile.skills.join(', ')}</p>
+            <p><strong>Certifications:</strong> {profile.certifications}</p>
+            <p><strong>Tools:</strong> {profile.tools.join(', ')}</p>
+            <p><strong>About:</strong> {profile.about}</p>
+            <p><strong>Goals:</strong> {profile.goals}</p>
+          </div>
+
+          <button
+            onClick={() => setShowPreview(false)}
+            className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all"
+          >
+            <Edit className="w-5 h-5" />
+            Edit Profile
+          </button>
         </div>
       )}
     </div>
