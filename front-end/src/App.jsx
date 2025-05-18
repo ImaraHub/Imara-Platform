@@ -18,10 +18,10 @@ function App() {
 
   return (
     <Router>
-     <div className="min-h-screen bg-background text-text">
+     {/* <div className="min-h-screen bg-background text-text">
         <header className="p-4 fixed top-4 right-4 justify-end">
           <ThemeToggle />
-        </header>
+        </header> */}
         
       <Routes>
         {/* Redirect unauthenticated users to Auth */}
@@ -39,7 +39,7 @@ function App() {
         <Route path="/staking-profile" element={<StakingProfile/>} />
         <Route path="/join-group" element={<JoinGroup />} />
       </Routes>
-      </div>
+      {/* </div> */}
     </Router>
     
 
