@@ -123,10 +123,10 @@ function Home({ handleSignOut }) {
     setSelectedIdea(idea);
   };
   
-
-  // Handle voting
-  if (showProfileSettings){
-    return <ProfileSettings/>
+  if (showProfileSettings) {
+    return (
+      <ProfileSettings onBack={() => setShowProfileSettings(false)} />
+    );
   }
 
 
