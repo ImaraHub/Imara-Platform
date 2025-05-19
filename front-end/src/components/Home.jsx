@@ -131,7 +131,7 @@ function Home({ handleSignOut }) {
 
 
   if (showIdeationMenu) {
-    return <CreateIdea />;
+    return <CreateIdea onBack={() => setShowIdeationMenu(false)} />;
   }
   
   const handleCopyLink = (projectId) => {
