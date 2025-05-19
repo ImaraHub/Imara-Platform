@@ -64,7 +64,6 @@ const trendingProjects = [
   }
 ];
 
-
 const categories = ["All", "DeFi", "NFT", "Gaming", "DAO", "Infrastructure"];
 const stages = ["All Stages", "Ideation", "Development", "Launch Ready"];
 const sortOptions = ["Newest", "Most Popular", "Highest Funded"];
@@ -83,7 +82,7 @@ function Home({ handleSignOut }) {
    const [showBuilderProfile, setShowBuilderProfile] = useState(false);
   const [showProjectManager, setShowProjectManager] = useState(false);
 
-
+  const allProjects = displayIdeas();
   // const navigate = useNavigate();
   const address = useAddress();
   const email = localStorage.getItem("userEmail");
@@ -124,16 +123,15 @@ function Home({ handleSignOut }) {
     setSelectedIdea(idea);
   };
   
-
-  
-  if (showProfile){
-    return <Profile allProjects={projects} onBack={() => setShowProfile(false)}/>
+  if (showProfileSettings) {
+    return (
+      <ProfileSettings onBack={() => setShowProfileSettings(false)} />
+    );
   }
 
 
   if (showIdeationMenu) {
-    return <CreateIdea onBack={() => setShowIdeationMenu(false)}/>;
-    
+    return <CreateIdea onBack={() => setShowIdeationMenu(false)} />;
   }
   
   const handleCopyLink = (projectId) => {

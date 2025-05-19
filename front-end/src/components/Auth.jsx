@@ -1,10 +1,10 @@
-import React, { useState , useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Github, Wallet, Mail, ArrowRight } from 'lucide-react';
-import {ConnectWallet, useAddress, useSigner} from "@thirdweb-dev/react";
+import { ConnectWallet, useAddress, useSigner } from "@thirdweb-dev/react";
 // import {useNavigate} from "react-router-dom";
 import { supabase } from '../utils/SupabaseClient';
 
-export function Auth({ setShowAuth, setShowHome }) {  
+export function Auth({ setShowAuth, setShowHome }) {
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -25,15 +25,15 @@ export function Auth({ setShowAuth, setShowHome }) {
     }
   }, [address]);
 
-    // a const that shows pop-up message
+  // a const that shows pop-up message
 
-    const WarningPopup = ({ message }) => {
-      return (
-        <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
-          {message}
-        </div>
-      );
-    };
+  const WarningPopup = ({ message }) => {
+    return (
+      <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
+        {message}
+      </div>
+    );
+  };
 
   // const errorMsgPopup = errorMsg ? <WarningPopup message={errorMsg} /> : null;
 
@@ -87,7 +87,7 @@ export function Auth({ setShowAuth, setShowHome }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (isLogin) {
       await signInWithEmail();
     } else {
@@ -113,7 +113,7 @@ export function Auth({ setShowAuth, setShowHome }) {
     if (error) {
       setErrorMsg(error.message);
     } else {
-      setErrorMsg('Please check your email to confirm your account.');
+      setErrorMsg('Please check your email to confirm your sign up.');
       setIsLogin(true);
       console.log('confirmation email sent to :', email);
     }
@@ -125,7 +125,7 @@ export function Auth({ setShowAuth, setShowHome }) {
   //   setErrorMsg('');
   // }
 
-  
+
 
   const signInWithEmail = async () => {
     setLoading(true);
@@ -137,14 +137,14 @@ export function Auth({ setShowAuth, setShowHome }) {
     setLoading(false);
 
     if (error) {
-    
-      setErrorMsg('User not found. Please sign up.');      
+
+      setErrorMsg('User not found. Please sign up.');
       console.log('Error signing in:', error.message)
-      
+
     } else {
       console.log('User signed in successfully:', data);
 
-          // Fetch user details
+      // Fetch user details
       const { data: userData, error: userError } = await supabase.auth.getUser();
 
       localStorage.setItem("userEmail", userData.user.email);
@@ -159,9 +159,9 @@ export function Auth({ setShowAuth, setShowHome }) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center px-4">
-        
 
-        {errorMsg && <WarningPopup message={errorMsg}/>}
+
+      {errorMsg && <WarningPopup message={errorMsg} />}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-4 -left-4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl" />
         <div className="absolute top-1/4 -right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
@@ -242,7 +242,7 @@ export function Auth({ setShowAuth, setShowHome }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 bg-white/5 border border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
-              placeholder="Enter your email"
+              placeholder="Eg: email@example.com"
               required
             />
           </div>
@@ -271,7 +271,7 @@ export function Auth({ setShowAuth, setShowHome }) {
           </button>
         </form>
 
-       {/* ✅ Toggle Sign-Up or Sign-In Mode */}
+        {/* ✅ Toggle Sign-Up or Sign-In Mode */}
         <p className="mt-8 text-center text-gray-400">
           {isLogin ? "Don't have an account?" : "Already have an account?"}
           <button
