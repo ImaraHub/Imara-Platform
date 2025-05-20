@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {useAddress} from "@thirdweb-dev/react";
 import { Carousel } from 'react-bootstrap';
-// import BuilderProfile from './BuilderProfile';
+import BuilderProfile from './BuilderProfile';
 import ViewIdea from './ViewIdea';
-// import ProjectManager from './ProjectManager';
-import Profile from './Profile'; // Correct import path
+import ProjectManager from './ProjectManager';
+import ProfileSettings from './ProfileSettings'; // Correct import path
 
 import {
   User,
@@ -90,7 +90,7 @@ function Home({ handleSignOut }) {
 
   const [showIdeationMenu, setShowIdeationMenu] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState(null);
-  const [showProfile,setShowProfile] = useState(false);
+  const [showProfileSettings,setShowProfileSettings] = useState(false);
 
   // call displayIdea from supabaseClient to retrieve posts
 
@@ -116,7 +116,7 @@ function Home({ handleSignOut }) {
   }, [address]);
 
   if (selectedIdea){
-    return <ViewIdea project={selectedIdea}  onBack={() => setSelectedIdea(null)}/>;
+    return <ViewIdea project={selectedIdea}  onClose={() => setSelectedIdea(null)}/>;
   }
 
   const handleIdeaClick = (idea) => {
@@ -244,12 +244,12 @@ function Home({ handleSignOut }) {
                       <button
   onClick={() => {
     setShowProfileMenu(false); // Close the dropdown
-    setShowProfile(true); // Show the ProfileSettings page
+    setShowProfileSettings(true); // Show the ProfileSettings page
   }}
   className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3"
 >
   <User className="w-4 h-4" />
-  Profile
+  Profile Settings
 </button>
                       <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
                         <Briefcase className="w-4 h-4" />

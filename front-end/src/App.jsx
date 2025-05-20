@@ -14,6 +14,7 @@ import ViewIdea from './components/ViewIdea';
 // import StakingProfile from './components/StakingProfile';
 import JoinGroup from './components/joinGroup';
 import AuthCallback from './components/AuthCallback';
+import ProfileSettings from './components/ProfileSettings';
 
 function App() {
   // const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -31,14 +32,15 @@ function App() {
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/builder-profile" element={<BuilderProfile />} />
+        {/* <Route path="/builder-profile" element={<BuilderProfile />} /> */}
         <Route path="/create-idea" element={<CreateIdea />} />
         <Route path="/ideas" element={<Index />} />
-        <Route path="/profile" element={<Profile />} />
+        {/* <Route path="/profile" element={<Profile />} /> */}
         <Route path="/project-manager" element={<ProjectManager />} />
         <Route path="/stake" element={<Stake />} />
         <Route path="/token" element={<TokenizationPage />} />
         <Route path="/view-idea" element={<ViewIdea />} />
+        <Route path="/profile" element={<ProfileSettings />} />
         {/* <Route path="/staking-profile" element={<StakingProfile/>} /> */}
         <Route path="/join-group" element={<JoinGroup />} />
       </Routes>
