@@ -36,22 +36,24 @@ function App() {
         </header> */}
         
       <Routes>
-        {/* Redirect unauthenticated users to Auth */}
-
-        <Route path="/" element={user ? <Home /> : <Index />} />
-        <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" />} />
+        {/* Public Routes */}
+        <Route path="/" element={user ? <Navigate to="/home" /> : <Index />} />
+        <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/home" />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         {/* <Route path="/builder-profile" element={<BuilderProfile />} /> */}
-        <Route path="/create-idea" element={user ? <CreateIdea /> : <Navigate to="/auth" />} />
-        <Route path="/ideas" element={user ? <Index /> : <Navigate to="/auth" />} />
+        <Route path="/home" element={user ? <Home /> : <Navigate to="/auth" />} />
+        <Route path="/idea" element={user ? <CreateIdea /> : <Navigate to="/auth" />} />
+        <Route path="/idea/:id" element={user ? <ViewIdea /> : <Navigate to="/auth" />} />
         {/* <Route path="/profile" element={<Profile />} /> */}
         <Route path="/project-manager" element={user ? <ProjectManager /> : <Navigate to="/auth" />} />
         <Route path="/stake" element={user ? <Stake /> : <Navigate to="/auth" />} />
         <Route path="/token" element={user ? <TokenizationPage /> : <Navigate to="/auth" />} />
-        <Route path="/view-idea/:id" element={user ? <ViewIdea /> : <Navigate to="/auth" />} />
         <Route path="/profile" element={user ? <ProfileSettings /> : <Navigate to="/auth" />} />
         {/* <Route path="/staking-profile" element={<StakingProfile/>} /> */}
         <Route path="/join-group" element={user ? <JoinGroup /> : <Navigate to="/auth" />} />
+
+        {/* Fallback Route */}
+        <Route path="*" element={<Navigate to={user ? "/home" : "/"} />} />
       </Routes>
       {/* </div> */}
     </Router>

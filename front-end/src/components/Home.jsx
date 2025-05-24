@@ -117,20 +117,19 @@ function Home({ handleSignOut }) {
   }, [address]);
 
   const handleIdeaClick = (idea) => {
-    navigate(`/view-idea/${idea.id}`, { 
+    navigate(`/idea/${idea.id}`, { 
       state: { project: idea }
     });
   };
   
   if (showProfileSettings) {
-    return (
-      <ProfileSettings onBack={() => setShowProfileSettings(false)} />
-    );
+    navigate('/profile');
+    return null;
   }
 
-
   if (showIdeationMenu) {
-    return <CreateIdea onBack={() => setShowIdeationMenu(false)} />;
+    navigate('/idea');
+    return null;
   }
   
   const handleCopyLink = (projectId) => {

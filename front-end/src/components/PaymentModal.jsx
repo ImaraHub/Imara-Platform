@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, CreditCard, Smartphone, Loader, Check, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
 import { ethers } from 'ethers';
+import { useNavigate } from 'react-router-dom';
 import stakeToken from '../utils/stake';
 import { initiateMpesaPayment, pollPaymentStatus, stakeContractAddress, userAddress } from '../utils/mpesaOnramp';
 import { jsPDF } from 'jspdf';
@@ -110,7 +111,8 @@ const USDT_ABI = [
 
 const USDT_CONTRACT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"; // Polygon USDT
 
-const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
+const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project }) => {
+  const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState('usdt');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -253,7 +255,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
   };
 
   const handleContinue = () => {
-    onPaymentComplete({ 
+    const paymentData = { 
       method: paymentMethod, 
       phoneNumber,
       orderId: mpesaOrderId,
@@ -263,7 +265,21 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
         transactionHash,
         status: 'success'
       }
-    });
+    };
+
+    // If we have a project prop, we're in the join group context
+    if (project) {
+      navigate(`/idea/${project.id}`, { 
+        state: { 
+          project, 
+          stakeSuccess: true,
+          paymentData 
+        } 
+      });
+    } else {
+      // Otherwise, just call the onPaymentComplete callback
+      onPaymentComplete(paymentData);
+    }
   };
 
   const downloadReceipt = () => {

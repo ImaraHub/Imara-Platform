@@ -23,7 +23,7 @@ function JoinGroup({ project, onBack }) {
   });
   const [isStaking, setIsStaking] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [stakingAmount] = useState(2); // Set your staking amount here
+  const [stakingAmount] = useState(1); // Set your staking amount here
   const address = useAddress();
   const [stakingAddress,setStakingAddress] = useState(null);
   const { user } = useAuth();
@@ -88,9 +88,7 @@ function JoinGroup({ project, onBack }) {
     setIsStaking(true);
     try {
       // If payment was successful, proceed with staking
-      
       const stakerAddress = address;
-      // setStakingAddress(stakerAddress);
 
       if (!stakingAddress) {
         setStakingAddress(address);
@@ -105,8 +103,7 @@ function JoinGroup({ project, onBack }) {
       // Add user as project contributor
       await addProjectContributor(project, user, formData.role);
 
-      // Redirect to ViewIdea page
-      navigate("/view-idea", { state: { project, stakeSuccess: true } });
+      // Navigation is now handled in PaymentModal
     } catch (error) {
       console.error("Error staking token:", error);
       alert("Staking failed");
@@ -311,6 +308,7 @@ function JoinGroup({ project, onBack }) {
         onClose={() => setShowPaymentModal(false)}
         amount={stakingAmount}
         onPaymentComplete={handlePaymentComplete}
+        project={project}
       />
     </div>
   );
