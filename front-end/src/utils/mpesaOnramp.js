@@ -166,11 +166,17 @@ export const pollPaymentStatus = async (orderID, userAddress, maxAttempts = 30, 
           }, 
           message: 'Payment and crypto transfer completed successfully' 
         };
-      } else if (status.status === 'FAILED') {
+      } else if (status.status === 'FAILED'  ) {
         return { 
           success: false, 
           status, 
           message: status.message || 'Payment failed' 
+        };
+      } else if (status.status === 'CANCELLED'  ) {
+        return { 
+          success: false, 
+          status, 
+          message: 'User cancelled the payment' 
         };
       }
       
