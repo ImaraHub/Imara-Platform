@@ -23,10 +23,13 @@ import {
 import { useNavigate } from 'react-router-dom';
 import JoinGroup from './joinGroup';
 import { useLocation } from "react-router-dom";
+import { useAuth } from '../AuthContext';
+import { getProjectContributors } from '../utils/SupabaseClient';
 
 function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const project = location.state?.project || propProject;
   const stakingSuccess = stakeSuccess || location.state?.stakeSuccess || false;
 
@@ -45,7 +48,26 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const [joinStatus, setJoinStatus] = useState("");
   const [teamMembers, setTeamMembers] = useState([]);
   const [selectedIdea, setSelectedIdea] = useState(null);
+  const [isContributor, setIsContributor] = useState(false);
 
+  // Check if user is already a contributor
+  useEffect(() => {
+    const checkContributorStatus = async () => {
+      if (!user || !project) return;
+      
+      try {
+        const contributorData = await getProjectContributors(project, user);
+        if (contributorData && contributorData.length > 0) {
+          setIsContributor(true);
+          setJoinStatus("confirmed");
+        }
+      } catch (error) {
+        console.error("Error checking contributor status:", error);
+      }
+    };
+
+    checkContributorStatus();
+  }, [user, project]);
 
   // a function that sets the join status to pending and then confirmed after 5 seconds
   const handleJoinGroup = () => {
@@ -81,11 +103,14 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   };
   
   const handleBack = () => {
-    if (onBack) {
-      onBack({ success: false });
-    } else {
-      navigate(-1); // Go back to previous page if onBack is not provided
-    }
+    // Always navigate to home page, regardless of state
+    navigate('/', { 
+      replace: true,  // Replace current history entry
+      state: { 
+        fromIdea: true,
+        ideaId: project?.id 
+      }
+    });
   };
 
   return (
@@ -97,7 +122,7 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
           className="mb-8 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          Back to Projects
+          Back to Home
         </button>
 
         {/* Project Header */}
@@ -247,22 +272,20 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
                 </button>
               </div>
               <button
-                  onClick={() => setShowJoinGroup(true)}
-                  className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
-                  disabled={!!joinStatus}
-                >
-                  
-                    {joinStatus === "confirmed"
-                      ? "Joined"
-                      : joinStatus === "pending"
-                      ? "Staking successful! Pending"
-                      : stakeSuccess
-                      ? "Waiting to Join"
-                      : "Join Project"}
-
-                </button>
-
-
+                onClick={() => setShowJoinGroup(true)}
+                className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isContributor || !!joinStatus}
+              >
+                {isContributor 
+                  ? "You are a Member"
+                  : joinStatus === "confirmed"
+                    ? "Joined"
+                    : joinStatus === "pending"
+                    ? "Staking successful! Pending"
+                    : stakeSuccess
+                    ? "Waiting to Join"
+                    : "Join Project"}
+              </button>
             </div>
             <div className="mt-4">
             
