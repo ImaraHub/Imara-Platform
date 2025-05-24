@@ -4,18 +4,108 @@ import { useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
 import { ethers } from 'ethers';
 import stakeToken from '../utils/stake';
 import { initiateMpesaPayment, pollPaymentStatus, stakeContractAddress, userAddress } from '../utils/mpesaOnramp';
+import { jsPDF } from 'jspdf';
 
 // Lisk Stake Contract ABI (minimal for stake function)
 const STAKE_ABI = [
-  "function stake(uint256 amount) returns (bool)",
-  "function balanceOf(address account) view returns (uint256)"
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "stake",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ];
 
 // USDT Contract ABI (for approval)
 const USDT_ABI = [
-  "function approve(address spender, uint256 amount) returns (bool)",
-  "function balanceOf(address account) view returns (uint256)",
-  "function decimals() view returns (uint8)"
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "approve",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ];
 
 const USDT_CONTRACT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"; // Polygon USDT
@@ -46,40 +136,21 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
   }, [pollingInterval]);
 
   const startPolling = (orderID) => {
-    // Clear any existing polling
     if (pollingInterval) {
       clearInterval(pollingInterval);
     }
 
-    // Start new polling
     const interval = setInterval(async () => {
       try {
         const result = await pollPaymentStatus(orderID, userAddress);
-        if (result.success ) {
-          // Payment successful
+        if (result.success) {
           clearInterval(interval);
           setPollingInterval(null);
           setPaymentStatus('success');
           if (result.status.cryptoTransfer?.hash) {
             setTransactionHash(result.status.cryptoTransfer.hash);
           }
-          onPaymentComplete({ 
-            method: 'mpesa', 
-            phoneNumber,
-            orderId: orderID,
-            details: {
-              ...result.status.details,
-              cryptoTransfer: result.status.cryptoTransfer ? {
-                status: result.status.cryptoTransfer.status,
-                message: result.status.cryptoTransfer.message,
-                hash: result.status.cryptoTransfer.hash,
-                createdAt: result.status.cryptoTransfer.createdAt,
-                updatedAt: result.status.cryptoTransfer.updatedAt
-              } : null
-            }
-          });
         } else {
-          // Payment failed
           clearInterval(interval);
           setPollingInterval(null);
           setPaymentStatus('error');
@@ -92,7 +163,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
         setPaymentStatus('error');
         setErrorMessage(error.message);
       }
-    }, 2000); // Poll every 2 seconds
+    }, 2000);
 
     setPollingInterval(interval);
   };
@@ -179,6 +250,69 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleContinue = () => {
+    onPaymentComplete({ 
+      method: paymentMethod, 
+      phoneNumber,
+      orderId: mpesaOrderId,
+      details: {
+        amount,
+        timestamp: new Date().toISOString(),
+        transactionHash,
+        status: 'success'
+      }
+    });
+  };
+
+  const downloadReceipt = () => {
+    // Create PDF document
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(20);
+    doc.text('Payment Receipt', 105, 20, { align: 'center' });
+    
+    // Add payment details
+    doc.setFontSize(12);
+    const details = [
+      ['Payment Method:', paymentMethod.toUpperCase()],
+      ['Amount:', `KES ${amount.toLocaleString()}`],
+      ['Date:', new Date().toLocaleDateString()],
+      ['Time:', new Date().toLocaleTimeString()],
+      ['Status:', 'Success'],
+    ];
+
+    // Add M-Pesa specific details if applicable
+    if (paymentMethod === 'mpesa') {
+      details.push(['Phone Number:', phoneNumber]);
+      details.push(['Order ID:', mpesaOrderId]);
+    }
+
+    // Add USDT specific details if applicable
+    if (paymentMethod === 'usdt' && transactionHash) {
+      details.push(['Transaction Hash:', transactionHash]);
+      details.push(['Amount Staked:', '1 USDT']);
+    }
+
+    // Add details to PDF
+    let y = 40;
+    details.forEach(([label, value]) => {
+      doc.setFont(undefined, 'bold');
+      doc.text(label, 20, y);
+      doc.setFont(undefined, 'normal');
+      doc.text(value, 70, y);
+      y += 10;
+    });
+
+    // Add footer
+    doc.setFontSize(10);
+    doc.text('Thank you for your payment!', 105, y + 20, { align: 'center' });
+    doc.text('This receipt serves as proof of your transaction.', 105, y + 30, { align: 'center' });
+
+    // Save the PDF
+    doc.save(`payment-receipt-${new Date().getTime()}.pdf`);
   };
 
   if (!isOpen) return null;
@@ -322,7 +456,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
             <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Check className="w-6 h-6 text-green-400" />
-                <h3 className="text-lg font-semibold text-green-300">Congratulations! Staking Successful</h3>
+                <h3 className="text-lg font-semibold text-green-300">Payment Successful!</h3>
               </div>
               
               <div className="space-y-3 text-sm">
@@ -353,10 +487,23 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
                 )}
               </div>
 
-              <div className="mt-4 p-3 bg-green-500/5 rounded-lg">
-                <p className="text-sm text-green-300 text-center">
-                  Your tokens have been successfully staked. Thank you for participating!
-                </p>
+              <div className="mt-6 space-y-3">
+                <button
+                  onClick={downloadReceipt}
+                  className="w-full bg-green-500/20 hover:bg-green-500/30 text-green-300 px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  Download Receipt (PDF)
+                </button>
+                
+                <button
+                  onClick={handleContinue}
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg transition-all hover:opacity-90"
+                >
+                  Continue to Idea Page
+                </button>
               </div>
             </div>
           </div>
