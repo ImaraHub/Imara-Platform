@@ -81,14 +81,14 @@ const CreateIdea = ({ onBack }) => {
     // Handle form submission
     console.log('Form submitted:', formData);
 
-    // check wallet is linked to an email, if not load email component
-    const user = await CheckEmailForWallet(walletAddress);
+    // // check wallet is linked to an email, if not load email component
+    // const user = await CheckEmailForWallet(walletAddress);
 
-    if (!user){
-      console.log('No user linked to this wallet address.');
-      setShowEmailComponent(true);
-      return;
-    }
+    // if (!user){
+    //   console.log('No user linked to this wallet address.');
+    //   setShowEmailComponent(true);
+    //   return;
+    // }
 
     try {
 
