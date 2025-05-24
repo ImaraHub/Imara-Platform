@@ -1,10 +1,29 @@
 import { createClient } from '@supabase/supabase-js';
-import React, { useEffect, useState } from 'react';
-// import { useAuth } from "../AuthContext";
+import { useAuth } from "../AuthContext";
 
 const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    detectSessionInUrl: true,
+    flowType: 'pkce',
+    persistSession: true,
+    autoRefreshToken: true,
+    storageKey: 'imara-auth-token',
+    storage: {
+      getItem: (key) => {
+        const value = localStorage.getItem(key);
+        return value ? JSON.parse(value) : null;
+      },
+      setItem: (key, value) => {
+        localStorage.setItem(key, JSON.stringify(value));
+      },
+      removeItem: (key) => {
+        localStorage.removeItem(key);
+      },
+    },
+  }
+});
 
 // console.log('Supabase URL:', supabaseUrl);
 // console.log('Supabase Key:', supabaseKey);
