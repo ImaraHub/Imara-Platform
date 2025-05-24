@@ -15,60 +15,59 @@ import {
   Twitter,
   Copy,
   Check,
-  X
+  X,
+  Loader,
+  Users
 } from 'lucide-react';
 
-import StakingProfile from './StakingProfile';
 import { useNavigate } from 'react-router-dom';
 import JoinGroup from './joinGroup';
-function ViewIdea({project, onBack }) {
+import { useLocation } from "react-router-dom";
+
+function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const project = location.state?.project || propProject;
+  const stakingSuccess = stakeSuccess || location.state?.stakeSuccess || false;
+
+  if (!project || Object.keys(project).length === 0) {
+    console.log("Project is empty or undefined!");
+    return
+  }
+
+  console.log("Project in view idea", project?.title);
+
   const [showShareModal, setShowShareModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [showCommentBox, setShowCommentBox] = useState(false);
   const [comment, setComment] = useState('');
-  // const [showStake,setShowStake] = useState(false);
-  const [showIdeaSignUp, setIdeaSIgnUp] = useState(false);
-  const navigate = useNavigate();
   const [showJoinGroup, setShowJoinGroup] = useState(false);
+  const [joinStatus, setJoinStatus] = useState("");
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [selectedIdea, setSelectedIdea] = useState(null);
 
 
-  const handleJoinGroupComplete = ({ success }) => {
-    if (success) {
-      setShowJoinGroup(false);
-      setJoinStatus('pending');
-      
-      // Simulate confirmation after 30 seconds
-      setTimeout(() => {
-        setJoinStatus('confirmed');
-        setShowConfirmation(true);
-        
-        // Hide confirmation after 5 seconds
-        setTimeout(() => {
-          setShowConfirmation(false);
-        }, 5000);
-      }, 30000);
-    } else {
-      setShowJoinGroup(false);
-    }
+  // a function that sets the join status to pending and then confirmed after 5 seconds
+  const handleJoinGroup = () => {
+    setJoinStatus("pending");
+    setTimeout(() => {
+      setJoinStatus("confirmed");
+    }, 10000);
   };
-
-
-  // useEffect(() => {
-  //   if (showIdeaSignUp){
-  //     navigate ('join-group');
-  //   }
-  // }, [showIdeaSignUp,navigate]);
   
-  // }
-  if (showJoinGroup) {
-    return < JoinGroup/>;
+  // Run handleJoinGroup() only when stakingSuccess changes to true
+  useEffect(() => {
+    if (stakingSuccess) {
+      handleJoinGroup();
+    }
+  }, [stakingSuccess]); 
+
+  if (showJoinGroup && !stakeSuccess){
+    return <JoinGroup project={project}  onBack={() => setShowJoinGroup(false)}/>;
   }
 
-  console.log("Project in view idea", project.title);
-  if (!project) return null;
-
   const handleCopyLink = () => {
-    const url = `https://imara.com/project/${project.id}`;
+    const url = `https://imara.com/project/${project?.id || "unknown"}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -76,66 +75,25 @@ function ViewIdea({project, onBack }) {
 
   const handleComment = (e) => {
     e.preventDefault();
-    // Handle comment submission
     console.log('Comment submitted:', comment);
     setComment('');
     setShowCommentBox(false);
   };
-
-  const ShareModal = ({ onClose }) => (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white"
-        >
-          <X className="w-6 h-6" />
-        </button>
-        
-        <h3 className="text-xl font-semibold text-white mb-6">Share Project</h3>
-        
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <button className="flex items-center gap-3 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-            <Facebook className="w-5 h-5" />
-            Facebook
-          </button>
-          <button className="flex items-center gap-3 bg-sky-500 text-white px-4 py-3 rounded-lg hover:bg-sky-600 transition-colors">
-            <Twitter className="w-5 h-5" />
-            Twitter
-          </button>
-        </div>
-
-        <div className="bg-gray-700/50 p-3 rounded-lg flex items-center gap-3">
-          <div className="flex-1 truncate text-gray-300 text-sm">
-            https://imara.com/project/{project.id}
-          </div>
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center gap-2 bg-gray-600 text-white px-3 py-1.5 rounded-lg hover:bg-gray-500 transition-colors"
-          >
-            {copiedLink ? (
-              <>
-                <Check className="w-4 h-4" />
-                Copied!
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4" />
-                Copy
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  
+  const handleBack = () => {
+    if (onBack) {
+      onBack({ success: false });
+    } else {
+      navigate(-1); // Go back to previous page if onBack is not provided
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <button
-          onClick={onBack}
+          onClick={handleBack}
           className="mb-8 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
@@ -156,12 +114,12 @@ function ViewIdea({project, onBack }) {
                   {project.category}
                 </span>
                 <div className="flex items-center gap-2">
-                  <div className="w-32 h-2 bg-gray-700 rounded-full">
+                  {/* <div className="w-32 h-2 bg-gray-700 rounded-full"> */}
                     {/* <div
                       className="h-full bg-blue-500 rounded-full"
                       style={{ width: `${project.progress}%` }}
                     /> */}
-                  </div>
+                  {/* </div> */}
                   <span className="text-gray-400 text-sm">{project.progress}% Complete</span>
                 </div>
               </div>
@@ -204,15 +162,7 @@ function ViewIdea({project, onBack }) {
               <p className="text-gray-300">{project.solution}</p>
             </section>
 
-            {/* Technical Requirements
-            <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
-              <h2 className="text-2xl font-semibold mb-4">Technical Requirements</h2>
-              <ul className="list-disc list-inside text-gray-300 space-y-2">
-                {project.resources?.map((req, index) => (
-                  <li key={index}>{req}</li>
-                ))}
-              </ul>
-            </section> */}
+
 
             {/* Comments Section */}
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
@@ -243,7 +193,8 @@ function ViewIdea({project, onBack }) {
                       Cancel
                     </button>
                     <button
-                      type="submit"
+                      onClick={() => setShowJoinGroup(true)}
+                      // type="submit"
                       className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                     >
                       Submit
@@ -298,22 +249,65 @@ function ViewIdea({project, onBack }) {
               <button
                   onClick={() => setShowJoinGroup(true)}
                   className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+                  disabled={!!joinStatus}
                 >
-                  Join Project
+                  
+                    {joinStatus === "confirmed"
+                      ? "Joined"
+                      : joinStatus === "pending"
+                      ? "Staking successful! Pending"
+                      : stakeSuccess
+                      ? "Waiting to Join"
+                      : "Join Project"}
+
                 </button>
 
-              {/* New Button Appears After Successful Staking */}
+
+            </div>
+            <div className="mt-4">
             
-              {/* {stakeSuccess && (
-                <button
-                  onClick={() => setShowStake(true)}
-                  className="w-full px-6 py-3 mt-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity">
-                <h3 className="text-lg">
-                  Continue
-                  </h3>
-                </button>
-              )} */}
-             
+
+                { /* Show team members ONLY when confirmation message disappears  */}
+                {(joinStatus === "confirmed" )&&(
+                  <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mt-6">
+                    <h2 className="text-2xl font-semibold mb-4">Team Members</h2>
+                    <ul className="space-y-3">
+                      {teamMembers.length > 0 ? (
+                        teamMembers.map((member, index) => (
+                          <li key={index} className="flex items-center gap-4 bg-gray-900 p-3 rounded-lg">
+                            <User className="w-6 h-6 text-gray-300" />
+                            <div>
+                              <p className="text-white">{member.username}</p>
+                              <p className="text-gray-400 text-sm">{member.email}</p>
+                            </div>
+                          </li>
+                        ))
+                      ) : (
+                        <p className="text-gray-400">No members yet...</p>
+                      )}
+                    </ul>
+                  </section>
+                )}
+
+                {!(joinStatus === "confirmed") && (
+                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mt-6">
+                    <h3 className="text-lg font-semibold mb-4">Team Needed</h3>
+                    <div className="space-y-3">
+                      {(project.resources 
+                        ? (Array.isArray(project.resources) ? project.resources : JSON.parse(project.resources || "[]")) 
+                        : []
+                      ).map((role, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-lg"
+                        >
+                          <span className="text-gray-300">{role.role}</span>
+                          <span className="text-sm text-gray-400">{role.count} needed</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
             </div>
 
             {/* Project Links */}
@@ -360,32 +354,7 @@ function ViewIdea({project, onBack }) {
               </div>
             </div>
 
-            {/* Team Needed */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
-              <h3 className="text-lg font-semibold mb-4">Team Needed</h3>
-              <div className="space-y-3">
-              
-              {Array.isArray(project.resources)
-    ? project.resources.map((role, index) => (
-        <div
-          key={index}
-          className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-lg"
-        >
-          <span className="text-gray-300">{role.role}</span>
-          <span className="text-sm text-gray-400">{role.count} needed</span>
-        </div>
-      ))
-    : JSON.parse(project.resources || "[]").map((role, index) => (
-        <div
-          key={index}
-          className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-lg"
-        >
-          <span className="text-gray-300">{role.role}</span>
-          <span className="text-sm text-gray-400">{role.count} needed</span>
-        </div>
-      ))}
-              </div>
-            </div>
+
           </div>
         </div>
       </div>
@@ -393,7 +362,7 @@ function ViewIdea({project, onBack }) {
       {showShareModal && (
         <ShareModal onClose={() => setShowShareModal(false)} />
       )}
-      {/* {showStake && <Stake />} */}
+  
     </div>
   );
   

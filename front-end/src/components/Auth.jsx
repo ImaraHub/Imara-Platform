@@ -1,15 +1,15 @@
-import React, { useState , useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Github, Wallet, Mail, ArrowRight } from 'lucide-react';
-import {ConnectWallet, useAddress, useSigner} from "@thirdweb-dev/react";
+import { ConnectWallet, useAddress, useSigner } from "@thirdweb-dev/react";
 // import {useNavigate} from "react-router-dom";
 import { supabase } from '../utils/SupabaseClient';
 
-export function Auth({ setShowAuth, setShowHome }) {  
+export function Auth({ setShowAuth, setShowHome }) {
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  const [userName, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const address = useAddress();
@@ -25,17 +25,53 @@ export function Auth({ setShowAuth, setShowHome }) {
     }
   }, [address]);
 
-    // a const that shows pop-up message
+  // a const that shows pop-up message
 
-    const WarningPopup = ({ message }) => {
-      return (
-        <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
-          {message}
-        </div>
-      );
-    };
+  const WarningPopup = ({ message }) => {
+    return (
+      <div className="fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg">
+        {message}
+      </div>
+    );
+  };
 
   // const errorMsgPopup = errorMsg ? <WarningPopup message={errorMsg} /> : null;
+
+  const signInGithub = async () => {
+    try {
+      setLoading(true);
+      setErrorMsg('');
+      
+      console.log('Initiating GitHub sign-in...');
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        }
+      });
+
+      console.log('GitHub sign-in response:', {
+        hasData: !!data,
+        hasError: !!error,
+        errorMessage: error?.message,
+        url: data?.url
+      });
+
+      if (error) {
+        console.error('Error signing in with GitHub:', error.message);
+        setErrorMsg(error.message);
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Unexpected error during GitHub sign in:', err);
+      setErrorMsg('An unexpected error occurred. Please try again.');
+      setLoading(false);
+    }
+  }
 
   const signMessage = async () => {
 
@@ -51,7 +87,7 @@ export function Auth({ setShowAuth, setShowHome }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (isLogin) {
       await signInWithEmail();
     } else {
@@ -67,16 +103,19 @@ export function Auth({ setShowAuth, setShowHome }) {
       password,
       options: {
         emailRedirectTo: 'https://imara-platform.onrender.com',
-      }
+        data: {
+        display_name: userName, // Replace `fullName` with the actual state/input
+      },
+      },
     });
     setLoading(false);
 
     if (error) {
       setErrorMsg(error.message);
     } else {
-      setErrorMsg('Please check your email to confirm your account.');
+      setErrorMsg('Please check your email to confirm your sign up.');
       setIsLogin(true);
-      console.log('User created successfully:', user);
+      console.log('confirmation email sent to :', email);
     }
 
   }
@@ -86,7 +125,7 @@ export function Auth({ setShowAuth, setShowHome }) {
   //   setErrorMsg('');
   // }
 
-  
+
 
   const signInWithEmail = async () => {
     setLoading(true);
@@ -98,14 +137,14 @@ export function Auth({ setShowAuth, setShowHome }) {
     setLoading(false);
 
     if (error) {
-    
-      setErrorMsg('User not found. Please sign up.');      
+
+      setErrorMsg('User not found. Please sign up.');
       console.log('Error signing in:', error.message)
-      
+
     } else {
       console.log('User signed in successfully:', data);
 
-          // Fetch user details
+      // Fetch user details
       const { data: userData, error: userError } = await supabase.auth.getUser();
 
       localStorage.setItem("userEmail", userData.user.email);
@@ -116,23 +155,13 @@ export function Auth({ setShowAuth, setShowHome }) {
   }
 
 
-  // const authWithSupabase = async (signature) => {
-  //   const { data, error} =  await supabase.auth.signInWithIdToken({
-  //     provider: 'walletconnect',
-  //     token: signature
-  //   });
-  //   if (error) {
-  //     console.error("Error signing in:", error);
-  //   } else {
-  //     console.log("User signed in:", data);
-  //   }
-  // }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center px-4">
-        
 
-        {errorMsg && <WarningPopup message={errorMsg}/>}
+
+      {errorMsg && <WarningPopup message={errorMsg} />}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-4 -left-4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl" />
         <div className="absolute top-1/4 -right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
@@ -159,7 +188,7 @@ export function Auth({ setShowAuth, setShowHome }) {
         </button>
         {/* Auth Options */}
         <div className="space-y-4 mb-8">
-          <button className="w-full bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-lg transition-all flex items-center justify-center gap-3 group">
+          <button onClick={signInGithub} className="w-full bg-white/5 hover:bg-white/10 text-white px-6 py-3 rounded-lg transition-all flex items-center justify-center gap-3 group">
             <Github className="w-5 h-5" />
             Continue with GitHub
             <ArrowRight className="w-4 h-4 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
@@ -169,8 +198,8 @@ export function Auth({ setShowAuth, setShowHome }) {
             
             <ArrowRight className="w-4 h-4 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all" />
           </button> */}
-          <ConnectWallet />
-          {address && <button onClick={signMessage}>Sign In with Wallet</button>}
+          {/* <ConnectWallet /> */}
+          {/* {address && <button onClick={signMessage}>Sign In with Wallet</button>} */}
         </div>
 
         {/* Divider */}
@@ -183,8 +212,26 @@ export function Auth({ setShowAuth, setShowHome }) {
           </div>
         </div>
 
-        {/* Email Form */}
+        {/* Username Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+        {!isLogin  && (
+           <div>
+           <label htmlFor="userName" className="block text-sm font-medium text-gray-400 mb-2">
+             User Name
+           </label>
+           <input
+             id="username"
+             type="text"
+             value={userName} 
+             onChange={(e) => setUsername(e.target.value)}
+             className="w-full px-4 py-3 bg-white/5 border border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
+             placeholder="Enter your username"
+             required
+           />
+         </div>
+
+        )
+      };
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-400 mb-2">
               Email address
@@ -195,7 +242,7 @@ export function Auth({ setShowAuth, setShowHome }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 bg-white/5 border border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
-              placeholder="Enter your email"
+              placeholder="Eg: email@example.com"
               required
             />
           </div>
@@ -224,7 +271,7 @@ export function Auth({ setShowAuth, setShowHome }) {
           </button>
         </form>
 
-       {/* ✅ Toggle Sign-Up or Sign-In Mode */}
+        {/* ✅ Toggle Sign-Up or Sign-In Mode */}
         <p className="mt-8 text-center text-gray-400">
           {isLogin ? "Don't have an account?" : "Already have an account?"}
           <button

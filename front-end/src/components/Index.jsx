@@ -114,7 +114,7 @@ return (
           </div>
         </div>
 
-        {/* Stats Section */}
+        {/* NOTE: Stats Section to be made dynamic*/}
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 py-12 px-6 bg-white/5 backdrop-blur-sm rounded-2xl mb-20">
           <StatCard number="2+" label="Active Projects" />
           <StatCard number="5+" label="Community Members" />
@@ -127,9 +127,6 @@ return (
       <section id="roles" className="py-20 bg-gradient-to-b from-gray-800/50 to-gray-900/50">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            {/* <div className="inline-block px-4 py-1 bg-purple-500/10 rounded-full text-purple-400 text-sm font-semibold mb-4">
-              Ecosystem Participants
-            </div> */}
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Join Our Diverse Community</h2>
             <p className="text-gray-400 max-w-2xl mx-auto">
               IMARA brings together various stakeholders, each playing a crucial role in bringing ideas to life.
@@ -286,33 +283,6 @@ return (
         </div>
       </section>
 
-      {/* CTA */}
-      {/* <section className="py-20">
-        <div className="container mx-auto px-6">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 to-purple-600">
-            <div className="absolute inset-0">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 to-purple-600/90" />
-              <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-              <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
-            </div>
-            <div className="relative px-8 py-16 md:px-16 md:py-20 text-center">
-              <h2 className="text-3xl md:text-4xl font-bold mb-8">Ready to Bring Your Ideas to Life?</h2>
-              <p className="text-xl text-gray-100 mb-12 max-w-2xl mx-auto">
-                Join our community of innovators, creators, and builders. Transform the way ideas become reality.
-              </p>
-              <div className="flex flex-col md:flex-row gap-4 justify-center">
-                <button className="bg-white text-blue-600 px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:bg-gray-100">
-                  Join IMARA Today
-                </button>
-                <button className="bg-white/10 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:bg-white/20">
-                  Schedule a Demo
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section> */}
-
       {/* Footer */}
       <footer className="bg-gray-900/80 backdrop-blur-sm py-12">
         <div className="container mx-auto px-6">
@@ -331,15 +301,15 @@ return (
               <ul className="space-y-2 text-gray-400">
                 <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
                 <li><a href="#process" className="hover:text-white transition-colors">How it Works</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Roadmap</a></li>
+                <li><a href="#benefits" className="hover:text-white transition-colors">Security</a></li>
+                <li><a href="#process" className="hover:text-white transition-colors">Roadmap</a></li>
               </ul>
             </div>
             <div>
               <h4 className="text-lg font-semibold mb-4">Resources</h4>
               <ul className="space-y-2 text-gray-400">
                 <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">API</a></li>
+                <li><a href="#features" className="hover:text-white transition-colors">API</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Community</a></li>
               </ul>

@@ -1,89 +1,74 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
+pragma solidity ^0.8.20;
+interface IERC20 {
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+    function transfer(address to, uint256 amount) external returns (bool);
+}
 contract Staking {
-    uint256 public constant STAKE_AMOUNT =  0.0003 ether; // Fixed stake amount (0 ETH for testing)
-    uint256 public constant ESTIMATED_APR = 1867; // 18.67% APR (scaled by 100 for precision)
-    address public owner;
-
-    struct Staker {
-        uint256 amountStaked;
-        uint256 totalRewardsClaimed;
-        uint256 unclaimedRewards;
-        uint256 stakingTimestamp;
-    }
-
-    mapping(address => Staker) public stakers;
-    uint256 public totalStakedAmount;
-
-    event Staked(address indexed user, uint256 amount);
-    event RewardsClaimed(address indexed user, uint256 amount);
-
+    address public immutable owner;
+    address public immutable lskToken;
+    enum TokenType { ETH, LSK }
+    mapping(address => bool) public approvedUnstake;
+    event Staked(address indexed user, uint256 amount, TokenType tokenType);
+    event UnstakeRequested(address indexed user, TokenType tokenType);
+    event Unstaked(address indexed user, uint256 amount, TokenType tokenType);
     modifier onlyOwner() {
         require(msg.sender == owner, "Not contract owner");
         _;
     }
-
-    constructor() {
+    constructor(address _lskTokenAddress) {
         owner = msg.sender;
+        lskToken = _lskTokenAddress;
     }
-
-    function stake() external payable {
-        require(msg.value == STAKE_AMOUNT, "Incorrect staking amount");
-        require(stakers[msg.sender].amountStaked == 0, "Already staked");
-
-        stakers[msg.sender] = Staker({
-            amountStaked: msg.value,
-            totalRewardsClaimed: 0,
-            unclaimedRewards: 0,
-            stakingTimestamp: block.timestamp
-        });
-
-        totalStakedAmount += msg.value;
-        emit Staked(msg.sender, msg.value);
+    // 1. Stake ETH
+    function stakeWithEth() external payable {
+        require(msg.value > 0, "Amount must be > 0");
+        emit Staked(msg.sender, msg.value, TokenType.ETH);
     }
-
-    function getStakedAmount(address _user) external view returns (uint256) {
-        return stakers[_user].amountStaked;
+    // 2. Direct ETH deposit
+    receive() external payable {
+        require(msg.value > 0, "Amount must be > 0");
+        emit Staked(msg.sender, msg.value, TokenType.ETH);
     }
-
-    function getAvailableBalance(address /*_user*/)
-        external
-        pure
-        returns (uint256)
-    {
-        return 0; // Placeholder, as cross-chain balance checking isn't implemented
+    // 3. Stake LSK
+    function stakeWithLsk(uint256 amount) external {
+        require(amount > 0, "Amount must be > 0");
+        require(
+            IERC20(lskToken).transferFrom(msg.sender, address(this), amount),
+            "LSK transfer failed"
+        );
+        emit Staked(msg.sender, amount, TokenType.LSK);
     }
-
-    function getTotalStakedAmount() external view returns (uint256) {
-        return totalStakedAmount;
+    // 4. Register off-chain LSK transfer
+    function registerStake(uint256 amount) external {
+        emit Staked(msg.sender, amount, TokenType.LSK);
     }
-
-    function getTotalRewardsClaimed(address _user)
-        external
-        view
-        returns (uint256)
-    {
-        return stakers[_user].totalRewardsClaimed;
+    // 5. User requests unstake
+    function requestUnstake(TokenType tokenType) external {
+        emit UnstakeRequested(msg.sender, tokenType);
     }
-
-    function getEstimatedAPR() external pure returns (uint256) {
-        return ESTIMATED_APR;
+    // 6. Owner approves unstake
+    function approveUnstake(address user) external onlyOwner {
+        approvedUnstake[user] = true;
     }
-
-    function getEstimatedDailyRewards(address _user)
-        external
-        view
-        returns (uint256)
-    {
-        return (stakers[_user].amountStaked * ESTIMATED_APR) / (365 * 10000);
+    // 7. Unstake
+    function unstake(uint256 amount, TokenType tokenType) external {
+        require(approvedUnstake[msg.sender], "Not approved");
+        require(amount > 0, "Amount must be > 0");
+        approvedUnstake[msg.sender] = false;
+        if (tokenType == TokenType.ETH) {
+            require(address(this).balance >= amount, "Insufficient ETH");
+            payable(msg.sender).transfer(amount);
+        } else if (tokenType == TokenType.LSK) {
+            require(IERC20(lskToken).transfer(msg.sender, amount), "LSK transfer failed");
+        }
+        emit Unstaked(msg.sender, amount, tokenType);
     }
-
-    function getUnclaimedRewards(address _user)
-        external
-        view
-        returns (uint256)
-    {
-        return stakers[_user].unclaimedRewards;
+    // 8. Withdrawals by owner
+    function withdrawEth(uint256 amount) external onlyOwner {
+        payable(owner).transfer(amount);
+    }
+    function withdrawLsk(uint256 amount) external onlyOwner {
+        IERC20(lskToken).transfer(owner, amount);
     }
 }

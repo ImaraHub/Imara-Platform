@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   define: {
@@ -13,9 +12,15 @@ export default defineConfig({
     'process.env': process.env,
   },
   server: {
-    host: true, // Enable listening on all network interfaces
-    port: process.env.PORT || 3000, // Use environment port or default to 3000
+    host: "0.0.0.0", // Allows external access
+    port: Number(process.env.PORT) || 10000, // Use Render's expected port
+    strictPort: true, // Prevents fallback to another port
+    allowedHosts: ['imara-platform-1.onrender.com'], // Allow Render host
+  },
+  preview: {
+    host: "0.0.0.0",
+    port: Number(process.env.PORT) || 10000,
+    strictPort: true,
+    allowedHosts: ['imara-platform-1.onrender.com'], // Allow Render host
   },
 });
-
-
