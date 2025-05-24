@@ -5,6 +5,7 @@ import BuilderProfile from './BuilderProfile';
 import ViewIdea from './ViewIdea';
 import ProjectManager from './ProjectManager';
 import ProfileSettings from './ProfileSettings'; // Correct import path
+import { useNavigate } from 'react-router-dom';
 
 import {
   User,
@@ -83,7 +84,7 @@ function Home({ handleSignOut }) {
   const [showProjectManager, setShowProjectManager] = useState(false);
 
   const allProjects = displayIdeas();
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const address = useAddress();
   const email = localStorage.getItem("userEmail");
   const [userEmail, setUserEmail] = useState(email);
@@ -115,12 +116,10 @@ function Home({ handleSignOut }) {
     }
   }, [address]);
 
-  if (selectedIdea){
-    return <ViewIdea project={selectedIdea}  onClose={() => setSelectedIdea(null)}/>;
-  }
-
   const handleIdeaClick = (idea) => {
-    setSelectedIdea(idea);
+    navigate(`/view-idea/${idea.id}`, { 
+      state: { project: idea }
+    });
   };
   
   if (showProfileSettings) {

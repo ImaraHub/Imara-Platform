@@ -20,22 +20,50 @@ import {
   Users
 } from 'lucide-react';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import JoinGroup from './joinGroup';
-import { useLocation } from "react-router-dom";
 import { useAuth } from '../AuthContext';
 import { getProjectContributors } from '../utils/SupabaseClient';
 
 function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { id } = useParams();
   const { user } = useAuth();
+  
+  // Get project from either route state, props, or fetch by ID
   const project = location.state?.project || propProject;
   const stakingSuccess = stakeSuccess || location.state?.stakeSuccess || false;
 
+  // If no project in state/props and we have an ID, we should fetch it
+  useEffect(() => {
+    const fetchProject = async () => {
+      if (!project && id) {
+        // TODO: Implement fetchProjectById in SupabaseClient
+        // const fetchedProject = await fetchProjectById(id);
+        // if (fetchedProject) {
+        //   setProject(fetchedProject);
+        // }
+      }
+    };
+    fetchProject();
+  }, [id, project]);
+
   if (!project || Object.keys(project).length === 0) {
     console.log("Project is empty or undefined!");
-    return
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold mb-4">Project Not Found</h2>
+          <button
+            onClick={() => navigate('/')}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Return to Home
+          </button>
+        </div>
+      </div>
+    );
   }
 
   console.log("Project in view idea", project?.title);
@@ -103,14 +131,11 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   };
   
   const handleBack = () => {
-    // Always navigate to home page, regardless of state
-    navigate('/', { 
-      replace: true,  // Replace current history entry
-      state: { 
-        fromIdea: true,
-        ideaId: project?.id 
-      }
-    });
+    if (onBack) {
+      onBack();
+    } else {
+      navigate(-1); // Go back one step in history
+    }
   };
 
   return (
