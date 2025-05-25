@@ -46,51 +46,64 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
 
   const stakingSuccess = stakeSuccess || location.state?.stakeSuccess || false;
 
+  // Memoize the initial project data to prevent unnecessary re-renders
+  const initialProjectData = React.useMemo(() => {
+    return location.state?.project || propProject;
+  }, [location.state?.project, propProject]);
+
   // Single useEffect to handle all data fetching
   useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
+      if (!isMounted) return;
+      
       setIsLoading(true);
       try {
         // First try to use state/props data
-        let data = location.state?.project || propProject;
+        let data = initialProjectData;
         
         // If no data or empty object, fetch from API
         if (!data || Object.keys(data).length === 0) {
           if (id) {
             console.log("Fetching project with ID:", id);
             data = await fetchProjectById(id);
-            if (data) {
+            if (data && isMounted) {
               console.log("Project fetched successfully:", data.title);
-            } else {
-              console.log("No project found with ID:", id);
+              setProjectData(data);
             }
           }
+        } else if (isMounted) {
+          // If we have initial data, use it
+          setProjectData(data);
         }
 
-        // If we have data, update state
-        if (data) {
-          setProjectData(data);
-          
-          // Check contributor status if we have user and project data
-          if (user && data.id) {
-            const contributorData = await getProjectContributors(data, user);
-            if (contributorData && contributorData.length > 0) {
-              setIsContributor(true);
-              setJoinStatus("confirmed");
-            }
+        // Check contributor status if we have user and project data
+        if (user && data?.id && isMounted) {
+          const contributorData = await getProjectContributors(data, user);
+          if (contributorData && contributorData.length > 0 && isMounted) {
+            setIsContributor(true);
+            setJoinStatus("confirmed");
           }
         }
       } catch (error) {
         console.error("Error fetching project data:", error);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchData();
-  }, [id, user, location.state?.project, propProject, stakingSuccess]);
 
-  // Handle join group status
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
+  }, [id, user, initialProjectData]); // Only depend on stable values
+
+  // Separate useEffect for staking success
   useEffect(() => {
     if (stakingSuccess && !isContributor) {
       setJoinStatus("pending");
@@ -128,8 +141,6 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
     );
   }
 
-  console.log("Project in view idea", projectData?.title);
-
   // a function that sets the join status to pending and then confirmed after 5 seconds
   const handleJoinGroup = () => {
     setJoinStatus("pending");
@@ -160,7 +171,7 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
     if (onBack) {
       onBack();
     } else {
-      navigate(-1); // Go back one step in history
+      navigate(-2); // Go back one step in history
     }
   };
 
