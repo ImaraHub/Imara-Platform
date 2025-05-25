@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import stakeToken from '../utils/stake';
 import { initiateMpesaPayment, pollPaymentStatus, stakeContractAddress, userAddress } from '../utils/mpesaOnramp';
 import { jsPDF } from 'jspdf';
+import { useAuth } from '../AuthContext';
+import { addProjectContributor } from '../utils/SupabaseClient';
 
 // Lisk Stake Contract ABI (minimal for stake function)
 const STAKE_ABI = [
@@ -113,6 +115,7 @@ const USDT_CONTRACT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"; // P
 
 const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState('usdt');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -248,13 +251,18 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project }) =
       }
     } catch (error) {
       setPaymentStatus('error');
-      setErrorMessage(error.message);
+      // Format error message to be more user-friendly
+      if (error.message?.includes('nonce too low') || error.message?.includes('nonce has already been used')) {
+        setErrorMessage('Transaction failed: Please try again in a few moments');
+      } else {
+        setErrorMessage(error.message);
+      }
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     const paymentData = { 
       method: paymentMethod, 
       phoneNumber,
@@ -269,13 +277,32 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project }) =
 
     // If we have a project prop, we're in the join group context
     if (project) {
-      navigate(`/idea/${project.id}`, { 
-        state: { 
-          project, 
-          stakeSuccess: true,
-          paymentData 
-        } 
-      });
+      try {
+        // Add user as contributor to the project
+        console.log("Adding user as contributor to project:", project.id);
+        await addProjectContributor(project, user, "member");
+        console.log("User added as contributor successfully");
+
+        // Navigate to the project page with updated state
+        navigate(`/idea/${project.id}`, { 
+          state: { 
+            project, 
+            stakeSuccess: true,
+            paymentData 
+          } 
+        });
+      } catch (error) {
+        console.error("Error adding user as contributor:", error);
+        // Still navigate even if contributor addition fails
+        navigate(`/idea/${project.id}`, { 
+          state: { 
+            project, 
+            stakeSuccess: true,
+            paymentData,
+            error: "Payment successful but failed to add as contributor. Please contact support."
+          } 
+        });
+      }
     } else {
       // Otherwise, just call the onPaymentComplete callback
       onPaymentComplete(paymentData);
@@ -450,6 +477,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project }) =
           </div>
         )}
 
+
         {/* Error Message */}
         {errorMessage && (
           <div className="mb-6 p-4 bg-red-500/10 rounded-lg border border-red-500/20">
@@ -467,8 +495,31 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project }) =
           </div>
         )}
 
+        {/* Pay Button */}
+        {paymentStatus !== 'pending_mpesa' && !pollingInterval && paymentStatus !== 'success' && (
+          <button
+            onClick={handlePayment}
+            disabled={isProcessing || 
+              (paymentMethod === 'usdt' && !address) || 
+              (paymentMethod === 'mpesa' && !phoneNumber)}
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isProcessing ? (
+              <>
+                <Loader className="w-5 h-5 animate-spin" />
+                Processing...
+              </>
+            ) : paymentMethod === 'usdt' ? (
+              address ? 'Stake USDT' : 'Connect Wallet'
+            ) : (
+              'Pay with M-Pesa'
+            )}
+          </button>
+        )}
+
+        {/* Success Message and Continue Button */}
         {paymentStatus === 'success' && (
-          <div className="mb-6 space-y-4">
+          <div className="mt-6 space-y-4">
             <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
               <div className="flex items-center justify-center gap-2 mb-4">
                 <Check className="w-6 h-6 text-green-400" />
@@ -481,10 +532,12 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project }) =
                   <span className="text-white font-medium">KES {amount.toLocaleString()}</span>
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">M-Pesa Order ID:</span>
-                  <span className="text-white font-mono">{mpesaOrderId}</span>
-                </div>
+                {mpesaOrderId && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">M-Pesa Order ID:</span>
+                    <span className="text-white font-mono">{mpesaOrderId}</span>
+                  </div>
+                )}
 
                 {transactionHash && (
                   <div className="pt-3 border-t border-green-500/20">
@@ -515,60 +568,14 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project }) =
                 </button>
                 
                 <button
-                  onClick={handleContinue}
+                  onClick={() => {
+                    handleContinue();
+                    onClose(); // Close the modal after continuing
+                  }}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg transition-all hover:opacity-90"
                 >
                   Continue to Idea Page
                 </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Pay Button */}
-        {paymentStatus !== 'pending_mpesa' && !pollingInterval && (
-          <button
-            onClick={handlePayment}
-            disabled={isProcessing || 
-              (paymentMethod === 'usdt' && !address) || 
-              (paymentMethod === 'mpesa' && !phoneNumber)}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isProcessing ? (
-              <>
-                <Loader className="w-5 h-5 animate-spin" />
-                Processing...
-              </>
-            ) : paymentMethod === 'usdt' ? (
-              address ? 'Stake USDT' : 'Connect Wallet'
-            ) : (
-              'Pay with M-Pesa'
-            )}
-          </button>
-        )}
-
-        {/* Success Message for USDT */}
-        {paymentStatus === 'success' && paymentMethod === 'usdt' && transactionHash && (
-          <div className="mt-6 p-4 bg-green-500/10 rounded-lg border border-green-500/20">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Check className="w-6 h-6 text-green-400" />
-              <h3 className="text-lg font-semibold text-green-300">Staking Successful!</h3>
-            </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Amount Staked:</span>
-                <span className="text-white font-medium">1 USDT</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Transaction Hash:</span>
-                <a 
-                  href={`https://polygonscan.com/tx/${transactionHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-green-400 hover:text-green-300 font-mono text-xs truncate max-w-[200px]"
-                >
-                  {transactionHash}
-                </a>
               </div>
             </div>
           </div>
