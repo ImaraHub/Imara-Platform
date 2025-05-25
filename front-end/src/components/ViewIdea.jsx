@@ -51,9 +51,15 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
     return location.state?.project || propProject;
   }, [location.state?.project, propProject]);
 
+  // Memoize the project ID to prevent unnecessary re-renders
+  const projectId = React.useMemo(() => {
+    return id || initialProjectData?.id;
+  }, [id, initialProjectData?.id]);
+
   // Single useEffect to handle all data fetching
   useEffect(() => {
     let isMounted = true;
+    let shouldFetch = false;
 
     const fetchData = async () => {
       if (!isMounted) return;
@@ -63,17 +69,17 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
         // First try to use state/props data
         let data = initialProjectData;
         
-        // If no data or empty object, fetch from API
-        if (!data || Object.keys(data).length === 0) {
-          if (id) {
-            console.log("Fetching project with ID:", id);
-            data = await fetchProjectById(id);
-            if (data && isMounted) {
-              console.log("Project fetched successfully:", data.title);
-              setProjectData(data);
-            }
+        // Only fetch if we don't have data or if we have an ID and no data
+        shouldFetch = (!data || Object.keys(data).length === 0) && !!projectId;
+        
+        if (shouldFetch) {
+          console.log("Fetching project with ID:", projectId);
+          data = await fetchProjectById(projectId);
+          if (data && isMounted) {
+            console.log("Project fetched successfully:", data.title);
+            setProjectData(data);
           }
-        } else if (isMounted) {
+        } else if (data && isMounted) {
           // If we have initial data, use it
           setProjectData(data);
         }
@@ -95,13 +101,16 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
       }
     };
 
-    fetchData();
+    // Only fetch if we have a project ID or initial data
+    if (projectId || initialProjectData) {
+      fetchData();
+    }
 
     // Cleanup function to prevent state updates after unmount
     return () => {
       isMounted = false;
     };
-  }, [id, user, initialProjectData]); // Only depend on stable values
+  }, [projectId, user]); // Only depend on projectId and user
 
   // Separate useEffect for staking success
   useEffect(() => {
