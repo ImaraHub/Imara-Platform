@@ -112,7 +112,7 @@ function JoinGroup({ project, onBack }) {
     }
   };
 
-
+  console.log("Contributor email in JoinGroup:", formData.email);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -309,6 +309,7 @@ function JoinGroup({ project, onBack }) {
         amount={stakingAmount}
         onPaymentComplete={handlePaymentComplete}
         project={project}
+        userEmail={formData.email}
       />
     </div>
   );
