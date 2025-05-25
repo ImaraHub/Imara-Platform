@@ -240,15 +240,15 @@ function Home({ handleSignOut }) {
                         <h3 className="text-sm font-semibold text-gray-400">Account</h3>
                       </div>
                       <button
-  onClick={() => {
-    setShowProfileMenu(false); // Close the dropdown
-    setShowProfileSettings(true); // Show the ProfileSettings page
-  }}
-  className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3"
->
-  <User className="w-4 h-4" />
-  Profile Settings
-</button>
+                        onClick={() => {
+                          setShowProfileMenu(false); // Close the dropdown
+                          navigate('/profile'); // Navigate to Profile component
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3"
+                      >
+                        <User className="w-4 h-4" />
+                        My Profile
+                      </button>
                       <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
                         <Briefcase className="w-4 h-4" />
                         My Projects

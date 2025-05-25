@@ -44,11 +44,11 @@ function App() {
         <Route path="/home" element={user ? <Home /> : <Navigate to="/auth" />} />
         <Route path="/idea" element={user ? <CreateIdea /> : <Navigate to="/auth" />} />
         <Route path="/idea/:id" element={user ? <ViewIdea /> : <Navigate to="/auth" />} />
-        {/* <Route path="/profile" element={<Profile />} /> */}
+        <Route path="/profile" element={user ? <Profile /> : <Navigate to="/auth" />} />
+        <Route path="/profile/settings" element={user ? <ProfileSettings /> : <Navigate to="/auth" />} />
         <Route path="/project-manager" element={user ? <ProjectManager /> : <Navigate to="/auth" />} />
         <Route path="/stake" element={user ? <Stake /> : <Navigate to="/auth" />} />
         <Route path="/token" element={user ? <TokenizationPage /> : <Navigate to="/auth" />} />
-        <Route path="/profile" element={user ? <ProfileSettings /> : <Navigate to="/auth" />} />
         {/* <Route path="/staking-profile" element={<StakingProfile/>} /> */}
         <Route path="/join-group" element={user ? <JoinGroup /> : <Navigate to="/auth" />} />
 
