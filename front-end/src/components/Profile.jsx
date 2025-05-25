@@ -23,25 +23,20 @@ import { getUserData } from '../utils/SupabaseClient';
 import { useAuth } from '../AuthContext';
 import { retrieveJoinedProjects,retrieveCreatedProjects } from '../utils/SupabaseClient';
 
-function Profile({allProjects,onBack}) {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('joined'); // 'joined', 'created'
+function Profile({ user }) {
   const [userData, setUserData] = useState(null);
   const [createdProjects, setCreatedProjects] = useState([]);
   const [joinedProjects, setJoinedProjects] = useState([]);
-  // Mock user data - replace with actual data from your database
+  const [activeTab, setActiveTab] = useState('joined');
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const { user } = useAuth();
-
-  
-
-  // console.log("User:", user);
-  
+  const { user: authUser } = useAuth();
 
   useEffect(() => {
-    if (user) {
+    if (authUser) {
       const fetchUserData = async () => {
-        const data = await getUserData(user);
+        const data = await getUserData(authUser);
         if (data) {
           setUserData(data);
         } else {
@@ -50,84 +45,76 @@ function Profile({allProjects,onBack}) {
       };
       fetchUserData();
     }
-  }, [user]);
-  // Mock projects data - replace with actual data from your database
-
+  }, [authUser]);
 
   useEffect(() => {
-    if (user?.id) {
+    if (authUser?.id) {
       const fetchJoinedProjects = async () => {
-        const projects = await retrieveJoinedProjects(user);
-
-        // loop through projects retrirving the project.idea_id and matching it to the allProjects array[project.id]
-        //  add the project to the joinedProjects array
-        const enrichedProjects = projects.map((project) => {
-          const projectData = allProjects.find((p) => p.id === project.idea_id);
-          return projectData ? { ...project, ...projectData } : project;
-        });
-        
-        
-        setJoinedProjects(enrichedProjects);
+        try {
+          const joinedProjects = await retrieveJoinedProjects(authUser);
+          if (joinedProjects) {
+            setJoinedProjects(joinedProjects);
+          } else {
+            setJoinedProjects([]);
+          }
+        } catch (error) {
+          console.error("Error fetching joined projects:", error);
+          setJoinedProjects([]);
+        }
       };
       fetchJoinedProjects();
     }
-  }, [user]);
+  }, [authUser]);
   
   useEffect(() => {
-    if (user?.id) {
+    if (authUser?.id) {
       const fetchCreatedProjects = async () => {
-        const projects = await retrieveCreatedProjects(user);
+        const projects = await retrieveCreatedProjects(authUser);
         setCreatedProjects(projects);
       };
       fetchCreatedProjects();
     }
-  }, [user]);
+  }, [authUser]);
   
-    // Add Loading state check
-    if (!userData) {
-      return <p>Loading profile...</p>;
-    }
+  if (!userData) {
+    return <p>Loading profile...</p>;
+  }
 
-    // Add Loading state check
-    if (createdProjects === null&& joinedProjects === null) {
-      return <p>Loading projects...</p>;
-    }
+  if (createdProjects === null&& joinedProjects === null) {
+    return <p>Loading projects...</p>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
       
       <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
         <button
-           onClick={() => onBack({ success: false })}
+           onClick={() => navigate('/')}
           className="mb-8 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           Back to Home
         </button>
 
-        {/* Profile Header */}
         <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-8 mb-8">
           <div className="flex flex-col md:flex-row items-start gap-8">
-            {/* Avatar and Basic Info */}
             <div className="flex-shrink-0">
               <div className="w-32 h-32 rounded-xl bg-gray-700/50 flex items-center justify-center">
                 <User className="w-16 h-16 text-gray-400" />
               </div>
             </div>
 
-            {/* User Details */}
             <div className="flex-grow">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                 <div>
-                  <h1 className="text-3xl font-bold mb-2">{user.name}</h1>
+                  <h1 className="text-3xl font-bold mb-2">{authUser.name}</h1>
                   <div className="flex items-center gap-2 text-gray-400">
                     <Mail className="w-4 h-4" />
-                    <span>{user.email}</span>
+                    <span>{authUser.email}</span>
                   </div>
                 </div>
                 <button
-                  onClick={() => navigate('/settings')}
+                  onClick={() => navigate('/profile/settings')}
                   className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
                 >
                   <Settings className="w-4 h-4" />
@@ -135,19 +122,18 @@ function Profile({allProjects,onBack}) {
                 </button>
               </div>
 
-              {/* User Info Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div className="flex items-center gap-2 text-gray-300">
                   <MapPin className="w-4 h-4 text-gray-400" />
-                  {user.location}
+                  {authUser.location}
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">
                   <Briefcase className="w-4 h-4 text-gray-400" />
-                  {user.role}
+                  {authUser.role}
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">
                   <Building className="w-4 h-4 text-gray-400" />
-                  {user.company}
+                  {authUser.company}
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">
                   <Calendar className="w-4 h-4 text-gray-400" />
@@ -155,7 +141,6 @@ function Profile({allProjects,onBack}) {
                 </div>
               </div>
 
-              {/* Social Links */}
               <div className="flex flex-wrap gap-4">
                 {userData.github && (
                   <a
@@ -210,9 +195,7 @@ function Profile({allProjects,onBack}) {
           </div>
         </div>
 
-        {/* Projects Section */}
         <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-8">
-          {/* Tabs */}
           <div className="flex gap-4 mb-8">
             <button
               onClick={() => setActiveTab('joined')}
@@ -236,12 +219,11 @@ function Profile({allProjects,onBack}) {
             </button>
           </div>
 
-          {/* Projects Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {(activeTab === 'joined' ? joinedProjects : createdProjects).map((project) => (
               <div
                 key={project.id}
-                onClick={() => navigate(`/project/${project.id}`)}
+                onClick={() => navigate(`/idea/${project.id}`)}
                 className="bg-gray-700/30 rounded-xl overflow-hidden hover:transform hover:scale-[1.02] transition-all cursor-pointer"
               >
                 <div className="relative h-48">
@@ -283,7 +265,7 @@ function Profile({allProjects,onBack}) {
                     </div>
                     <div className="flex items-center gap-2 text-gray-400">
                       <Users className="w-4 h-4" />
-                      <span>{project.teamSize} members</span>
+                      <span>{project.teamSize || 1} members</span>
                     </div>
                   </div>
 
@@ -292,12 +274,18 @@ function Profile({allProjects,onBack}) {
                       <div className="w-24 h-2 bg-gray-600 rounded-full">
                         <div
                           className="h-full bg-blue-500 rounded-full"
-                          style={{ width: `${project.progress}%` }}
+                          style={{ width: `${project.progress || 0}%` }}
                         />
                       </div>
-                      <span className="text-sm text-gray-400">{project.progress}%</span>
+                      <span className="text-sm text-gray-400">{project.progress || 0}%</span>
                     </div>
-                    <button className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/idea/${project.id}`);
+                      }} 
+                      className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors"
+                    >
                       View Project
                       <ArrowUpRight className="w-4 h-4" />
                     </button>
@@ -307,7 +295,6 @@ function Profile({allProjects,onBack}) {
             ))}
           </div>
 
-          {/* Empty State */}
           {((activeTab === 'joined' && joinedProjects.length === 0) ||
             (activeTab === 'created' && createdProjects.length === 0)) && (
             <div className="text-center py-12">
