@@ -23,7 +23,7 @@ import {
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import JoinGroup from './joinGroup';
 import { useAuth } from '../AuthContext';
-import { getProjectContributors } from '../utils/SupabaseClient';
+import { getProjectContributors, fetchProjectById } from '../utils/SupabaseClient';
 
 function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const navigate = useNavigate();
@@ -31,26 +31,88 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const { id } = useParams();
   const { user } = useAuth();
   
-  // Get project from either route state, props, or fetch by ID
-  const project = location.state?.project || propProject;
+  // All useState declarations at the top
+  const [projectData, setProjectData] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [showCommentBox, setShowCommentBox] = useState(false);
+  const [comment, setComment] = useState('');
+  const [showJoinGroup, setShowJoinGroup] = useState(false);
+  const [joinStatus, setJoinStatus] = useState("");
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [selectedIdea, setSelectedIdea] = useState(null);
+  const [isContributor, setIsContributor] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
   const stakingSuccess = stakeSuccess || location.state?.stakeSuccess || false;
 
-  // If no project in state/props and we have an ID, we should fetch it
+  // Single useEffect to handle all data fetching
   useEffect(() => {
-    const fetchProject = async () => {
-      if (!project && id) {
-        // TODO: Implement fetchProjectById in SupabaseClient
-        // const fetchedProject = await fetchProjectById(id);
-        // if (fetchedProject) {
-        //   setProject(fetchedProject);
-        // }
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // First try to use state/props data
+        let data = location.state?.project || propProject;
+        
+        // If no data or empty object, fetch from API
+        if (!data || Object.keys(data).length === 0) {
+          if (id) {
+            console.log("Fetching project with ID:", id);
+            data = await fetchProjectById(id);
+            if (data) {
+              console.log("Project fetched successfully:", data.title);
+            } else {
+              console.log("No project found with ID:", id);
+            }
+          }
+        }
+
+        // If we have data, update state
+        if (data) {
+          setProjectData(data);
+          
+          // Check contributor status if we have user and project data
+          if (user && data.id) {
+            const contributorData = await getProjectContributors(data, user);
+            if (contributorData && contributorData.length > 0) {
+              setIsContributor(true);
+              setJoinStatus("confirmed");
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching project data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchProject();
-  }, [id, project]);
 
-  if (!project || Object.keys(project).length === 0) {
-    console.log("Project is empty or undefined!");
+    fetchData();
+  }, [id, user, location.state?.project, propProject, stakingSuccess]);
+
+  // Handle join group status
+  useEffect(() => {
+    if (stakingSuccess && !isContributor) {
+      setJoinStatus("pending");
+      const timer = setTimeout(() => {
+        setJoinStatus("confirmed");
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [stakingSuccess, isContributor]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Loading project...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!projectData || Object.keys(projectData).length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex items-center justify-center">
         <div className="text-center">
@@ -66,36 +128,7 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
     );
   }
 
-  console.log("Project in view idea", project?.title);
-
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
-  const [showCommentBox, setShowCommentBox] = useState(false);
-  const [comment, setComment] = useState('');
-  const [showJoinGroup, setShowJoinGroup] = useState(false);
-  const [joinStatus, setJoinStatus] = useState("");
-  const [teamMembers, setTeamMembers] = useState([]);
-  const [selectedIdea, setSelectedIdea] = useState(null);
-  const [isContributor, setIsContributor] = useState(false);
-
-  // Check if user is already a contributor
-  useEffect(() => {
-    const checkContributorStatus = async () => {
-      if (!user || !project) return;
-      
-      try {
-        const contributorData = await getProjectContributors(project, user);
-        if (contributorData && contributorData.length > 0) {
-          setIsContributor(true);
-          setJoinStatus("confirmed");
-        }
-      } catch (error) {
-        console.error("Error checking contributor status:", error);
-      }
-    };
-
-    checkContributorStatus();
-  }, [user, project]);
+  console.log("Project in view idea", projectData?.title);
 
   // a function that sets the join status to pending and then confirmed after 5 seconds
   const handleJoinGroup = () => {
@@ -105,19 +138,12 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
     }, 10000);
   };
   
-  // Run handleJoinGroup() only when stakingSuccess changes to true
-  useEffect(() => {
-    if (stakingSuccess) {
-      handleJoinGroup();
-    }
-  }, [stakingSuccess]); 
-
-  if (showJoinGroup && !stakeSuccess){
-    return <JoinGroup project={project}  onBack={() => setShowJoinGroup(false)}/>;
+  if (showJoinGroup && !stakingSuccess){
+    return <JoinGroup project={projectData}  onBack={() => setShowJoinGroup(false)}/>;
   }
 
   const handleCopyLink = () => {
-    const url = `https://imara.com/project/${project?.id || "unknown"}`;
+    const url = `https://imara.com/idea/${projectData?.id || "unknown"}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -153,27 +179,27 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
         {/* Project Header */}
         <div className="relative h-[400px] rounded-xl overflow-hidden mb-8">
           <img
-            src={project.image}
-            alt={project.title}
+            src={projectData.image}
+            alt={projectData.title}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent">
             <div className="absolute bottom-0 left-0 right-0 p-8">
               <div className="flex items-center gap-4 mb-4">
                 <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
-                  {project.category}
+                  {projectData.category}
                 </span>
                 <div className="flex items-center gap-2">
                   {/* <div className="w-32 h-2 bg-gray-700 rounded-full"> */}
                     {/* <div
                       className="h-full bg-blue-500 rounded-full"
-                      style={{ width: `${project.progress}%` }}
+                      style={{ width: `${projectData.progress}%` }}
                     /> */}
                   {/* </div> */}
-                  <span className="text-gray-400 text-sm">{project.progress}% Complete</span>
+                  <span className="text-gray-400 text-sm">{projectData.progress}% Complete</span>
                 </div>
               </div>
-              <h1 className="text-4xl font-bold mb-4">{project.title}</h1>
+              <h1 className="text-4xl font-bold mb-4">{projectData.title}</h1>
               <div className="flex items-center gap-6 text-gray-300">
                 <div className="flex items-center gap-2">
                   <User className="w-5 h-5" />
@@ -181,7 +207,7 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  <span>{new Date(project.createdAt).toLocaleDateString()}</span>
+                  <span>{new Date(projectData.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
@@ -196,20 +222,20 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Project Description</h2>
               <div className="prose prose-invert max-w-none">
-                <p className="text-gray-300 whitespace-pre-wrap">{project.projectDescription}</p>
+                <p className="text-gray-300 whitespace-pre-wrap">{projectData.projectDescription}</p>
               </div>
             </section>
 
             {/* Problem Statement */}
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Problem Statement</h2>
-              <p className="text-gray-300">{project.problemStatement}</p>
+              <p className="text-gray-300">{projectData.problemStatement}</p>
             </section>
 
             {/* Solution */}
             <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
               <h2 className="text-2xl font-semibold mb-4">Solution</h2>
-              <p className="text-gray-300">{project.solution}</p>
+              <p className="text-gray-300">{projectData.solution}</p>
             </section>
 
 
@@ -254,7 +280,7 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
               )}
 
               <div className="space-y-6">
-                {project.comments?.map((comment, index) => (
+                {projectData.comments?.map((comment, index) => (
                   <div key={index} className="border-b border-gray-700 last:border-0 pb-6 last:pb-0">
                     <div className="flex items-center gap-4 mb-3">
                       <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
@@ -283,7 +309,7 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
                   <button className="p-2 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors">
                     <ArrowBigUp className="w-6 h-6" />
                   </button>
-                  <span className="text-lg font-medium">{project.votes}</span>
+                  <span className="text-lg font-medium">{projectData.votes}</span>
                   <button className="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors">
                     <ArrowBigDown className="w-6 h-6" />
                   </button>
@@ -341,8 +367,8 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
                   <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mt-6">
                     <h3 className="text-lg font-semibold mb-4">Team Needed</h3>
                     <div className="space-y-3">
-                      {(project.resources 
-                        ? (Array.isArray(project.resources) ? project.resources : JSON.parse(project.resources || "[]")) 
+                      {(projectData.resources 
+                        ? (Array.isArray(projectData.resources) ? projectData.resources : JSON.parse(projectData.resources || "[]")) 
                         : []
                       ).map((role, index) => (
                         <div
@@ -359,17 +385,17 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
             </div>
 
             {/* Project Links */}
-            {project.link && (
+            {projectData.link && (
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
                 <h3 className="text-lg font-semibold mb-4">Project Links</h3>
                 <a
-                  href={project.link}
+                  href={projectData.link}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
                 >
                   <LinkIcon className="w-5 h-5 text-blue-400" />
-                  <span className="text-gray-300 truncate">{project.link}</span>
+                  <span className="text-gray-300 truncate">{projectData.link}</span>
                 </a>
               </div>
             )}
@@ -380,16 +406,16 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Globe className="w-5 h-5 text-gray-400" />
-                  <span className="text-gray-300">Status: {project.status}</span>
+                  <span className="text-gray-300">Status: {projectData.status}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Scale className="w-5 h-5 text-gray-400" />
-                  <span className="text-gray-300">License: {project.license}</span>
+                  <span className="text-gray-300">License: {projectData.license}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Tag className="w-5 h-5 text-gray-400" />
                   <div className="flex flex-wrap gap-2">
-                    {project.tags?.map((tag, index) => (
+                    {projectData.tags?.map((tag, index) => (
                       <span
                         key={index}
                         className="px-2 py-1 bg-gray-700/50 rounded-full text-sm text-gray-300"
