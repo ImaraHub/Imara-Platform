@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Github, Wallet, Mail, ArrowRight } from 'lucide-react';
 import { ConnectWallet, useAddress, useSigner } from "@thirdweb-dev/react";
-// import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from '../utils/SupabaseClient';
 
-export function Auth({ setShowAuth, setShowHome }) {
+export function Auth({ setShowAuth, setShowHome, setIsAuthenticated }) {
 
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
@@ -15,15 +15,18 @@ export function Auth({ setShowAuth, setShowHome }) {
   const address = useAddress();
   const signer = useSigner();
   const [signature, setSignature] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (address) {
       signMessage();
       console.log("Connected wallet address:", address);
-      setShowAuth(false);  // Hide the Auth page
-      setShowHome(true);    // Show the Home page
+      setIsAuthenticated(true);
+      setShowAuth(false);
+      setShowHome(true);
+      navigate('/home', { replace: true });
     }
-  }, [address]);
+  }, [address, setIsAuthenticated, setShowAuth, setShowHome, navigate]);
 
   // a const that shows pop-up message
 
@@ -130,29 +133,32 @@ export function Auth({ setShowAuth, setShowHome }) {
   const signInWithEmail = async () => {
     setLoading(true);
     setErrorMsg('');
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-    setLoading(false);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-    if (error) {
-
-      setErrorMsg('User not found. Please sign up.');
-      console.log('Error signing in:', error.message)
-
-    } else {
-      console.log('User signed in successfully:', data);
-
-      // Fetch user details
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-
-      localStorage.setItem("userEmail", userData.user.email);
-
-      setShowAuth(false);  // Hide the Auth page
-      setShowHome(true);    // Show the Home page
+      if (error) {
+        setErrorMsg('User not found. Please sign up.');
+        console.log('Error signing in:', error.message);
+      } else {
+        console.log('User signed in successfully:', data);
+        const { data: userData } = await supabase.auth.getUser();
+        localStorage.setItem("userEmail", userData.user.email);
+        
+        setIsAuthenticated(true);
+        setShowAuth(false);
+        setShowHome(true);
+        navigate('/home', { replace: true });
+      }
+    } catch (error) {
+      console.error('Error during sign in:', error);
+      setErrorMsg('An error occurred during sign in. Please try again.');
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
 
 

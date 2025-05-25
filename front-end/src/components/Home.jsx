@@ -6,6 +6,7 @@ import ViewIdea from './ViewIdea';
 import ProjectManager from './ProjectManager';
 import ProfileSettings from './ProfileSettings'; // Correct import path
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../AuthContext'; // Add this import
 
 import {
   User,
@@ -92,6 +93,8 @@ function Home({ handleSignOut }) {
   const [showIdeationMenu, setShowIdeationMenu] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState(null);
   const [showProfileSettings,setShowProfileSettings] = useState(false);
+
+  const { signOut } = useAuth(); // Add this
 
   // call displayIdea from supabaseClient to retrieve posts
 
@@ -195,6 +198,18 @@ function Home({ handleSignOut }) {
     </div>
   );
  
+  // Add this function to handle sign out
+  const handleSignOutClick = async () => {
+    try {
+      await signOut(); // Call the signOut function from AuthContext
+      localStorage.removeItem('userEmail'); // Clear the stored email
+      setShowProfileMenu(false); // Close the profile menu
+      navigate('/', { replace: true }); // Redirect to home and replace the history
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900">
       <nav className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-50">
@@ -256,7 +271,8 @@ function Home({ handleSignOut }) {
                       <div className="border-t border-gray-700/50 mt-2 pt-2">
                         <button  
                         className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50 transition-colors flex items-center gap-3" 
-                        onClick={handleSignOut}>
+                        onClick={handleSignOutClick}
+                        >
                           Sign Out
                         </button>
                       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Home from './Home';
 import Auth from './Auth';
 // import { Globe } from 'lucide-react';
@@ -33,33 +33,55 @@ import {
   CheckCircle2,
   ArrowRight
 } from 'lucide-react';
-import { useAddress, useDisconnect } from '@thirdweb-dev/react';
+import { useAddress, useDisconnect, useNavigate } from '@thirdweb-dev/react';
 
 
 function Index() {
 const [isAuthenticated, setIsAuthenticated] = useState(false);
 const [activePhase, setActivePhase] = useState(1);
-const [showAuth, setShowAuth] = useState(false); // New state variable
-const [showHome, setShowHome] = useState(false); // New state for Home page
-
+const [showAuth, setShowAuth] = useState(false);
+const [showHome, setShowHome] = useState(false);
 
 const address = useAddress();
 const disconnect = useDisconnect();
+const navigate = useNavigate();
 
-const handleSignOut = () => {
-  console.log(`${address} signed out`);
-  disconnect(); // Disconnect the wallet
-  setIsAuthenticated(false); // Set isAuthenticated to false
-  setShowHome(false); // Hide Home page
+const handleSignOut = async () => {
+  try {
+    console.log(`${address} signed out`);
+    await disconnect(); // Disconnect the wallet
+    setIsAuthenticated(false);
+    setShowHome(false);
+    setShowAuth(false);
+    navigate('/', { replace: true });
+  } catch (error) {
+    console.error('Error signing out:', error);
+  }
+};
 
-}
+// Handle auth state changes
+useEffect(() => {
+  if (address) {
+    setIsAuthenticated(true);
+    setShowHome(true);
+    setShowAuth(false);
+  } else {
+    setIsAuthenticated(false);
+    setShowHome(false);
+  }
+}, [address]);
 
 if (showAuth) {
-  return <Auth setShowAuth={setShowAuth} setShowHome={setShowHome} />; // Pass setShowHome
+  return (
+    <Auth 
+      setShowAuth={setShowAuth} 
+      setShowHome={setShowHome}
+      setIsAuthenticated={setIsAuthenticated}
+    />
+  );
 }
-if (showHome) {
-  return <Home handleSignOut={handleSignOut} />; // Render Home component when showHome is true
-
+if (showHome && isAuthenticated) {
+  return <Home handleSignOut={handleSignOut} />;
 }
 return (
   <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white relative">
