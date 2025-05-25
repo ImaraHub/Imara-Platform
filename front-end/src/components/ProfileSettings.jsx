@@ -3,7 +3,7 @@ import { User, Briefcase, Award, Globe, Link, Edit, Save, X, ArrowLeft, Eye } fr
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const ProfileSettings = ({ onBack }) => {
+const ProfileSettings = () => {
   const [profile, setProfile] = useState({
     fullName: '',
     location: '',
@@ -99,11 +99,11 @@ const ProfileSettings = ({ onBack }) => {
     <div className="min-h-screen bg-gray-900 text-white p-8">
       {/* Back Button */}
       <button
-        onClick={onBack}
+        onClick={() => navigate(-1)}
         className="mb-8 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 group"
       >
         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-        Back to Home
+        Back
       </button>
 
       {/* Error Message */}

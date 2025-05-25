@@ -2,25 +2,121 @@ import React, { useState, useEffect } from 'react';
 import { X, CreditCard, Smartphone, Loader, Check, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
 import { ethers } from 'ethers';
+import { useNavigate } from 'react-router-dom';
 import stakeToken from '../utils/stake';
 import { initiateMpesaPayment, pollPaymentStatus, stakeContractAddress, userAddress } from '../utils/mpesaOnramp';
+import { jsPDF } from 'jspdf';
+import { useAuth } from '../AuthContext';
+import { addProjectContributor } from '../utils/SupabaseClient';
+import { sendStakingConfirmationEmail } from '../utils/emailService';
 
 // Lisk Stake Contract ABI (minimal for stake function)
 const STAKE_ABI = [
-  "function stake(uint256 amount) returns (bool)",
-  "function balanceOf(address account) view returns (uint256)"
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "stake",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ];
 
 // USDT Contract ABI (for approval)
 const USDT_ABI = [
-  "function approve(address spender, uint256 amount) returns (bool)",
-  "function balanceOf(address account) view returns (uint256)",
-  "function decimals() view returns (uint8)"
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "spender",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "approve",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
 ];
 
 const USDT_CONTRACT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"; // Polygon USDT
 
-const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
+const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, userEmail }) => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState('usdt');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -46,40 +142,21 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
   }, [pollingInterval]);
 
   const startPolling = (orderID) => {
-    // Clear any existing polling
     if (pollingInterval) {
       clearInterval(pollingInterval);
     }
 
-    // Start new polling
     const interval = setInterval(async () => {
       try {
         const result = await pollPaymentStatus(orderID, userAddress);
-        if (result.success ) {
-          // Payment successful
+        if (result.success) {
           clearInterval(interval);
           setPollingInterval(null);
           setPaymentStatus('success');
           if (result.status.cryptoTransfer?.hash) {
             setTransactionHash(result.status.cryptoTransfer.hash);
           }
-          onPaymentComplete({ 
-            method: 'mpesa', 
-            phoneNumber,
-            orderId: orderID,
-            details: {
-              ...result.status.details,
-              cryptoTransfer: result.status.cryptoTransfer ? {
-                status: result.status.cryptoTransfer.status,
-                message: result.status.cryptoTransfer.message,
-                hash: result.status.cryptoTransfer.hash,
-                createdAt: result.status.cryptoTransfer.createdAt,
-                updatedAt: result.status.cryptoTransfer.updatedAt
-              } : null
-            }
-          });
         } else {
-          // Payment failed
           clearInterval(interval);
           setPollingInterval(null);
           setPaymentStatus('error');
@@ -92,7 +169,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
         setPaymentStatus('error');
         setErrorMessage(error.message);
       }
-    }, 2000); // Poll every 2 seconds
+    }, 2000);
 
     setPollingInterval(interval);
   };
@@ -175,10 +252,128 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
       }
     } catch (error) {
       setPaymentStatus('error');
-      setErrorMessage(error.message);
+      // Format error message to be more user-friendly
+      if (error.message?.includes('nonce too low') || error.message?.includes('nonce has already been used')) {
+        setErrorMessage('Transaction failed: Please try again in a few moments');
+      } else {
+        setErrorMessage(error.message);
+      }
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleContinue = async () => {
+    const paymentData = { 
+      method: paymentMethod, 
+      phoneNumber,
+      orderId: mpesaOrderId,
+      details: {
+        amount,
+        timestamp: new Date().toISOString(),
+        transactionHash,
+        status: 'success'
+      }
+    };
+
+    // If we have a project prop, we're in the join group context
+    if (project) {
+      try {
+        // Add user as contributor to the project
+        console.log("Adding user as contributor to project:", project.id);
+        await addProjectContributor(project, user, "member");
+        console.log("User added as contributor successfully");
+
+        // Send confirmation email
+        console.log("Sending email to:", userEmail);
+        const emailSent = await sendStakingConfirmationEmail({
+          userEmail,
+          project,
+          paymentDetails: {
+            amount: paymentMethod === 'usdt' ? '1' : amount.toString(),
+            token: paymentMethod === 'usdt' ? 'USDT' : 'KES',
+            transactionHash: transactionHash || mpesaOrderId,
+            timestamp: new Date().toISOString()
+          }
+        });
+
+        if (!emailSent) {
+          console.warn('Failed to send confirmation email');
+        }
+
+        // Navigate to the project page with updated state
+        navigate(`/idea/${project.id}`, { 
+          state: { 
+            project, 
+            stakeSuccess: true,
+            paymentData 
+          } 
+        });
+      } catch (error) {
+        console.error("Error in handleContinue:", error);
+        // Still navigate even if contributor addition fails
+        navigate(`/idea/${project.id}`, { 
+          state: { 
+            project, 
+            stakeSuccess: true,
+            paymentData,
+            error: "Payment successful but failed to add as contributor. Please contact support."
+          } 
+        });
+      }
+    } else {
+      // Otherwise, just call the onPaymentComplete callback
+      onPaymentComplete(paymentData);
+    }
+  };
+
+  const downloadReceipt = () => {
+    // Create PDF document
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(20);
+    doc.text('Payment Receipt', 105, 20, { align: 'center' });
+    
+    // Add payment details
+    doc.setFontSize(12);
+    const details = [
+      ['Payment Method:', paymentMethod.toUpperCase()],
+      ['Amount:', `KES ${amount.toLocaleString()}`],
+      ['Date:', new Date().toLocaleDateString()],
+      ['Time:', new Date().toLocaleTimeString()],
+      ['Status:', 'Success'],
+    ];
+
+    // Add M-Pesa specific details if applicable
+    if (paymentMethod === 'mpesa') {
+      details.push(['Phone Number:', phoneNumber]);
+      details.push(['Order ID:', mpesaOrderId]);
+    }
+
+    // Add USDT specific details if applicable
+    if (paymentMethod === 'usdt' && transactionHash) {
+      details.push(['Transaction Hash:', transactionHash]);
+      details.push(['Amount Staked:', '1 USDT']);
+    }
+
+    // Add details to PDF
+    let y = 40;
+    details.forEach(([label, value]) => {
+      doc.setFont(undefined, 'bold');
+      doc.text(label, 20, y);
+      doc.setFont(undefined, 'normal');
+      doc.text(value, 70, y);
+      y += 10;
+    });
+
+    // Add footer
+    doc.setFontSize(10);
+    doc.text('Thank you for your payment!', 105, y + 20, { align: 'center' });
+    doc.text('This receipt serves as proof of your transaction.', 105, y + 30, { align: 'center' });
+
+    // Save the PDF
+    doc.save(`payment-receipt-${new Date().getTime()}.pdf`);
   };
 
   if (!isOpen) return null;
@@ -300,6 +495,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
           </div>
         )}
 
+
         {/* Error Message */}
         {errorMessage && (
           <div className="mb-6 p-4 bg-red-500/10 rounded-lg border border-red-500/20">
@@ -317,53 +513,8 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
           </div>
         )}
 
-        {paymentStatus === 'success' && (
-          <div className="mb-6 space-y-4">
-            <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <Check className="w-6 h-6 text-green-400" />
-                <h3 className="text-lg font-semibold text-green-300">Congratulations! Staking Successful</h3>
-              </div>
-              
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Amount:</span>
-                  <span className="text-white font-medium">KES {amount.toLocaleString()}</span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">M-Pesa Order ID:</span>
-                  <span className="text-white font-mono">{mpesaOrderId}</span>
-                </div>
-
-                {transactionHash && (
-                  <div className="pt-3 border-t border-green-500/20">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Transaction Hash:</span>
-                      <a 
-                        href={`https://polygonscan.com/tx/${transactionHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-green-400 hover:text-green-300 font-mono text-xs truncate max-w-[200px]"
-                      >
-                        {transactionHash}
-                      </a>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 p-3 bg-green-500/5 rounded-lg">
-                <p className="text-sm text-green-300 text-center">
-                  Your tokens have been successfully staked. Thank you for participating!
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Pay Button */}
-        {paymentStatus !== 'pending_mpesa' && !pollingInterval && (
+        {paymentStatus !== 'pending_mpesa' && !pollingInterval && paymentStatus !== 'success' && (
           <button
             onClick={handlePayment}
             disabled={isProcessing || 
@@ -384,28 +535,65 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete }) => {
           </button>
         )}
 
-        {/* Success Message for USDT */}
-        {paymentStatus === 'success' && paymentMethod === 'usdt' && transactionHash && (
-          <div className="mt-6 p-4 bg-green-500/10 rounded-lg border border-green-500/20">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Check className="w-6 h-6 text-green-400" />
-              <h3 className="text-lg font-semibold text-green-300">Staking Successful!</h3>
-            </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Amount Staked:</span>
-                <span className="text-white font-medium">1 USDT</span>
+        {/* Success Message and Continue Button */}
+        {paymentStatus === 'success' && (
+          <div className="mt-6 space-y-4">
+            <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Check className="w-6 h-6 text-green-400" />
+                <h3 className="text-lg font-semibold text-green-300">Payment Successful!</h3>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-400">Transaction Hash:</span>
-                <a 
-                  href={`https://polygonscan.com/tx/${transactionHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-green-400 hover:text-green-300 font-mono text-xs truncate max-w-[200px]"
+              
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-400">Amount:</span>
+                  <span className="text-white font-medium">KES {amount.toLocaleString()}</span>
+                </div>
+                
+                {mpesaOrderId && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">M-Pesa Order ID:</span>
+                    <span className="text-white font-mono">{mpesaOrderId}</span>
+                  </div>
+                )}
+
+                {transactionHash && (
+                  <div className="pt-3 border-t border-green-500/20">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Transaction Hash:</span>
+                      <a 
+                        href={`https://polygonscan.com/tx/${transactionHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-400 hover:text-green-300 font-mono text-xs truncate max-w-[200px]"
+                      >
+                        {transactionHash}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 space-y-3">
+                <button
+                  onClick={downloadReceipt}
+                  className="w-full bg-green-500/20 hover:bg-green-500/30 text-green-300 px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2"
                 >
-                  {transactionHash}
-                </a>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  Download Receipt (PDF)
+                </button>
+                
+                <button
+                  onClick={() => {
+                    handleContinue();
+                    onClose(); // Close the modal after continuing
+                  }}
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg transition-all hover:opacity-90"
+                >
+                  Continue to Idea Page
+                </button>
               </div>
             </div>
           </div>

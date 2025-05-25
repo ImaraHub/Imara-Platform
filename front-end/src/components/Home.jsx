@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {useAddress} from "@thirdweb-dev/react";
+import {useAddress, useDisconnect} from "@thirdweb-dev/react";
 import { Carousel } from 'react-bootstrap';
 import BuilderProfile from './BuilderProfile';
 import ViewIdea from './ViewIdea';
 import ProjectManager from './ProjectManager';
 import ProfileSettings from './ProfileSettings'; // Correct import path
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../utils/SupabaseClient';
 
 import {
   User,
@@ -68,7 +70,7 @@ const categories = ["All", "DeFi", "NFT", "Gaming", "DAO", "Infrastructure"];
 const stages = ["All Stages", "Ideation", "Development", "Launch Ready"];
 const sortOptions = ["Newest", "Most Popular", "Highest Funded"];
 
-function Home({ handleSignOut }) {
+function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStage, setSelectedStage] = useState("All Stages");
@@ -83,8 +85,9 @@ function Home({ handleSignOut }) {
   const [showProjectManager, setShowProjectManager] = useState(false);
 
   const allProjects = displayIdeas();
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const address = useAddress();
+  const disconnect = useDisconnect();
   const email = localStorage.getItem("userEmail");
   const [userEmail, setUserEmail] = useState(email);
 
@@ -105,9 +108,7 @@ function Home({ handleSignOut }) {
     // projects.forEach(project => {
     //   console.log(project.title);
     // });
-    
-
-  
+      
   useEffect(() => { 
     if (address) {
       // console.log("Connected wallet address:", address);
@@ -115,23 +116,20 @@ function Home({ handleSignOut }) {
     }
   }, [address]);
 
-  if (selectedIdea){
-    return <ViewIdea project={selectedIdea}  onClose={() => setSelectedIdea(null)}/>;
-  }
-
   const handleIdeaClick = (idea) => {
-    setSelectedIdea(idea);
+    navigate(`/idea/${idea.id}`, { 
+      state: { project: idea }
+    });
   };
   
   if (showProfileSettings) {
-    return (
-      <ProfileSettings onBack={() => setShowProfileSettings(false)} />
-    );
+    navigate('/profile');
+    return null;
   }
 
-
   if (showIdeationMenu) {
-    return <CreateIdea onBack={() => setShowIdeationMenu(false)} />;
+    navigate('/idea');
+    return null;
   }
   
   const handleCopyLink = (projectId) => {
@@ -197,6 +195,29 @@ function Home({ handleSignOut }) {
     </div>
   );
  
+  const handleSignOut = async () => {
+    try {
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+      
+      // Clear local storage
+      localStorage.removeItem("userEmail");
+      
+      // Disconnect wallet if connected
+      if (address) {
+        await disconnect();
+      }
+      
+      // Close the profile menu
+      setShowProfileMenu(false);
+      
+      // Navigate to landing page
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900">
       <nav className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-50">
@@ -242,19 +263,19 @@ function Home({ handleSignOut }) {
                         <h3 className="text-sm font-semibold text-gray-400">Account</h3>
                       </div>
                       <button
-  onClick={() => {
-    setShowProfileMenu(false); // Close the dropdown
-    setShowProfileSettings(true); // Show the ProfileSettings page
-  }}
-  className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3"
->
-  <User className="w-4 h-4" />
-  Profile Settings
-</button>
-                      <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
+                        onClick={() => {
+                          setShowProfileMenu(false); // Close the dropdown
+                          navigate('/profile'); // Navigate to Profile component
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3"
+                      >
+                        <User className="w-4 h-4" />
+                        My Profile
+                      </button>
+                      {/* <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
                         <Briefcase className="w-4 h-4" />
                         My Projects
-                      </button>
+                      </button> */}
                       <div className="border-t border-gray-700/50 mt-2 pt-2">
                         <button  
                         className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50 transition-colors flex items-center gap-3" 
