@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {useAddress} from "@thirdweb-dev/react";
+import {useAddress, useDisconnect} from "@thirdweb-dev/react";
 import { Carousel } from 'react-bootstrap';
 import BuilderProfile from './BuilderProfile';
 import ViewIdea from './ViewIdea';
 import ProjectManager from './ProjectManager';
 import ProfileSettings from './ProfileSettings'; // Correct import path
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../utils/SupabaseClient';
 
 import {
   User,
@@ -69,7 +70,7 @@ const categories = ["All", "DeFi", "NFT", "Gaming", "DAO", "Infrastructure"];
 const stages = ["All Stages", "Ideation", "Development", "Launch Ready"];
 const sortOptions = ["Newest", "Most Popular", "Highest Funded"];
 
-function Home({ handleSignOut }) {
+function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStage, setSelectedStage] = useState("All Stages");
@@ -86,6 +87,7 @@ function Home({ handleSignOut }) {
   const allProjects = displayIdeas();
   const navigate = useNavigate();
   const address = useAddress();
+  const disconnect = useDisconnect();
   const email = localStorage.getItem("userEmail");
   const [userEmail, setUserEmail] = useState(email);
 
@@ -193,6 +195,29 @@ function Home({ handleSignOut }) {
     </div>
   );
  
+  const handleSignOut = async () => {
+    try {
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+      
+      // Clear local storage
+      localStorage.removeItem("userEmail");
+      
+      // Disconnect wallet if connected
+      if (address) {
+        await disconnect();
+      }
+      
+      // Close the profile menu
+      setShowProfileMenu(false);
+      
+      // Navigate to landing page
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900">
       <nav className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-50">
