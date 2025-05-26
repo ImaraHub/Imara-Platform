@@ -46,7 +46,7 @@ export function Auth({ setShowAuth, setShowHome }) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `https://imara-platform-1.onrender.com/auth/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -102,7 +102,7 @@ export function Auth({ setShowAuth, setShowHome }) {
       email,
       password,
       options: {
-        emailRedirectTo: 'https://imara-platform.onrender.com',
+        emailRedirectTo: 'https://imara-platform-1.onrender.com',
         data: {
         display_name: userName, // Replace `fullName` with the actual state/input
       },
