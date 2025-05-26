@@ -34,13 +34,14 @@ function JoinGroup({ project, onBack }) {
       const fetchUserData = async () => {
         if (!user) return;
 
-        console.log("Fetching user data for user:", user);
-
+        // console.log("Fetching user data for user:", user);
+        console.log(user.email)
               // Call getUserData to fetch user details from DB
         const data = await getUserData(user); 
     
         if (!data || data.length === 0) {
           console.log("No user data found in DB.");
+          setFormData(prev => ({ ...prev, email: user.email || "", }));
           return;
         }
     
@@ -93,6 +94,8 @@ function JoinGroup({ project, onBack }) {
       if (!stakingAddress) {
         setStakingAddress(address);
       }
+
+
 
       const result = await addUserData(formData, user, stakerAddress);
 
