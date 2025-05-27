@@ -8,6 +8,7 @@ import { initiateMpesaPayment, pollPaymentStatus, stakeContractAddress, userAddr
 import { jsPDF } from 'jspdf';
 import { useAuth } from '../AuthContext';
 import { addProjectContributor } from '../utils/SupabaseClient';
+import { sendStakingConfirmationEmail } from '../utils/emailService';
 
 // Lisk Stake Contract ABI (minimal for stake function)
 const STAKE_ABI = [
@@ -113,7 +114,7 @@ const USDT_ABI = [
 
 const USDT_CONTRACT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"; // Polygon USDT
 
-const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project }) => {
+const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, userEmail }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState('usdt');
@@ -283,6 +284,23 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project }) =
         await addProjectContributor(project, user, "member");
         console.log("User added as contributor successfully");
 
+        // Send confirmation email
+        console.log("Sending email to:", userEmail);
+        const emailSent = await sendStakingConfirmationEmail({
+          userEmail,
+          project,
+          paymentDetails: {
+            amount: paymentMethod === 'usdt' ? '1' : amount.toString(),
+            token: paymentMethod === 'usdt' ? 'USDT' : 'KES',
+            transactionHash: transactionHash || mpesaOrderId,
+            timestamp: new Date().toISOString()
+          }
+        });
+
+        if (!emailSent) {
+          console.warn('Failed to send confirmation email');
+        }
+
         // Navigate to the project page with updated state
         navigate(`/idea/${project.id}`, { 
           state: { 
@@ -292,7 +310,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project }) =
           } 
         });
       } catch (error) {
-        console.error("Error adding user as contributor:", error);
+        console.error("Error in handleContinue:", error);
         // Still navigate even if contributor addition fails
         navigate(`/idea/${project.id}`, { 
           state: { 

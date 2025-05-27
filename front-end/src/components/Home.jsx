@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {useAddress} from "@thirdweb-dev/react";
+import {useAddress, useDisconnect} from "@thirdweb-dev/react";
 import { Carousel } from 'react-bootstrap';
 import BuilderProfile from './BuilderProfile';
 import ViewIdea from './ViewIdea';
@@ -7,6 +7,8 @@ import ProjectManager from './ProjectManager';
 import ProfileSettings from './ProfileSettings'; // Correct import path
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext'; // Add this import
+import { supabase } from '../utils/SupabaseClient';
+import logo from '../assets/logo.png';  // Add this import
 
 import {
   User,
@@ -70,7 +72,7 @@ const categories = ["All", "DeFi", "NFT", "Gaming", "DAO", "Infrastructure"];
 const stages = ["All Stages", "Ideation", "Development", "Launch Ready"];
 const sortOptions = ["Newest", "Most Popular", "Highest Funded"];
 
-function Home({ handleSignOut }) {
+function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStage, setSelectedStage] = useState("All Stages");
@@ -87,6 +89,7 @@ function Home({ handleSignOut }) {
   const allProjects = displayIdeas();
   const navigate = useNavigate();
   const address = useAddress();
+  const disconnect = useDisconnect();
   const email = localStorage.getItem("userEmail");
   const [userEmail, setUserEmail] = useState(email);
 
@@ -109,9 +112,7 @@ function Home({ handleSignOut }) {
     // projects.forEach(project => {
     //   console.log(project.title);
     // });
-    
-
-  
+      
   useEffect(() => { 
     if (address) {
       // console.log("Connected wallet address:", address);
@@ -210,15 +211,37 @@ function Home({ handleSignOut }) {
     }
   };
 
+ 
+  const handleSignOut = async () => {
+    try {
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+      
+      // Clear local storage
+      localStorage.removeItem("userEmail");
+      
+      // Disconnect wallet if connected
+      if (address) {
+        await disconnect();
+      }
+      
+      // Close the profile menu
+      setShowProfileMenu(false);
+      
+      // Navigate to landing page
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-900">
       <nav className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                <Globe className="w-6 h-6 text-blue-400" />
-              </div>
+              <img src={logo} alt="IMARA Logo" className="h-10 w-auto" />
               <span className="text-xl font-bold text-white">IMARA</span>
             </div>
             
@@ -264,10 +287,10 @@ function Home({ handleSignOut }) {
                         <User className="w-4 h-4" />
                         My Profile
                       </button>
-                      <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
+                      {/* <button className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/50 transition-colors flex items-center gap-3">
                         <Briefcase className="w-4 h-4" />
                         My Projects
-                      </button>
+                      </button> */}
                       <div className="border-t border-gray-700/50 mt-2 pt-2">
                         <button  
                         className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700/50 transition-colors flex items-center gap-3" 

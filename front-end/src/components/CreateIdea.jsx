@@ -7,9 +7,10 @@ import {useAddress} from "@thirdweb-dev/react";
 import CheckEmailForWallet from '../utils/walletEmailLinking';
 import {LoginWithWallet} from '../utils/sessionGenerate';
 import RequestEmail from './EmailRequest';
+import { useNavigate } from 'react-router-dom';
 
-const CreateIdea = ({ onBack }) => {
-
+const CreateIdea = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const walletAddress = useAddress();
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -153,7 +154,7 @@ const handleCustomDurationSubmit = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <button
-          onClick={onBack}
+          onClick={() => navigate(-1)}
           className="mb-8 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-2 group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />

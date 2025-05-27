@@ -34,13 +34,14 @@ function JoinGroup({ project, onBack }) {
       const fetchUserData = async () => {
         if (!user) return;
 
-        console.log("Fetching user data for user:", user);
-
+        // console.log("Fetching user data for user:", user);
+        console.log(user.email)
               // Call getUserData to fetch user details from DB
         const data = await getUserData(user); 
     
         if (!data || data.length === 0) {
           console.log("No user data found in DB.");
+          setFormData(prev => ({ ...prev, email: user.email || "", }));
           return;
         }
     
@@ -94,6 +95,8 @@ function JoinGroup({ project, onBack }) {
         setStakingAddress(address);
       }
 
+
+
       const result = await addUserData(formData, user, stakerAddress);
 
       if (result !== true) {
@@ -112,7 +115,7 @@ function JoinGroup({ project, onBack }) {
     }
   };
 
-
+  console.log("Contributor email in JoinGroup:", formData.email);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -309,6 +312,7 @@ function JoinGroup({ project, onBack }) {
         amount={stakingAmount}
         onPaymentComplete={handlePaymentComplete}
         project={project}
+        userEmail={formData.email}
       />
     </div>
   );
