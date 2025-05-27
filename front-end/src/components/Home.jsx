@@ -86,6 +86,7 @@ function Home() {
   const [showProjectManager, setShowProjectManager] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProjects, setFilteredProjects] = useState([]);
+  const projectsPerPage = 6;
 
   const allProjects = displayIdeas();
   const navigate = useNavigate();
@@ -158,6 +159,13 @@ function Home() {
       setFilteredProjects(sortedProjects);
     }
   }, [selectedSort, projects, searchQuery]);
+
+  // Calculate pagination
+  const indexOfLastProject = currentPage * projectsPerPage;
+  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
+  const currentProjects = (searchQuery || selectedSort !== "Newest" ? filteredProjects : projects)
+    .slice(indexOfFirstProject, indexOfLastProject);
+  const totalPages = Math.ceil((searchQuery || selectedSort !== "Newest" ? filteredProjects : projects).length / projectsPerPage);
 
   const handleIdeaClick = (idea) => {
     navigate(`/idea/${idea.id}`, { 
@@ -445,7 +453,7 @@ function Home() {
 {/* AllProject */}
           <div className="flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(searchQuery || selectedSort !== "Newest" ? filteredProjects : projects).map((project) => (
+              {currentProjects.map((project) => (
                 
                 <div
                   key={project.id}
@@ -544,26 +552,38 @@ function Home() {
             <div className="flex justify-center items-center gap-2 mt-8">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                className="p-2 rounded-lg bg-gray-800/50 text-gray-400 hover:bg-gray-700 transition-colors"
+                disabled={currentPage === 1}
+                className={`p-2 rounded-lg ${
+                  currentPage === 1 
+                    ? 'bg-gray-800/30 text-gray-600 cursor-not-allowed' 
+                    : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700'
+                } transition-colors`}
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              {[1, 2, 3].map((page) => (
+              
+              {[...Array(totalPages)].map((_, index) => (
                 <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
+                  key={index + 1}
+                  onClick={() => setCurrentPage(index + 1)}
                   className={`w-10 h-10 rounded-lg ${
-                    currentPage === page
+                    currentPage === index + 1
                       ? 'bg-blue-500 text-white'
                       : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700'
                   } transition-colors`}
                 >
-                  {page}
+                  {index + 1}
                 </button>
               ))}
+              
               <button
-                onClick={() => setCurrentPage(Math.min(3, currentPage + 1))}
-                className="p-2 rounded-lg bg-gray-800/50 text-gray-400 hover:bg-gray-700 transition-colors"
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-lg ${
+                  currentPage === totalPages 
+                    ? 'bg-gray-800/30 text-gray-600 cursor-not-allowed' 
+                    : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700'
+                } transition-colors`}
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
