@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Home from './Home';
 import Auth from './Auth';
+import logo from '../assets/logo.png';
 // import { Globe } from 'lucide-react';
 import {
   Brain,
@@ -79,7 +80,7 @@ return (
       <header className="container mx-auto px-6 pt-8">
         <nav className="fixed top-0 left-0 w-full bg-gray-900 flex justify-between items-center px-6 py-4 z-50 shadow-md">
           <div className="flex items-center gap-2">
-            <Globe className="w-8 h-8 text-blue-400" />
+            <img src={logo} alt="IMARA Logo" className="h-8 w-auto" />
             <span className="text-2xl font-bold">IMARA</span>
           </div>
           <div className="hidden md:flex items-center gap-8">

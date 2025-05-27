@@ -7,6 +7,7 @@ import ProjectManager from './ProjectManager';
 import ProfileSettings from './ProfileSettings'; // Correct import path
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/SupabaseClient';
+import logo from '../assets/logo.png';  // Add this import
 
 import {
   User,
@@ -224,9 +225,7 @@ function Home() {
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center">
-                <Globe className="w-6 h-6 text-blue-400" />
-              </div>
+              <img src={logo} alt="IMARA Logo" className="h-10 w-auto" />
               <span className="text-xl font-bold text-white">IMARA</span>
             </div>
             
