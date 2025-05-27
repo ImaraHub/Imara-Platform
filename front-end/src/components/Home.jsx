@@ -84,6 +84,8 @@ function Home() {
   const [copiedLink, setCopiedLink] = useState(false);
    const [showBuilderProfile, setShowBuilderProfile] = useState(false);
   const [showProjectManager, setShowProjectManager] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredProjects, setFilteredProjects] = useState([]);
 
   const allProjects = displayIdeas();
   const navigate = useNavigate();
@@ -116,6 +118,46 @@ function Home() {
       setUserEmail(address.slice(0, 6) + '...' + address.slice(-4) );
     }
   }, [address]);
+
+  // Add this new useEffect for search functionality
+  useEffect(() => {
+    if (projects) {
+      const filtered = projects.filter(project => 
+        project.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredProjects(filtered);
+    }
+  }, [searchQuery, projects]);
+
+  // Add this new useEffect for sorting functionality
+  useEffect(() => {
+    if (projects) {
+      let sortedProjects = [...projects];
+      
+      switch (selectedSort) {
+        case "Newest":
+          sortedProjects.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          break;
+        case "Most Popular":
+          sortedProjects.sort((a, b) => (b.votes || 0) - (a.votes || 0));
+          break;
+        case "Highest Funded":
+          sortedProjects.sort((a, b) => (b.stakeAmount || 0) - (a.stakeAmount || 0));
+          break;
+        default:
+          break;
+      }
+
+      // Apply search filter if there's a search query
+      if (searchQuery) {
+        sortedProjects = sortedProjects.filter(project => 
+          project.title.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+
+      setFilteredProjects(sortedProjects);
+    }
+  }, [selectedSort, projects, searchQuery]);
 
   const handleIdeaClick = (idea) => {
     navigate(`/idea/${idea.id}`, { 
@@ -339,6 +381,8 @@ function Home() {
                   <input
                     type="text"
                     placeholder="Search projects..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <Search className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
@@ -401,7 +445,7 @@ function Home() {
 {/* AllProject */}
           <div className="flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => (
+              {(searchQuery || selectedSort !== "Newest" ? filteredProjects : projects).map((project) => (
                 
                 <div
                   key={project.id}
