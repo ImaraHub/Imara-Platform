@@ -3,6 +3,7 @@ import { Github, Wallet, Mail, ArrowRight } from 'lucide-react';
 import { ConnectWallet, useAddress, useSigner } from "@thirdweb-dev/react";
 // import {useNavigate} from "react-router-dom";
 import { supabase } from '../utils/SupabaseClient';
+import logo from '../assets/logo.png';
 
 export function Auth({ setShowAuth, setShowHome }) {
 
@@ -170,8 +171,8 @@ export function Auth({ setShowAuth, setShowHome }) {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-500/10 mb-4">
-            <img src="/vite.svg" alt="Logo" className="w-8 h-8" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <img src={logo} alt="IMARA Logo" className="h-16 w-auto" />
           </div>
           <h2 className="text-3xl font-bold text-white">Welcome to IMARA</h2>
           <p className="text-gray-400 mt-2">
