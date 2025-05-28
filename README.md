@@ -1,82 +1,212 @@
-# IMARA Platform
+# Imara Platform
 
-## Overview
-
-IMARA helps serious blockchain builders across the world connect and collaborate by leveraging existing staking systems as a commitment mechanism, ensuring only dedicated contributors join projects.
-
-
-## Current Status
-
-🚧 **We are currently in the production stage, working tirelessly to bring IMARA to life!
-Stay tuned for more updates.**
+A decentralized platform for project management, team collaboration, and milestone tracking.
 
 ## Features
 
-### Core Features
+- Web3 wallet authentication
+- Project creation and management
+- Team formation and matching
+- Milestone tracking and validation
+- Staking mechanism
+- Reputation system
 
-- **Idea Creation**
-  - Users can input their own concepts and ideas.
+## Prerequisites
 
-- **Collaboration and Contribution**
-  - Contributors add value by conducting research, providing expertise, and enhancing the idea’s feasibility.
-  - Stakeholders acquire tokens to secure roles and contribute resources, ensuring a vested interest in the project’s success.
+- Node.js (v16 or higher)
+- npm or yarn
+- MetaMask or any Web3 wallet
+- Supabase account
+- Git
 
-- **Project Growth and Ranking**
-  - Ideas gain popularity with community engagement.
+## Tech Stack
 
-- **Investment and Budgeting**
-  - Projects reaching high engagement attract investors who lock in capital for development.
-  - Contributors create budgets to outline requirements and secure funding.
-  - Funds are held in escrow and released upon milestone completion to ensure accountability.
+- Frontend: React.js with Vite
+- Backend: Node.js with Express
+- Database: Supabase (PostgreSQL)
+- Smart Contracts: Solidity
+- Authentication: Web3, JWT
+- Storage: Supabase Storage
 
-- **Implementation and Governance**
-  - Developers, marketers, and experts work collaboratively to bring projects to life.
-  - Key governance features include voting mechanisms, categorized conversations, and transparent payment systems tied to milestones.
+## Project Structure
 
-### Coming Soon
+```
+imara-platform/
+├── front-end/          # React frontend application
+├── backend/           # Node.js backend server
+├── contracts/         # Solidity smart contracts
+└── docs/             # Documentation
+```
 
-- **Real-Time Collaboration Tools**
-  - Enhanced real-time chat and collaboration features to facilitate seamless communication among contributors.
+## Setup Instructions
 
-- **Advanced AI Integration**
-  - Further integration of AI tools for ideation, project management, and personalized recommendations.
+### 1. Clone the Repository
 
-- **Gamification and Reputation System**
-  - Members can earn badges and avatar upgrades for contributions, making it an engaging platform for long-term participation.
+```bash
+git clone https://github.com/your-username/imara-platform.git
+cd imara-platform
+```
 
-- **Community-to-Implementation Pipeline**
-  - Creating the most efficient path for community ideas to reach real-world impact.
+### 2. Set Up Supabase
 
-- **Enhanced Security Features**
-  - Implementing advanced security measures to ensure the safety and integrity of all transactions and data on the platform.
+1. Create a new project in [Supabase](https://supabase.com)
+2. Copy your project URL and anon key
+3. Run the SQL commands from `backend/docs/db.md` in the Supabase SQL editor
+4. Create the following storage buckets:
+   - avatars
+   - project-images
+   - team-images
 
-- **Mobile App**
-  - Developing a mobile app to provide users with on-the-go access to the IMARA platform.
+### 3. Backend Setup
 
-## How to Get Involved
+```bash
+cd backend
 
-We welcome developers, contributors, and investors to join us on this journey to transform how ideas are nurtured and executed.
+# Install dependencies
+npm install
 
-### Contributing
+# Create .env file
+cp .env.example .env
+```
 
-- Fork the repository
-- Create a new branch (`git checkout -b feature/your-feature-name`)
-- Commit your changes (`git commit -m 'Add your feature'`)
-- Push to the branch (`git push origin feature/your-feature-name`)
-- Open a pull request
-### View Demo Product
-[Imara-Product-Demo](https://youtu.be/ndFxwwpFGFM)
+Update `.env` with your configuration:
+```env
+# Server Configuration
+PORT=3001
+NODE_ENV=development
 
-### socials
-Connect with us on twitter and get the lates updates about Imara
-[connect](https://x.com/imarahub)
-### Contact
+# Supabase Configuration
+SUPABASE_URL=your-project-url
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-If you have any questions, suggestions, or want to get involved, feel free to mailto: imarahub@gmail.com.
+# JWT Configuration
+JWT_SECRET=your-secret-key
 
----
+# Smart Contract Addresses
+MILESTONE_CONTRACT_ADDRESS=your-contract-address
+STAKING_CONTRACT_ADDRESS=your-contract-address
+TOKEN_FACTORY_CONTRACT_ADDRESS=your-contract-address
 
-Together, let's bridge the gap between ideation and execution and create a world where every idea has the chance to become a reality.
+# GitHub OAuth Configuration
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+GITHUB_CALLBACK_URL=http://localhost:3001/api/auth/github/callback
+```
 
-**Stay tuned for more updates!**
+### 4. Frontend Setup
+
+```bash
+cd front-end
+
+# Install dependencies
+npm install
+
+# Create .env file
+cp .env.example .env
+```
+
+Update `.env` with your configuration:
+```env
+VITE_API_URL=http://localhost:3001
+VITE_SUPABASE_URL=your-project-url
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### 5. Smart Contract Setup
+
+```bash
+cd contracts
+
+# Install dependencies
+npm install
+
+# Create .env file
+cp .env.example .env
+```
+
+Update `.env` with your configuration:
+```env
+PRIVATE_KEY=your-wallet-private-key
+INFURA_API_KEY=your-infura-api-key
+```
+
+## Running the Application
+
+### 1. Start the Backend Server
+
+```bash
+cd backend
+npm run dev
+```
+
+The backend server will start at `http://localhost:3001`
+
+### 2. Start the Frontend Development Server
+
+```bash
+cd front-end
+npm run dev
+```
+
+The frontend application will start at `http://localhost:5173`
+
+### 3. Deploy Smart Contracts (Optional)
+
+```bash
+cd contracts
+npx hardhat run scripts/deploy.js --network <network-name>
+```
+
+## Development Workflow
+
+1. Make sure both backend and frontend servers are running
+2. Connect your Web3 wallet to the application
+3. Create a user profile
+4. Start creating projects or joining teams
+
+## Testing
+
+### Backend Tests
+
+```bash
+cd backend
+npm test
+```
+
+### Frontend Tests
+
+```bash
+cd front-end
+npm test
+```
+
+### Smart Contract Tests
+
+```bash
+cd contracts
+npx hardhat test
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Support
+
+For support, email support@imara-platform.com or join our Discord community.
+
+## Acknowledgments
+
+- OpenZeppelin for smart contract libraries
+- Supabase for backend infrastructure
+- React team for the amazing frontend framework
 
