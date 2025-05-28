@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Home from './Home';
-import Auth from './Auth';
+import Auth from './auth/Auth';
 import logo from '../assets/logo.png';
 // import { Globe } from 'lucide-react';
 import {

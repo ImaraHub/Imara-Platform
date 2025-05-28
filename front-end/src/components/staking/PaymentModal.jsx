@@ -3,12 +3,12 @@ import { X, CreditCard, Smartphone, Loader, Check, AlertCircle, RefreshCw } from
 import { useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
 import { ethers } from 'ethers';
 import { useNavigate } from 'react-router-dom';
-import stakeToken from '../utils/stake';
-import { initiateMpesaPayment, pollPaymentStatus, stakeContractAddress, userAddress } from '../utils/mpesaOnramp';
+import stakeToken from '../../utils/stake';
+import { initiateMpesaPayment, pollPaymentStatus, stakeContractAddress, userAddress } from '../../utils/mpesaOnramp';
 import { jsPDF } from 'jspdf';
-import { useAuth } from '../AuthContext';
-import { addProjectContributor } from '../utils/SupabaseClient';
-import { sendStakingConfirmationEmail } from '../utils/emailService';
+import { useAuth } from '../../AuthContext';
+import { addProjectContributor } from '../../utils/SupabaseClient';
+import { sendStakingConfirmationEmail } from '../../utils/emailService';
 
 // Lisk Stake Contract ABI (minimal for stake function)
 const STAKE_ABI = [

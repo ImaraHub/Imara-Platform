@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import {useAddress} from "@thirdweb-dev/react";
-import  {AddUser} from "../utils/sessionGenerate";
+import  {AddUser} from "../../utils/sessionGenerate";
 
 const RequestEmail = ({ onClose, onSubmit, errorMsg }) => {
   const [email, setEmail] = useState("");

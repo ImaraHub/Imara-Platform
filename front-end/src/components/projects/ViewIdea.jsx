@@ -22,8 +22,8 @@ import {
 
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import JoinGroup from './joinGroup';
-import { useAuth } from '../AuthContext';
-import { getProjectContributors, fetchProjectById } from '../utils/SupabaseClient';
+import { useAuth } from '../../AuthContext';
+import { getProjectContributors, fetchProjectById } from '../../utils/SupabaseClient';
 
 function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const navigate = useNavigate();

@@ -19,9 +19,9 @@ import {
   Star,
   Settings
 } from 'lucide-react';
-import { getUserData } from '../utils/SupabaseClient'; 
-import { useAuth } from '../AuthContext';
-import { retrieveJoinedProjects,retrieveCreatedProjects } from '../utils/SupabaseClient';
+import { getUserData } from '../../utils/SupabaseClient'; 
+import { useAuth } from '../../AuthContext';
+import { retrieveJoinedProjects,retrieveCreatedProjects } from '../../utils/SupabaseClient';
 
 function Profile({ user }) {
   const [userData, setUserData] = useState(null);

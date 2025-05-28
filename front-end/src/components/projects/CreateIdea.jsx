@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Hash, Link as LinkIcon, Upload, ArrowLeft, Plus, X, HelpCircle, Users, Brain, Clock, Check } from 'lucide-react';
-import Home from './Home';
-import {uploadImageToSupabase, addIdea } from '../utils/SupabaseClient';
-import { useAuth } from "../AuthContext";
+import Home from '../Home';
+import {uploadImageToSupabase, addIdea } from '../../utils/SupabaseClient';
+import { useAuth } from "../../AuthContext";
 import {useAddress} from "@thirdweb-dev/react";
-import CheckEmailForWallet from '../utils/walletEmailLinking';
-import {LoginWithWallet} from '../utils/sessionGenerate';
-import RequestEmail from './EmailRequest';
+import CheckEmailForWallet from '../../utils/walletEmailLinking';
+import {LoginWithWallet} from '../../utils/sessionGenerate';
+import RequestEmail from '../user/EmailRequest';
 import { useNavigate } from 'react-router-dom';
 
 const CreateIdea = () => {

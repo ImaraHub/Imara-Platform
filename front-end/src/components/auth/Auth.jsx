@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Github, Wallet, Mail, ArrowRight } from 'lucide-react';
 import { ConnectWallet, useAddress, useSigner } from "@thirdweb-dev/react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from '../utils/SupabaseClient';
-import logo from '../assets/logo.png';
+import { supabase } from '../../utils/SupabaseClient';
+import logo from '../../assets/logo.png';
 
 export function Auth({ setShowAuth, setShowHome, setIsAuthenticated }) {
 

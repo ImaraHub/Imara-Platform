@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../auth/AuthProvider';
 import { milestoneContract } from '../../services/contracts';
 
 const MilestoneTracker = ({ projectId }) => {

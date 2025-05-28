@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, Github, Linkedin, Twitter, Globe, Check, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ViewIdea from './ViewIdea';
-import stakeToken from '../utils/stake';
-import {updateUser, uploadCvToSupabase} from '../utils/SupabaseClient';
+import stakeToken from '../../utils/stake';
+import {updateUser, uploadCvToSupabase} from '../../utils/SupabaseClient';
 import { useAddress } from "@thirdweb-dev/react";
-import { useAuth } from '../AuthContext';
-import { addUserData, getUserData,addProjectContributor } from '../utils/SupabaseClient';
-import PaymentModal from './PaymentModal';
+import { useAuth } from '../../AuthContext';
+import { addUserData, getUserData,addProjectContributor } from '../../utils/SupabaseClient';
+import PaymentModal from '../staking/PaymentModal';
 
 
 function JoinGroup({ project, onBack }) {

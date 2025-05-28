@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../auth/AuthProvider';
 import { teams } from '../../services/api';
 
 const TeamMatcher = ({ project }) => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../auth/AuthProvider';
 import { projects } from '../../services/api';
 
 const ProjectCard = ({ project, onSelect }) => {

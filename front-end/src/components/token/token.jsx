@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Upload, Link as LinkIcon} from 'lucide-react';
-import Home from './Home';
-import createToken from '../utils/config';
+import Home from '../Home';
+import createToken from '../../utils/config';
 import {useAddress} from "@thirdweb-dev/react";
 
 

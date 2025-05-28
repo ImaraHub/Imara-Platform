@@ -1,90 +1,99 @@
 import React, { useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
-import { ethers } from 'ethers';
+import { stakingContract } from '../../services/contracts';
 
-const StakingForm = ({ project, onStake }) => {
+const StakingForm = ({ projectId, minStake, onStake }) => {
   const { user } = useAuth();
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleStake = async (e) => {
+  // Handle stake submission
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user || !user.signer) {
-      setError('Please connect your wallet first');
+
+    if (!user) {
+      setError('Please connect your wallet to stake');
       return;
     }
 
-    try {
-      setLoading(true);
-      setError(null);
+    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+      setError('Please enter a valid stake amount');
+      return;
+    }
 
-      // Convert amount to wei
-      const stakeAmount = ethers.utils.parseEther(amount);
+    if (parseFloat(amount) < minStake) {
+      setError(`Minimum stake amount is ${minStake} ETH`);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Stake using smart contract
+      await stakingContract.stake(projectId, amount);
       
-      // TODO: Implement actual staking contract interaction
-      // This is a mock implementation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      onStake(stakeAmount);
+      // Call the callback to update UI
+      await onStake(parseFloat(amount));
       setAmount('');
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to stake');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-xl font-semibold text-gray-800 mb-4">Stake on Project</h3>
-      
-      <form onSubmit={handleStake}>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Stake Amount (ETH)
-          </label>
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Enter amount to stake"
-            required
-          />
-        </div>
+    <div className="bg-white rounded-lg shadow p-6">
+      <h2 className="text-2xl font-bold mb-4">Stake on Project</h2>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-            {error}
-          </div>
-        )}
-
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            Minimum stake: {project.minStake} ETH
-          </div>
-          <button
-            type="submit"
-            disabled={loading || !user}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
-              loading || !user
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700'
-            }`}
-          >
-            {loading ? 'Processing...' : 'Stake Now'}
-          </button>
-        </div>
-      </form>
-
-      {!user && (
-        <div className="mt-4 p-3 bg-yellow-100 text-yellow-700 rounded-md">
-          Please connect your wallet to stake
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
         </div>
       )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label
+            htmlFor="amount"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Stake Amount (ETH)
+          </label>
+          <div className="mt-1">
+            <input
+              type="number"
+              id="amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              min={minStake}
+              step="0.01"
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              placeholder={`Minimum: ${minStake} ETH`}
+              disabled={loading || !user}
+            />
+          </div>
+          <p className="mt-1 text-sm text-gray-500">
+            Minimum stake amount: {minStake} ETH
+          </p>
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading || !user}
+          className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+        >
+          {loading ? 'Staking...' : 'Stake'}
+        </button>
+
+        {!user && (
+          <p className="text-sm text-yellow-600">
+            Please connect your wallet to stake on this project
+          </p>
+        )}
+      </form>
     </div>
   );
 };
