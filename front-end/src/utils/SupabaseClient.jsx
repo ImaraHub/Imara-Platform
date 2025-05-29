@@ -391,3 +391,47 @@ export const fetchProjectById = async (projectId) => {
         return null;
     }
 };
+
+export const isRoleAvailable = async (projectId, role) => {
+    try {
+        // Get the project's resources
+        const { data: projectData, error: projectError } = await supabase
+            .from('ideas')
+            .select('resources')
+            .eq('id', projectId)
+            .single();
+
+        if (projectError) {
+            console.error("Error fetching project resources:", projectError);
+            return false;
+        }
+
+        // Parse resources if it's a string
+        const resources = typeof projectData.resources === 'string' 
+            ? JSON.parse(projectData.resources) 
+            : projectData.resources;
+
+        // Find the required count for this role
+        const requiredRole = resources.find(r => r.role === role);
+        if (!requiredRole) return false;
+
+        // Get current count of contributors for this role
+        const { data: contributors, error: contributorsError } = await supabase
+            .from('idea_contributors')
+            .select('*')
+            .eq('idea_id', projectId)
+            .eq('role', role)
+            .eq('approved_status', 'pending');
+
+        if (contributorsError) {
+            console.error("Error fetching contributors:", contributorsError);
+            return false;
+        }
+
+        // Check if we've reached the required count
+        return contributors.length < requiredRole.count;
+    } catch (err) {
+        console.error("Unexpected error in isRoleAvailable:", err);
+        return false;
+    }
+};
