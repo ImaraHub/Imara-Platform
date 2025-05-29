@@ -23,7 +23,8 @@ import {
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import JoinGroup from './joinGroup';
 import { useAuth } from '../AuthContext';
-import { getProjectContributors, fetchProjectById } from '../utils/SupabaseClient';
+import { getProjectContributors, fetchProjectById, isRoleAvailable } from '../utils/SupabaseClient';
+import { supabase } from '../utils/SupabaseClient';
 
 function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const navigate = useNavigate();
@@ -43,6 +44,8 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const [selectedIdea, setSelectedIdea] = useState(null);
   const [isContributor, setIsContributor] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [roleAvailability, setRoleAvailability] = useState({});
+  const [isTeamFull, setIsTeamFull] = useState(false);
 
   const stakingSuccess = stakeSuccess || location.state?.stakeSuccess || false;
   const isContributorFromState = location.state?.isContributor || false;
@@ -57,7 +60,39 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
     return id || initialProjectData?.id;
   }, [id, initialProjectData?.id]);
 
-  // Single useEffect to handle all data fetching
+  // Add this function to check role availability
+  const checkRoleAvailability = async (projectData) => {
+    if (!projectData || !projectData.resources) return;
+
+    const resources = typeof projectData.resources === 'string' 
+      ? JSON.parse(projectData.resources) 
+      : projectData.resources;
+
+    const availability = {};
+    let totalRequired = 0;
+    let totalFilled = 0;
+
+    for (const resource of resources) {
+      const isAvailable = await isRoleAvailable(projectData.id, resource.role);
+      availability[resource.role] = isAvailable;
+      
+      // Get current count of contributors for this role
+      const { data: contributors } = await supabase
+        .from('idea_contributors')
+        .select('*')
+        .eq('idea_id', projectData.id)
+        .eq('role', resource.role)
+        .eq('approved_status', 'pending');
+
+      totalRequired += resource.count;
+      totalFilled += contributors?.length || 0;
+    }
+
+    setRoleAvailability(availability);
+    setIsTeamFull(totalFilled >= totalRequired);
+  };
+
+  // Update the useEffect to include role availability check
   useEffect(() => {
     let isMounted = true;
     let shouldFetch = false;
@@ -67,32 +102,25 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
       
       setIsLoading(true);
       try {
-        // First try to use state/props data
         let data = initialProjectData;
-        
-        // Only fetch if we don't have data or if we have an ID and no data
         shouldFetch = (!data || Object.keys(data).length === 0) && !!projectId;
         
         if (shouldFetch) {
-          console.log("Fetching project with ID:", projectId);
           data = await fetchProjectById(projectId);
           if (data && isMounted) {
-            console.log("Project fetched successfully:", data.title);
             setProjectData(data);
+            await checkRoleAvailability(data);
           }
         } else if (data && isMounted) {
-          // If we have initial data, use it
           setProjectData(data);
+          await checkRoleAvailability(data);
         }
 
-        // Check contributor status if we have user and project data
         if (user && data?.id && isMounted) {
-          // If we have contributor status from state, use it
           if (isContributorFromState) {
             setIsContributor(true);
             setJoinStatus("confirmed");
           } else {
-            // Otherwise check the database
             const contributorData = await getProjectContributors(data, user);
             if (contributorData && contributorData.length > 0 && isMounted) {
               setIsContributor(true);
@@ -109,27 +137,14 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
       }
     };
 
-    // Only fetch if we have a project ID or initial data
     if (projectId || initialProjectData) {
       fetchData();
     }
 
-    // Cleanup function to prevent state updates after unmount
     return () => {
       isMounted = false;
     };
-  }, [projectId, user, isContributorFromState]); // Add isContributorFromState to dependencies
-
-  // Separate useEffect for staking success
-  // useEffect(() => {
-  //   if (stakingSuccess && !isContributor) {
-  //     setJoinStatus("pending");
-  //     const timer = setTimeout(() => {
-  //       setJoinStatus("confirmed");
-  //     }, 10000);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [stakingSuccess, isContributor]);
+  }, [projectId, initialProjectData, user, isContributorFromState]);
 
   if (isLoading) {
     return (
@@ -158,14 +173,6 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
     );
   }
 
-  // a function that sets the join status to pending and then confirmed after 5 seconds
-  // const handleJoinGroup = () => {
-  //   setJoinStatus("pending");
-  //   setTimeout(() => {
-  //     setJoinStatus("confirmed");
-  //   }, 10000);
-  // };
-  
   if (showJoinGroup && !stakingSuccess){
     return <JoinGroup project={projectData}  onBack={() => setShowJoinGroup(false)}/>;
   }
@@ -353,10 +360,12 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
               <button
                 onClick={() => setShowJoinGroup(true)}
                 className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isContributor || !!joinStatus}
+                disabled={isContributor || !!joinStatus || isTeamFull}
               >
                 {isContributor 
                   ? "You are a Member"
+                  : isTeamFull
+                    ? "Team is Full"
                     : "Join Project"}
               </button>
 
@@ -407,11 +416,23 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
                           key={index}
                           className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-lg"
                         >
-                          <span className="text-gray-300">{role.role}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-gray-300">{role.role}</span>
+                            {roleAvailability[role.role] === false && (
+                              <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded-full text-xs">
+                                Position Filled
+                              </span>
+                            )}
+                          </div>
                           <span className="text-sm text-gray-400">{role.count} needed</span>
                         </div>
                       ))}
                     </div>
+                    {isTeamFull && (
+                      <div className="mt-4 p-3 bg-yellow-500/20 text-yellow-400 rounded-lg text-sm">
+                        This project's team is now full. No more positions are available.
+                      </div>
+                    )}
                   </div>
                 )}
             </div>
