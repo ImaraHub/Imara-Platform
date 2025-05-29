@@ -359,6 +359,16 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
                   ? "You are a Member"
                     : "Join Project"}
               </button>
+
+              {isContributor && (
+                <button
+                  onClick={() => navigate(`/idea/${projectData.id}/workspace`)}
+                  className="w-full mt-4 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                >
+                  <Users className="w-5 h-5" />
+                  Go to Workspace
+                </button>
+              )}
             </div>
             <div className="mt-4">
             

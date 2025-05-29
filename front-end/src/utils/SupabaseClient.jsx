@@ -391,3 +391,55 @@ export const fetchProjectById = async (projectId) => {
         return null;
     }
 };
+
+export const getAllProjectContributors = async (projectId) => {
+    try {
+        if (!projectId) {
+            console.error("Project ID is missing!");
+            return null;
+        }
+
+        // First get all contributors for the project
+        const { data: contributors, error: contributorsError } = await supabase
+            .from('idea_contributors')
+            .select('*')
+            .eq('idea_id', projectId);
+
+        if (contributorsError) {
+            console.error("Error fetching project contributors:", contributorsError);
+            return null;
+        }
+
+        // Then get user information for each contributor
+        const contributorsWithUserInfo = await Promise.all(
+            contributors.map(async (contributor) => {
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select('email, username')
+                    .eq('auth_id', contributor.user_id)
+                    .single();
+
+                if (userError) {
+                    console.error("Error fetching user data:", userError);
+                    return {
+                        ...contributor,
+                        user: {
+                            email: 'Unknown',
+                            username: 'Anonymous User'
+                        }
+                    };
+                }
+
+                return {
+                    ...contributor,
+                    user: userData
+                };
+            })
+        );
+
+        return contributorsWithUserInfo;
+    } catch (err) {
+        console.error("Unexpected error in getAllProjectContributors:", err);
+        return null;
+    }
+}
