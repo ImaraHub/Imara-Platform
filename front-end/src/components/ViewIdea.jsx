@@ -84,8 +84,11 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
         .eq('role', resource.role)
         .eq('approved_status', 'pending');
 
+      const filledCount = contributors?.length || 0;
+      availability[`${resource.role}_count`] = filledCount;
+      
       totalRequired += resource.count;
-      totalFilled += contributors?.length || 0;
+      totalFilled += filledCount;
     }
 
     setRoleAvailability(availability);
@@ -414,7 +417,11 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
                               </span>
                             )}
                           </div>
-                          <span className="text-sm text-gray-400">{role.count} needed</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-400">
+                              {roleAvailability[`${role.role}_count`] || 0}/{role.count} filled
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
