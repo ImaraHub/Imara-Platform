@@ -151,19 +151,19 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   }
 
   // a function that sets the join status to pending and then confirmed after 5 seconds
-  const handleJoinGroup = () => {
-    setJoinStatus("pending");
-    setTimeout(() => {
-      setJoinStatus("confirmed");
-    }, 10000);
-  };
+  // const handleJoinGroup = () => {
+  //   setJoinStatus("pending");
+  //   setTimeout(() => {
+  //     setJoinStatus("confirmed");
+  //   }, 10000);
+  // };
   
   if (showJoinGroup && !stakingSuccess){
     return <JoinGroup project={projectData}  onBack={() => setShowJoinGroup(false)}/>;
   }
 
   const handleCopyLink = () => {
-    const url = `https://imara.com/idea/${projectData?.id || "unknown"}`;
+    const url = `https://imara-platform-1.com/idea/${projectData?.id || "unknown"}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -349,12 +349,6 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
               >
                 {isContributor 
                   ? "You are a Member"
-                  : joinStatus === "confirmed"
-                    ? "Joined"
-                    : joinStatus === "pending"
-                    ? "Staking successful! Pending"
-                    : stakeSuccess
-                    ? "Waiting to Join"
                     : "Join Project"}
               </button>
             </div>
