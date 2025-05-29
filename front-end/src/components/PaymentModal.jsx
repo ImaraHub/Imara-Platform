@@ -295,10 +295,23 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
     // If we have a project prop, we're in the join group context
     if (project) {
       try {
-        // Add user as contributor to the project
-        console.log("Adding user as contributor to project:", project.id);
-        await addProjectContributor(project, user, role);
-        console.log("User added as contributor successfully");
+        // Navigate first to prevent the join group page from showing
+        navigate(`/idea/${project.id}`, { 
+          state: { 
+            project, 
+            stakeSuccess: true,
+            paymentData,
+            isContributor: true
+          } 
+        });
+
+        // Then handle the async operations
+        const result = await onPaymentComplete(paymentData);
+        
+        if (!result.success) {
+          console.error("Error updating user data:", result.error);
+          return;
+        }
 
         // Send confirmation email
         console.log("Sending email to:", userEmail);
@@ -317,23 +330,30 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
           console.warn('Failed to send confirmation email');
         }
 
-        // Navigate to the project page with updated state
+        // Fetch updated project data
+        const updatedProject = await fetchProjectById(project.id);
+        console.log("Updated project data:", updatedProject);
+
+        // Update the state with the latest data
         navigate(`/idea/${project.id}`, { 
           state: { 
-            project, 
+            project: updatedProject, 
             stakeSuccess: true,
-            paymentData 
+            paymentData,
+            isContributor: true,
+            userData: result.userData
           } 
         });
+
       } catch (error) {
         console.error("Error in handleContinue:", error);
-        // Still navigate even if contributor addition fails
+        // The user is already on the ViewIdea page, so we just need to show an error message
         navigate(`/idea/${project.id}`, { 
           state: { 
             project, 
             stakeSuccess: true,
             paymentData,
-            error: "Payment successful but failed to add as contributor. Please contact support."
+            error: error.message || "Payment successful but failed to update user data. Please contact support."
           } 
         });
       }
