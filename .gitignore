@@ -4,3 +4,4 @@ lib
 cache
 out
 package-lock.json
+.vite

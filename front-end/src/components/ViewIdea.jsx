@@ -45,6 +45,7 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const stakingSuccess = stakeSuccess || location.state?.stakeSuccess || false;
+  const isContributorFromState = location.state?.isContributor || false;
 
   // Memoize the initial project data to prevent unnecessary re-renders
   const initialProjectData = React.useMemo(() => {
@@ -86,10 +87,17 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
 
         // Check contributor status if we have user and project data
         if (user && data?.id && isMounted) {
-          const contributorData = await getProjectContributors(data, user);
-          if (contributorData && contributorData.length > 0 && isMounted) {
+          // If we have contributor status from state, use it
+          if (isContributorFromState) {
             setIsContributor(true);
             setJoinStatus("confirmed");
+          } else {
+            // Otherwise check the database
+            const contributorData = await getProjectContributors(data, user);
+            if (contributorData && contributorData.length > 0 && isMounted) {
+              setIsContributor(true);
+              setJoinStatus("confirmed");
+            }
           }
         }
       } catch (error) {
@@ -110,18 +118,18 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
     return () => {
       isMounted = false;
     };
-  }, [projectId, user]); // Only depend on projectId and user
+  }, [projectId, user, isContributorFromState]); // Add isContributorFromState to dependencies
 
   // Separate useEffect for staking success
-  useEffect(() => {
-    if (stakingSuccess && !isContributor) {
-      setJoinStatus("pending");
-      const timer = setTimeout(() => {
-        setJoinStatus("confirmed");
-      }, 10000);
-      return () => clearTimeout(timer);
-    }
-  }, [stakingSuccess, isContributor]);
+  // useEffect(() => {
+  //   if (stakingSuccess && !isContributor) {
+  //     setJoinStatus("pending");
+  //     const timer = setTimeout(() => {
+  //       setJoinStatus("confirmed");
+  //     }, 10000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [stakingSuccess, isContributor]);
 
   if (isLoading) {
     return (

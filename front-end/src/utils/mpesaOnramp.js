@@ -184,7 +184,7 @@ export const pollPaymentStatus = async (orderID, userAddress, maxAttempts = 30, 
       await new Promise(resolve => setTimeout(resolve, interval));
       attempts++;
     } catch (error) {
-      throw new Error(`Error polling payment status: ${error.message}`);
+      throw error;
     }
   }
   

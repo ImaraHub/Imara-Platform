@@ -95,21 +95,30 @@ function JoinGroup({ project, onBack }) {
         setStakingAddress(address);
       }
 
-
-
+      // Update user data
       const result = await addUserData(formData, user, stakerAddress);
-
       if (result !== true) {
         await updateUser(user, formData, stakerAddress);
       }
 
       // Add user as project contributor
-      await addProjectContributor(project, user, formData.role);
+      const contributorResult = await addProjectContributor(project, user, formData.role);
+      console.log("User added as contributor:", contributorResult);
 
-      // Navigation is now handled in PaymentModal
+      // Return updated data for PaymentModal to use
+      return {
+        success: true,
+        userData: formData,
+        stakerAddress,
+        contributorResult
+      };
+
     } catch (error) {
-      console.error("Error staking token:", error);
-      alert("Staking failed");
+      console.error("Error in handlePaymentComplete:", error);
+      return {
+        success: false,
+        error: error.message
+      };
     } finally {
       setIsStaking(false);
     }
@@ -313,7 +322,8 @@ function JoinGroup({ project, onBack }) {
         onPaymentComplete={handlePaymentComplete}
         project={project}
         userEmail={formData.email}
-        role = {formData.role}
+        role={formData.role}
+        formData={formData}
       />
     </div>
   );

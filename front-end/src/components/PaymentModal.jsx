@@ -9,6 +9,7 @@ import { jsPDF } from 'jspdf';
 import { useAuth } from '../AuthContext';
 import { addProjectContributor } from '../utils/SupabaseClient';
 import { sendStakingConfirmationEmail } from '../utils/emailService';
+import { addUserData, updateUser } from '../utils/SupabaseClient';
 
 // Lisk Stake Contract ABI (minimal for stake function)
 const STAKE_ABI = [
@@ -114,7 +115,7 @@ const USDT_ABI = [
 
 const USDT_CONTRACT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"; // Polygon USDT
 
-const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, userEmail }) => {
+const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, userEmail, role, formData }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState('usdt');
@@ -231,6 +232,21 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
     setPaymentStatus('pending');
 
     try {
+      // First update user data in database
+      const stakerAddress = paymentMethod === 'usdt' ? address : phoneNumber;
+      console.log("Updating user data with staker address:", stakerAddress);
+      console.log("Form data being sent:", formData);
+      
+      if (!formData) {
+        throw new Error('Form data is required');
+      }
+
+      const result = await addUserData(formData, user, stakerAddress);
+      if (result !== true) {
+        await updateUser(user, formData, stakerAddress);
+      }
+      console.log("User data updated successfully");
+
       if (paymentMethod === 'usdt') {
         await handleLiskStake();
       } else {
@@ -281,7 +297,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
       try {
         // Add user as contributor to the project
         console.log("Adding user as contributor to project:", project.id);
-        await addProjectContributor(project, user, "member");
+        await addProjectContributor(project, user, role);
         console.log("User added as contributor successfully");
 
         // Send confirmation email
@@ -562,7 +578,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400">Transaction Hash:</span>
                       <a 
-                        href={`https://polygonscan.com/tx/${transactionHash}`}
+                        href={`https:blockscout.lisk.com/tx/${transactionHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-green-400 hover:text-green-300 font-mono text-xs truncate max-w-[200px]"
