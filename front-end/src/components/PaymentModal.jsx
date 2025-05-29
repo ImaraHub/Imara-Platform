@@ -168,7 +168,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
         clearInterval(interval);
         setPollingInterval(null);
         setPaymentStatus('error');
-        setErrorMessage(error.message);
+        setErrorMessage('Failed to poll payment status');
       }
     }, 2000);
 
@@ -222,7 +222,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
     } catch (error) {
       console.error('Stake error:', error);
       setPaymentStatus('error');
-      setErrorMessage(error.message || 'Failed to stake USDT');
+      setErrorMessage(`stake lisk error ${result.message}` || 'Failed to stake USDT');
     }
   };
 
