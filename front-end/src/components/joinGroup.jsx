@@ -6,7 +6,7 @@ import stakeToken from '../utils/stake';
 import {updateUser, uploadCvToSupabase} from '../utils/SupabaseClient';
 import { useAddress } from "@thirdweb-dev/react";
 import { useAuth } from '../AuthContext';
-import { addUserData, getUserData,addProjectContributor } from '../utils/SupabaseClient';
+import { addUserData, getUserData, addProjectContributor, isRoleAvailable } from '../utils/SupabaseClient';
 import PaymentModal from './PaymentModal';
 
 
@@ -27,6 +27,7 @@ function JoinGroup({ project, onBack }) {
   const address = useAddress();
   const [stakingAddress,setStakingAddress] = useState(null);
   const { user } = useAuth();
+  const [roleError, setRoleError] = useState('');
 
   
   // retrieve user data from db
@@ -80,8 +81,16 @@ function JoinGroup({ project, onBack }) {
   ? JSON.parse(project.resources)
   : [];
 
-  const handleStakeClick = (e) => {
+  const handleStakeClick = async (e) => {
     e.preventDefault();
+    
+    // Check if the selected role is available
+    const isAvailable = await isRoleAvailable(project.id, formData.role);
+    if (!isAvailable) {
+      setRoleError('This role is no longer available. Please select another role.');
+      return;
+    }
+
     setShowPaymentModal(true);
   };
 
@@ -154,18 +163,23 @@ function JoinGroup({ project, onBack }) {
               <span className="text-lg font-semibold block mb-2">Select Your Role</span>
               <select
                   value={formData.role}
-                  onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, role: e.target.value }));
+                    setRoleError('');
+                  }}
                   className="w-full px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
                   required>
                   <option value="">Select a role</option>
-                  {resourcesArray.map((role) => (
-                    <option key={role.id} value={role.role}>
-                      {role.role}
-                    </option>
-                  ))}
+                  {(Array.isArray(project.resources) ? project.resources : JSON.parse(project.resources || "[]"))
+                    .map((role, index) => (
+                      <option key={index} value={role.role}>
+                        {role.role} ({role.count} needed)
+                      </option>
+                    ))}
               </select>
-
-
+              {roleError && (
+                <p className="mt-2 text-sm text-red-400">{roleError}</p>
+              )}
             </label>
           </div>
 
