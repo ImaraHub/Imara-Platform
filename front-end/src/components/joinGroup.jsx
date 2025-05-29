@@ -313,6 +313,7 @@ function JoinGroup({ project, onBack }) {
         onPaymentComplete={handlePaymentComplete}
         project={project}
         userEmail={formData.email}
+        role = {formData.role}
       />
     </div>
   );
