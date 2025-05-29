@@ -11,6 +11,7 @@ import ProjectManager from './components/ProjectManager';
 import Stake from './components/stake';
 import TokenizationPage from './components/token';
 import ViewIdea from './components/ViewIdea';
+import ProjectWorkspace from './components/ProjectWorkspace';
 // import StakingProfile from './components/StakingProfile';
 import JoinGroup from './components/joinGroup';
 import AuthCallback from './components/AuthCallback';
@@ -44,6 +45,7 @@ function App() {
         <Route path="/home" element={user ? <Home /> : <Navigate to="/auth" />} />
         <Route path="/idea" element={user ? <CreateIdea /> : <Navigate to="/auth" />} />
         <Route path="/idea/:id" element={user ? <ViewIdea /> : <Navigate to="/auth" />} />
+        <Route path="/idea/:id/workspace" element={user ? <ProjectWorkspace /> : <Navigate to="/auth" />} />
         <Route path="/profile" element={user ? <Profile /> : <Navigate to="/auth" />} />
         <Route path="/profile/settings" element={user ? <ProfileSettings /> : <Navigate to="/auth" />} />
         <Route path="/project-manager" element={user ? <ProjectManager /> : <Navigate to="/auth" />} />
