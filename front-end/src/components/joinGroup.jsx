@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Upload, Github, Linkedin, Twitter, Globe, Check, Loader } from 'lucide-react';
+import { ArrowLeft, Upload, Github, Linkedin, Twitter, Globe, Check, Loader, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ViewIdea from './ViewIdea';
 import stakeToken from '../utils/stake';
@@ -27,48 +27,46 @@ function JoinGroup({ project, onBack }) {
   const address = useAddress();
   const [stakingAddress,setStakingAddress] = useState(null);
   const { user } = useAuth();
+  const [verificationStatus, setVerificationStatus] = useState('pending'); // 'pending', 'verified', 'rejected'
+  const [verificationMessage, setVerificationMessage] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
   
   // retrieve user data from db
   useEffect(() => {
-      const fetchUserData = async () => {
-        if (!user) return;
-
-        // console.log("Fetching user data for user:", user);
-        console.log(user.email)
-              // Call getUserData to fetch user details from DB
-        const data = await getUserData(user); 
-    
-        if (!data || data.length === 0) {
-          console.log("No user data found in DB.");
-          setFormData(prev => ({ ...prev, email: user.email || "", }));
-          return;
+    const fetchUserData = async () => {
+      if (user) {
+        const data = await getUserData(user);
+        if (data) {
+          setFormData(prev => ({
+            ...prev,
+            // Don't set email from user data to allow user input
+            github: data.github || '',
+            linkedin: data.linkedin || '',
+            twitter: data.twitter || '',
+            portfolio: data.portfolio_link || '',
+          }));
         }
-    
-        console.log("User data fetched:", data[0]); // Assuming only one record per user
-        setFormData(prev => ({
-          ...prev,
-          email: user.email || "",
-          github: data[0].github || "",
-          linkedin: data[0].linkedin_profile || "",
-          twitter: data[0].twitter_handle || "",
-          portfolio: data[0].portfolio_link || "",
-        }));
-  };
-
-  fetchUserData();
-}, [user]);  
+      }
+    };
+    fetchUserData();
+  }, [user]);
 
 
   const handleFileChange = async (e) => {
     var file = e.target.files[0];
     if (!file) return;
 
-    const cvUrl = await uploadCvToSupabase(file, user);
+    try {
+      const cvUrl = await uploadCvToSupabase(file, user);
 
-    if (cvUrl){
-      // setUploadedFile(cvUrl);
-      setFormData(prev => ({ ...prev, cv: cvUrl }));
+      if (cvUrl) {
+        setFormData(prev => ({ ...prev, cv: cvUrl }));
+      } else {
+        console.error('CV upload failed - no URL returned');
+      }
+    } catch (error) {
+      console.error('CV upload error:', error);
     }
   };
 
@@ -80,8 +78,63 @@ function JoinGroup({ project, onBack }) {
   ? JSON.parse(project.resources)
   : [];
 
+  const handleVerifyProfile = async (e) => {
+    e.preventDefault();
+    setIsVerifying(true);
+    setVerificationMessage('Verifying your profile...');
+    
+    try {
+      // Basic form validation with detailed feedback
+      const missingFields = [];
+      if (!formData.role) missingFields.push('Role');
+      if (!formData.email) missingFields.push('Email');
+      if (!formData.cv) missingFields.push('CV');
+
+      if (missingFields.length > 0) {
+        setVerificationStatus('rejected');
+        setVerificationMessage(`Please fill in the following required fields: ${missingFields.join(', ')}`);
+        setIsVerifying(false);
+        return;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        setVerificationStatus('rejected');
+        setVerificationMessage('Please enter a valid email address');
+        setIsVerifying(false);
+        return;
+      }
+
+      // Check if the selected role exists in the project's required roles
+      const roleExists = resourcesArray.some(role => role.role === formData.role);
+      if (!roleExists) {
+        setVerificationStatus('rejected');
+        setVerificationMessage('Selected role is not available for this project');
+        setIsVerifying(false);
+        return;
+      }
+
+      // Quick verification delay (500ms) just to show the process
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // If all verifications pass
+      setVerificationStatus('verified');
+      setVerificationMessage('Profile verified successfully! You can now proceed to stake.');
+    } catch (error) {
+      console.error('Verification error:', error);
+      setVerificationStatus('rejected');
+      setVerificationMessage('An error occurred during verification. Please try again.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   const handleStakeClick = (e) => {
     e.preventDefault();
+    if (verificationStatus !== 'verified') {
+      return;
+    }
     setShowPaymentModal(true);
   };
 
@@ -138,7 +191,7 @@ function JoinGroup({ project, onBack }) {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleStakeClick} className="max-w-2xl mx-auto space-y-8">
+        <form onSubmit={handleVerifyProfile} className="max-w-2xl mx-auto space-y-8">
           {/* Role Selection */}
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
             <label className="block">
@@ -166,15 +219,17 @@ function JoinGroup({ project, onBack }) {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium mb-2">
                 Email Address
+                <span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-700 rounded-lg text-gray-300 cursor-not-allowed"
-                readOnly
+                className="w-full px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                placeholder="Enter your email address"
+                required
               />
             </div>
 
@@ -255,7 +310,10 @@ function JoinGroup({ project, onBack }) {
           {/* CV Upload */}
           <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
             <label className="block">
-              <span className="text-lg font-semibold block mb-2">Upload CV/Resume</span>
+              <span className="text-lg font-semibold block mb-2">
+                Upload CV/Resume
+                <span className="text-red-500 ml-1">*</span>
+              </span>
               <span className="text-gray-400 text-sm block mb-4">
                 Upload your CV in PDF format (max 5MB)
               </span>
@@ -275,7 +333,14 @@ function JoinGroup({ project, onBack }) {
                   <div className="flex flex-col items-center space-y-2">
                     <Upload className="w-8 h-8 text-gray-400" />
                     <span className="text-sm text-gray-400">
-                      {formData.cv ? "CV attached" : 'Drop your CV here or click to upload'}
+                      {formData.cv ? (
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-400" />
+                          <span>CV uploaded successfully</span>
+                        </div>
+                      ) : (
+                        'Drop your CV here or click to upload'
+                      )}
                     </span>
                   </div>
                 </label>
@@ -283,25 +348,64 @@ function JoinGroup({ project, onBack }) {
             </label>
           </div>
 
-          {/* Submit Button */}
-         {/* Submit Button */}
-        <button
-          type="submit"
-          onClick={handleStakeClick}
-          disabled={isStaking}
-          className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {isStaking ? (
-            <>
-              <Loader className="w-5 h-5 animate-spin" />
-              Staking to Join...
-            </>
-          ) : (
-            <>
-              Stake to Join (KES {stakingAmount.toLocaleString()})
-            </>
+          {/* Verification Status */}
+          {(verificationMessage || isVerifying) && (
+            <div className={`p-4 rounded-lg ${
+              isVerifying 
+                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                : verificationStatus === 'verified' 
+                ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                : 'bg-red-500/20 text-red-400 border border-red-500/30'
+            }`}>
+              <div className="flex items-center gap-2">
+                {isVerifying ? (
+                  <Loader className="w-5 h-5 animate-spin" />
+                ) : verificationStatus === 'verified' ? (
+                  <Check className="w-5 h-5" />
+                ) : (
+                  <AlertCircle className="w-5 h-5" />
+                )}
+                <p>{verificationMessage}</p>
+              </div>
+            </div>
           )}
-        </button>
+
+          {/* Submit Buttons */}
+          {verificationStatus !== 'verified' ? (
+            <button
+              type="submit"
+              disabled={isVerifying}
+              onClick={handleVerifyProfile}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isVerifying ? (
+                <>
+                  <Loader className="w-5 h-5 animate-spin" />
+                  Verifying Profile...
+                </>
+              ) : (
+                'Verify Profile'
+              )}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleStakeClick}
+              disabled={isStaking}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isStaking ? (
+                <>
+                  <Loader className="w-5 h-5 animate-spin" />
+                  Staking to Join...
+                </>
+              ) : (
+                <>
+                  Stake to Join (KES {stakingAmount.toLocaleString()})
+                </>
+              )}
+            </button>
+          )}
         </form>
       </div>
 
