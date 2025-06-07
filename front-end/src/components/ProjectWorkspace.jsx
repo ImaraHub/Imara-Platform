@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Users, MessageSquare, Calendar, CheckCircle, User } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getAllProjectContributors } from '../utils/SupabaseClient';
+import MilestoneList from './milestones/MilestoneList';
+import TimelineConfig from './milestones/TimelineConfig';
 
 function ProjectWorkspace() {
   const navigate = useNavigate();
@@ -9,6 +11,7 @@ function ProjectWorkspace() {
   const [activeTab, setActiveTab] = useState('members'); // members, chat, milestones
   const [contributors, setContributors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [timeline, setTimeline] = useState(null);
 
   useEffect(() => {
     const fetchContributors = async () => {
@@ -29,6 +32,12 @@ function ProjectWorkspace() {
 
     fetchContributors();
   }, [activeTab, id]);
+
+  const handleTimelineUpdate = (newTimeline) => {
+    setTimeline(newTimeline);
+    // Here you would typically save the timeline to your backend
+    console.log('Timeline updated:', newTimeline);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -159,26 +168,11 @@ function ProjectWorkspace() {
 
             {activeTab === 'milestones' && (
               <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-semibold">Project Milestones</h2>
-                  <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
-                    Add Milestone
-                  </button>
-                </div>
-                <div className="space-y-4">
-                  {/* Milestones will be listed here */}
-                  <div className="bg-gray-900/50 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <CheckCircle className="w-5 h-5 text-gray-400" />
-                      <h3 className="text-lg font-medium">Project Setup</h3>
-                    </div>
-                    <p className="text-gray-400 mb-4">Complete initial project setup and team onboarding</p>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span>Due: March 15, 2024</span>
-                      <span>Status: In Progress</span>
-                    </div>
-                  </div>
-                </div>
+                {!timeline ? (
+                  <TimelineConfig onTimelineUpdate={handleTimelineUpdate} />
+                ) : (
+                  <MilestoneList projectId={id} timeline={timeline} />
+                )}
               </section>
             )}
           </div>
