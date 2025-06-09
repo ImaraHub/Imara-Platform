@@ -18,16 +18,17 @@ const TimelineConfig = ({ onTimelineUpdate, projectId }) => {
         }
         const data = await response.json();
 
-        console.log(data);
+        console.log('Timeline data:', data);
         
-        // If timeline exists, update the parent component
-        if (data && data.length > 0) {
-          const existingTimeline = data[0];
-          onTimelineUpdate({
-            startDate: existingTimeline.start_date,
-            endDate: existingTimeline.end_date,
-            description: existingTimeline.description
-          });
+        // If timeline exists, update the state and parent component
+        if (data && (data.start_date || data.end_date)) {
+          const updatedTimeline = {
+            startDate: data.start_date,
+            endDate: data.end_date,
+            description: data.description
+          };
+          setTimeline(updatedTimeline);
+          onTimelineUpdate(updatedTimeline);
         }
       } catch (error) {
         console.error('Error checking timeline:', error);

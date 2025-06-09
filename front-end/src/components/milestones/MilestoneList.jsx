@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Upload, Calendar, User } from 'lucide-react';
+import { Plus, Upload, Calendar, User, CheckCircle, Clock, AlertCircle, FileText } from 'lucide-react';
 import MilestoneCard from './MilestoneCard';
 import { supabase } from '../../utils/SupabaseClient';
 
@@ -8,9 +8,16 @@ const MilestoneList = ({ projectId, timeline }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
+  const [expandedMilestone, setExpandedMilestone] = useState(null);
   const [newMilestone, setNewMilestone] = useState({
     title: '',
     description: '',
+    dueDate: '',
+    status: 'pending'
+  });
+  const [newTask, setNewTask] = useState({
+    title: '',
+    assignee: '',
     dueDate: '',
     status: 'pending'
   });
@@ -100,16 +107,35 @@ const MilestoneList = ({ projectId, timeline }) => {
 
   const handleAddTask = async (milestoneId, task) => {
     try {
-      // Here you would typically save the task to your backend
+      const response = await fetch(`http://localhost:8080/api/milestones/${milestoneId}/tasks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          milestone_id: milestoneId,
+          title: task.title,
+          assignee: task.assignee,
+          due_date: task.dueDate,
+          status: 'pending'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create task');
+      }
+
+      const data = await response.json();
       setMilestones(milestones.map(milestone => {
         if (milestone.id === milestoneId) {
           return {
             ...milestone,
-            tasks: [...milestone.tasks, { id: Date.now(), ...task, status: 'pending', reviewed: false }]
+            tasks: [...(milestone.tasks || []), data]
           };
         }
         return milestone;
       }));
+      setNewTask({ title: '', assignee: '', dueDate: '', status: 'pending' });
     } catch (error) {
       console.error('Error adding task:', error);
     }
@@ -117,7 +143,18 @@ const MilestoneList = ({ projectId, timeline }) => {
 
   const handleTaskUpdate = async (milestoneId, taskId, updates) => {
     try {
-      // Here you would typically update the task in your backend
+      const response = await fetch(`http://localhost:8080/api/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update task');
+      }
+
       setMilestones(milestones.map(milestone => {
         if (milestone.id === milestoneId) {
           return {
@@ -139,7 +176,17 @@ const MilestoneList = ({ projectId, timeline }) => {
 
   const handleTaskReview = async (milestoneId, taskId) => {
     try {
-      // Here you would typically update the task review status in your backend
+      const response = await fetch(`http://localhost:8080/api/tasks/${taskId}/review`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to review task');
+      }
+
       setMilestones(milestones.map(milestone => {
         if (milestone.id === milestoneId) {
           const updatedTasks = milestone.tasks.map(task => {
@@ -149,7 +196,6 @@ const MilestoneList = ({ projectId, timeline }) => {
             return task;
           });
           
-          // Check if all tasks are completed and reviewed
           const allTasksCompleted = updatedTasks.every(task => 
             task.status === 'completed' && task.reviewed
           );
@@ -167,11 +213,26 @@ const MilestoneList = ({ projectId, timeline }) => {
     }
   };
 
-  const handleFileUpload = (milestoneId, taskId, file) => {
-    // Here you would typically upload the file to your storage service
-    // and get back a URL. For now, we'll just use a placeholder URL
-    const evidenceUrl = URL.createObjectURL(file);
+  const handleFileUpload = async (milestoneId, taskId, file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('task_id', taskId);
+
+      const response = await fetch(`http://localhost:8080/api/tasks/${taskId}/evidence`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload evidence');
+      }
+
+      const { evidenceUrl } = await response.json();
     handleTaskUpdate(milestoneId, taskId, { evidence: evidenceUrl });
+    } catch (error) {
+      console.error('Error uploading evidence:', error);
+    }
   };
 
   if (isLoading) {
@@ -271,8 +332,20 @@ const MilestoneList = ({ projectId, timeline }) => {
         ) : milestones.length > 0 ? (
           milestones.map((milestone) => (
             <div key={milestone.id} className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold">{milestone.title}</h3>
+              <div 
+                className="flex items-center justify-between mb-4 cursor-pointer"
+                onClick={() => setExpandedMilestone(expandedMilestone === milestone.id ? null : milestone.id)}
+              >
+                <div className="flex items-center gap-3">
+                  {milestone.status === 'completed' ? (
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                  ) : milestone.status === 'in_progress' ? (
+                    <Clock className="w-5 h-5 text-blue-400" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-yellow-400" />
+                  )}
+                  <h3 className="text-xl font-semibold">{milestone.title}</h3>
+                </div>
                 <span className={`px-3 py-1 rounded-full text-sm ${
                   milestone.status === 'completed' 
                     ? 'bg-green-500/20 text-green-400'
@@ -294,6 +367,102 @@ const MilestoneList = ({ projectId, timeline }) => {
                   <span>Created by: {milestone.created_by}</span>
                 </div>
               </div>
+
+              {expandedMilestone === milestone.id && (
+                <div className="mt-6 space-y-4">
+                  {/* Tasks List */}
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-gray-300">Tasks</h4>
+                    {milestone.tasks?.map((task, index) => (
+                      <div key={task.id} className="bg-gray-900/50 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-400">#{index + 1}</span>
+                            <h5 className="font-medium">{task.title}</h5>
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            task.status === 'completed' 
+                              ? 'bg-green-500/20 text-green-400'
+                              : task.status === 'in_progress'
+                              ? 'bg-blue-500/20 text-blue-400'
+                              : 'bg-yellow-500/20 text-yellow-400'
+                          }`}>
+                            {task.status}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-400">
+                          <div className="flex items-center gap-1">
+                            <User className="w-4 h-4" />
+                            <span>{task.assignee}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        {task.evidence && (
+                          <div className="mt-2 flex items-center gap-2 text-sm text-gray-400">
+                            <FileText className="w-4 h-4" />
+                            <a href={task.evidence} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+                              View Evidence
+                            </a>
+                          </div>
+                        )}
+                        {task.status === 'completed' && !task.reviewed && (
+                          <button
+                            onClick={() => handleTaskReview(milestone.id, task.id)}
+                            className="mt-2 px-3 py-1 bg-blue-500/20 text-blue-400 rounded-lg text-sm hover:bg-blue-500/30"
+                          >
+                            Review Task
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add New Task Form */}
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    handleAddTask(milestone.id, newTask);
+                  }} className="bg-gray-900/50 rounded-lg p-3">
+                    <h4 className="text-sm font-medium text-gray-300 mb-3">Add New Task</h4>
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        value={newTask.title}
+                        onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                        placeholder="Task title"
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      />
+                      <input
+                        type="text"
+                        value={newTask.assignee}
+                        onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
+                        placeholder="Assignee"
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      />
+                      <input
+                        type="date"
+                        value={newTask.dueDate}
+                        onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                        min={timeline?.startDate}
+                        max={timeline?.endDate}
+                      />
+                      <button
+                        type="submit"
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Task
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
             </div>
           ))
         ) : (

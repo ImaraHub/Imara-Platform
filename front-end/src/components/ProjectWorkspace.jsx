@@ -34,7 +34,6 @@ function ProjectWorkspace() {
   }, [activeTab, id]);
 
   const handleTimelineUpdate = async (newTimeline) => {
-    setTimeline(newTimeline);
     try {
       // First check if a timeline already exists
       const checkResponse = await fetch(`http://localhost:8080/api/projects/${id}/timeline`, {
@@ -44,14 +43,28 @@ function ProjectWorkspace() {
         },
       });
 
-      const existingTimeline = await checkResponse.json();
-      const method = existingTimeline && existingTimeline.length > 0 ? 'PUT' : 'POST';
-      const endpoint = existingTimeline && existingTimeline.length > 0 
-        ? `http://localhost:8080/api/timeline/${existingTimeline[0].id}`
-        : 'http://localhost:8080/api/timeline';
+      if (!checkResponse.ok) {
+        throw new Error(`Failed to check timeline: ${checkResponse.statusText}`);
+      }
 
-      const response = await fetch(endpoint, {
-        method: method,
+      const existingTimeline = await checkResponse.json();
+      console.log('Existing timeline:', existingTimeline);
+
+      // If timeline exists, just update the state
+      if (existingTimeline && existingTimeline.start_date) {
+        console.log('Timeline already exists, updating state only');
+        setTimeline({
+          startDate: existingTimeline.start_date,
+          endDate: existingTimeline.end_date,
+          description: existingTimeline.description
+        });
+        return;
+      }
+
+      // If no timeline exists, save the new one
+      console.log('No existing timeline, saving new timeline');
+      const response = await fetch('http://localhost:8080/api/timeline', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -59,23 +72,24 @@ function ProjectWorkspace() {
           project_id: id,
           start_date: newTimeline.startDate,
           end_date: newTimeline.endDate,
-          description: newTimeline.description
+          description: newTimeline.description || ''
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to save timeline');
+        console.error('Timeline save error response:', errorData);
+        throw new Error(errorData.message || `Failed to save timeline: ${response.statusText}`);
       }
 
       const data = await response.json();
       console.log('Timeline saved successfully:', data);
-      // You might want to show a success message to the user here
+      setTimeline(newTimeline);
+      alert('Timeline saved successfully!');
     
     } catch (error) {
-      console.error('Error saving timeline:', error);
-      // Show error message to the user
-      alert('Failed to save timeline. Please try again.');
+      console.error('Error handling timeline:', error);
+      alert(`Failed to handle timeline: ${error.message}`);
     }
   };
 
