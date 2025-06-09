@@ -27,7 +27,7 @@ func main() {
 		ServeWs(hub, w, r)
 	})
 
-	http.HandleFunc("/api/chat/message", HandleChatMessage)
+	http.HandleFunc("/api/chat/message", HandleChatMessage(hub))
 
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/", fs)
