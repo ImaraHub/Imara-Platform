@@ -148,7 +148,14 @@ func main() {
 		}
 
 		// Insert into Supabase
-		_, response, err := client.From("project_timelines").Insert(timeline, false, "", "", "").Execute()
+		timelineData := map[string]interface{}{
+			"project_id":  timeline.ProjectID,
+			"start_date":  timeline.StartDate,
+			"end_date":    timeline.EndDate,
+			"description": timeline.Description,
+		}
+
+		_, response, err := client.From("project_timelines").Insert(timelineData, false, "", "", "").Execute()
 		if err != nil {
 			fmt.Printf("Error inserting timeline into Supabase: %v\n", err)
 			http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
