@@ -3,6 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
+	"bytes"
+	"encoding/json"
 
 	"github.com/gorilla/websocket"
 )
@@ -10,7 +13,9 @@ import (
 // WebSocket upgrader config
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		return true // Allow any origin for dev
+		// Allow only the frontend origin in development. Change for production!
+		origin := r.Header.Get("Origin")
+		return origin == "http://localhost:3000"
 	},
 }
 
@@ -116,4 +121,68 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 
 	go client.writePump()
 	go client.readPump()
+}
+
+// ChatMessagePayload represents the expected payload for chat messages
+// (matches your Supabase schema)
+type ChatMessagePayload struct {
+	ProjectID       string `json:"project_id,omitempty"`
+	UserID          string `json:"user_id,omitempty"`
+	Message         string `json:"message"`
+	Username        string `json:"username,omitempty"`
+	Email           string `json:"email,omitempty"`
+	IsSystemMessage bool   `json:"is_system_message,omitempty"`
+}
+
+// Handler for POST /api/chat/message
+func HandleChatMessage(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	var payload ChatMessagePayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"error": "invalid JSON"}`))
+		return
+	}
+
+	supabaseURL := os.Getenv("SUPABASE_URL")
+	supabaseKey := os.Getenv("SUPABASE_SERVICE_KEY")
+	if supabaseURL == "" || supabaseKey == "" {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"error": "Supabase credentials not set"}`))
+		return
+	}
+
+	// Prepare the request to Supabase REST API
+	apiURL := supabaseURL + "/rest/v1/chat_messages"
+	jsonBody, _ := json.Marshal(payload)
+	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"error": "failed to create request"}`))
+		return
+	}
+	req.Header.Set("apikey", supabaseKey)
+	req.Header.Set("Authorization", "Bearer "+supabaseKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadGateway)
+		w.Write([]byte(`{"error": "failed to contact Supabase"}`))
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(`{"success": true}`))
+	} else {
+		w.WriteHeader(http.StatusBadGateway)
+		w.Write([]byte(`{"error": "Supabase error"}`))
+	}
 }
