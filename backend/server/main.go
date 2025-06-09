@@ -124,14 +124,33 @@ func main() {
 
 		var timeline Timeline
 		if err := json.NewDecoder(r.Body).Decode(&timeline); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			fmt.Printf("Error decoding timeline request: %v\n", err)
+			http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+			return
+		}
+
+		// Log the received timeline data
+		fmt.Printf("Received timeline data: %+v\n", timeline)
+
+		// Validate required fields
+		if timeline.ProjectID == "" {
+			http.Error(w, "Project ID is required", http.StatusBadRequest)
+			return
+		}
+		if timeline.StartDate == "" {
+			http.Error(w, "Start date is required", http.StatusBadRequest)
+			return
+		}
+		if timeline.EndDate == "" {
+			http.Error(w, "End date is required", http.StatusBadRequest)
 			return
 		}
 
 		// Insert into Supabase
 		_, response, err := client.From("project_timelines").Insert(timeline, false, "", "", "").Execute()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			fmt.Printf("Error inserting timeline into Supabase: %v\n", err)
+			http.Error(w, fmt.Sprintf("Database error: %v", err), http.StatusInternalServerError)
 			return
 		}
 
@@ -257,21 +276,14 @@ func main() {
 			return
 		}
 
-		// Debug logging for parsed data
-		if len(timelineData) > 0 {
-			fmt.Printf("Parsed timeline data: %+v\n", timelineData[0])
-			fmt.Printf("Start date: %s, Type: %T\n", timelineData[0].StartDate, timelineData[0].StartDate)
-			fmt.Printf("End date: %s, Type: %T\n", timelineData[0].EndDate, timelineData[0].EndDate)
-		}
-
 		// Check if we got any data
 		if len(timelineData) == 0 {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode([]Timeline{}) // Return empty array if no data
+			json.NewEncoder(w).Encode(map[string]interface{}{}) // Return empty object if no data
 			return
 		}
 
-		// Transform the data to match frontend expectations
+		// Return the first timeline found
 		responseData := map[string]interface{}{
 			"start_date":  timelineData[0].StartDate,
 			"end_date":    timelineData[0].EndDate,
