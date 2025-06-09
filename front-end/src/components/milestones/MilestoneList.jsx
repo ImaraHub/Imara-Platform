@@ -15,6 +15,15 @@ const MilestoneList = ({ projectId, timeline }) => {
     status: 'pending'
   });
 
+  // Add debug logging for timeline
+  useEffect(() => {
+    console.log('Timeline data received:', timeline);
+    if (timeline) {
+      console.log('Start date:', timeline.startDate, 'Type:', typeof timeline.startDate);
+      console.log('End date:', timeline.endDate, 'Type:', typeof timeline.endDate);
+    }
+  }, [timeline]);
+
   useEffect(() => {
     // Get current user from Supabase
     const getCurrentUser = async () => {
@@ -180,7 +189,7 @@ const MilestoneList = ({ projectId, timeline }) => {
         <div>
           <h2 className="text-2xl font-semibold">Project Milestones</h2>
           <p className="text-sm text-gray-400 mt-1">
-            Timeline: {new Date(timeline.startDate).toLocaleDateString()} - {new Date(timeline.endDate).toLocaleDateString()}
+            Timeline: {timeline?.startDate ? new Date(timeline.startDate).toLocaleDateString() : 'Not set'} - {timeline?.endDate ? new Date(timeline.endDate).toLocaleDateString() : 'Not set'}
           </p>
         </div>
         <button
@@ -230,8 +239,8 @@ const MilestoneList = ({ projectId, timeline }) => {
                 onChange={(e) => setNewMilestone({ ...newMilestone, dueDate: e.target.value })}
                 className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
-                min={timeline.startDate}
-                max={timeline.endDate}
+                min={timeline?.startDate}
+                max={timeline?.endDate}
               />
             </div>
             <div className="flex gap-4">

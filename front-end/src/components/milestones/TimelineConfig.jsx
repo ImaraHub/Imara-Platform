@@ -17,6 +17,8 @@ const TimelineConfig = ({ onTimelineUpdate, projectId }) => {
           throw new Error('Failed to fetch timeline');
         }
         const data = await response.json();
+
+        console.log(data);
         
         // If timeline exists, update the parent component
         if (data && data.length > 0) {

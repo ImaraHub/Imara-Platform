@@ -22,7 +22,14 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
         localStorage.removeItem(key);
       },
     },
-  }
+  },
+  global: {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  },
 });
 
 // console.log('Supabase URL:', supabaseUrl);

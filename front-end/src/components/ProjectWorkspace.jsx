@@ -36,8 +36,22 @@ function ProjectWorkspace() {
   const handleTimelineUpdate = async (newTimeline) => {
     setTimeline(newTimeline);
     try {
-      const response = await fetch('http://localhost:8080/api/timeline', {
-        method: 'POST',
+      // First check if a timeline already exists
+      const checkResponse = await fetch(`http://localhost:8080/api/projects/${id}/timeline`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const existingTimeline = await checkResponse.json();
+      const method = existingTimeline && existingTimeline.length > 0 ? 'PUT' : 'POST';
+      const endpoint = existingTimeline && existingTimeline.length > 0 
+        ? `http://localhost:8080/api/timeline/${existingTimeline[0].id}`
+        : 'http://localhost:8080/api/timeline';
+
+      const response = await fetch(endpoint, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -50,15 +64,18 @@ function ProjectWorkspace() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save timeline');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to save timeline');
       }
 
       const data = await response.json();
       console.log('Timeline saved successfully:', data);
+      // You might want to show a success message to the user here
     
     } catch (error) {
       console.error('Error saving timeline:', error);
-      // You might want to show an error message to the user here
+      // Show error message to the user
+      alert('Failed to save timeline. Please try again.');
     }
   };
 
