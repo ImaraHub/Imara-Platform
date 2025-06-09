@@ -1,14 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Users, MessageSquare, Calendar, CheckCircle, User } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getAllProjectContributors } from '../utils/SupabaseClient';
+import { getAllProjectContributors, createChatMessage, getChatMessages, createInitialChatMessage } from '../utils/SupabaseClient';
+import { supabase } from '../utils/SupabaseClient';
+import { useAuth } from '../AuthContext';
 
 function ProjectWorkspace() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('members'); // members, chat, milestones
   const [contributors, setContributors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [typingUsers, setTypingUsers] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
 
   useEffect(() => {
     const fetchContributors = async () => {
@@ -29,6 +38,113 @@ function ProjectWorkspace() {
 
     fetchContributors();
   }, [activeTab, id]);
+
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      // Fetch initial messages
+      const fetchMessages = async () => {
+        const chatMessages = await getChatMessages(id);
+        setMessages(chatMessages);
+      };
+      fetchMessages();
+
+      // Subscribe to new messages
+      const messagesSubscription = supabase
+        .channel('chat_messages')
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `project_id=eq.${id}`
+        }, (payload) => {
+          setMessages(prev => [...prev, payload.new]);
+        })
+        .subscribe();
+
+      // Subscribe to typing indicators
+      const typingSubscription = supabase
+        .channel('typing_indicators')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'typing_indicators',
+          filter: `project_id=eq.${id}`
+        }, (payload) => {
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            if (payload.new.is_typing) {
+              setTypingUsers(prev => {
+                const filtered = prev.filter(u => u.user_id !== payload.new.user_id);
+                return [...filtered, payload.new];
+              });
+            } else {
+              setTypingUsers(prev => prev.filter(u => u.user_id !== payload.new.user_id));
+            }
+          } else if (payload.eventType === 'DELETE') {
+            setTypingUsers(prev => prev.filter(u => u.user_id !== payload.old.user_id));
+          }
+        })
+        .subscribe();
+
+      return () => {
+        messagesSubscription.unsubscribe();
+        typingSubscription.unsubscribe();
+      };
+    }
+  }, [activeTab, id]);
+
+  useEffect(() => {
+    // Scroll to bottom when new messages arrive
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleMessageChange = async (e) => {
+    setNewMessage(e.target.value);
+    
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set typing indicator
+    if (!isTyping) {
+      setIsTyping(true);
+    }
+
+    // Clear typing indicator after 2 seconds of no typing
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+    }, 2000);
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+
+    // Optimistically add the message to the UI
+    const optimisticMessage = {
+      message: newMessage,
+      username: user.user_metadata?.username || user.email?.split('@')[0],
+      email: user.email,
+      user_id: user.id,
+      created_at: new Date().toISOString(),
+      is_system_message: false,
+    };
+    setMessages(prev => [...prev, optimisticMessage]);
+    setNewMessage('');
+    setIsTyping(false);
+
+    try {
+      await createChatMessage(id, user.id, newMessage.trim(), {
+        username: optimisticMessage.username,
+        email: optimisticMessage.email,
+      });
+      // Optionally: you could refresh messages from DB here if you want to ensure consistency
+    } catch (error) {
+      // Remove the optimistic message and show an error
+      setMessages(prev => prev.filter(m => m !== optimisticMessage));
+      alert('Failed to send message');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -140,19 +256,69 @@ function ProjectWorkspace() {
                 <h2 className="text-2xl font-semibold mb-6">Project Chat</h2>
                 <div className="h-[600px] flex flex-col">
                   <div className="flex-1 bg-gray-900/50 rounded-lg p-4 mb-4 overflow-y-auto">
-                    {/* Chat messages will be displayed here */}
-                    <p className="text-gray-400">Chat coming soon...</p>
+                    {messages.map((message, index) => (
+                      <div
+                        key={index}
+                        className={`mb-4 ${
+                          message.is_system_message
+                            ? 'text-center'
+                            : message.user_id === user.id
+                            ? 'text-right'
+                            : 'text-left'
+                        }`}
+                      >
+                        <div
+                          className={`inline-block max-w-[80%] rounded-lg p-3 ${
+                            message.is_system_message
+                              ? 'bg-blue-500/20 text-blue-400'
+                              : message.user_id === user.id
+                              ? 'bg-blue-500 text-white'
+                              : 'bg-gray-700 text-white'
+                          }`}
+                        >
+                          {!message.is_system_message && (
+                            <div className="text-xs text-gray-300 mb-1">
+                              {message.username}
+                            </div>
+                          )}
+                          <p>{message.message}</p>
+                          <div className="text-xs text-gray-300 mt-1">
+                            {new Date(message.created_at).toLocaleTimeString()}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
                   </div>
-                  <div className="flex gap-4">
+
+                  {/* Typing Indicators */}
+                  {typingUsers.length > 0 && (
+                    <div className="text-sm text-gray-400 mb-2">
+                      {typingUsers.map((typingUser, index) => (
+                        <span key={typingUser.user_id}>
+                          {typingUser.username || 'Someone'}{' '}
+                          {index === typingUsers.length - 1 ? 'is' : 'are'} typing...
+                          {index < typingUsers.length - 1 ? ', ' : ''}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSendMessage} className="flex gap-4">
                     <input
                       type="text"
+                      value={newMessage}
+                      onChange={handleMessageChange}
                       placeholder="Type your message..."
                       className="flex-1 bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <button className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    >
                       Send
                     </button>
-                  </div>
+                  </form>
                 </div>
               </section>
             )}
