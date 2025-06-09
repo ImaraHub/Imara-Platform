@@ -328,13 +328,39 @@ func main() {
 
 	// Create task endpoint
 	r.HandleFunc("/api/milestones/{milestoneId}/tasks", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		milestoneId := vars["milestoneId"]
+
+		if r.Method == http.MethodGet {
+			// Fetch tasks from Supabase
+			data, _, err := client.From("milestone_tasks").
+				Select("*", "", false).
+				Eq("milestone_id", milestoneId).
+				Execute()
+
+			if err != nil {
+				fmt.Printf("Error fetching tasks: %v\n", err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			// Parse the tasks data
+			var tasks []Task
+			if err := json.Unmarshal(data, &tasks); err != nil {
+				fmt.Printf("Error unmarshaling tasks: %v\n", err)
+				http.Error(w, "Error processing tasks data", http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(tasks)
+			return
+		}
+
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-
-		vars := mux.Vars(r)
-		milestoneId := vars["milestoneId"]
 
 		var taskReq CreateTaskRequest
 		if err := json.NewDecoder(r.Body).Decode(&taskReq); err != nil {
@@ -376,7 +402,7 @@ func main() {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(createdTasks[0])
-	}).Methods("POST", "OPTIONS")
+	}).Methods("GET", "POST", "OPTIONS")
 
 	// Update task endpoint
 	r.HandleFunc("/api/tasks/{taskId}", func(w http.ResponseWriter, r *http.Request) {
