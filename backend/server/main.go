@@ -33,6 +33,7 @@ type Milestone struct {
 	CreatedBy   string `json:"created_by"`
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
+	Tasks       []Task `json:"milestone_tasks"`
 }
 
 type CreateMilestoneRequest struct {
@@ -168,41 +169,39 @@ func main() {
 		vars := mux.Vars(r)
 		projectId := vars["projectId"]
 
-		// Add CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		// Handle preflight requests
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		// Fetch milestones from Supabase
+		// Fetch milestones with their tasks from Supabase using a join
 		data, _, err := client.From("milestones").
-			Select("*", "", false).
+			Select(`
+				*,
+				milestone_tasks (
+					id,
+					title,
+					description,
+					assignee_id,
+					due_date,
+					status,
+					reviewed,
+					created_by,
+					created_at,
+					updated_at
+				)
+			`, "", false).
 			Eq("project_id", projectId).
 			Execute()
+
 		if err != nil {
 			fmt.Printf("Error fetching milestones: %v\n", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		// Debug logging
-		// fmt.Printf("Raw milestones data: %s\n", string(data))
-
-		// Parse the milestones data
+		// Parse the milestones data with their tasks
 		var milestones []Milestone
 		if err := json.Unmarshal(data, &milestones); err != nil {
 			fmt.Printf("Error unmarshaling milestones: %v\n", err)
 			http.Error(w, "Error processing milestones data", http.StatusInternalServerError)
 			return
 		}
-
-		// Debug logging
-		// fmt.Printf("Parsed milestones: %+v\n", milestones)
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(milestones)
