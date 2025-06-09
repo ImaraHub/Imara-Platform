@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Upload, Calendar } from 'lucide-react';
+import { Plus, Upload, Calendar, User } from 'lucide-react';
 import MilestoneCard from './MilestoneCard';
 import { supabase } from '../../utils/SupabaseClient';
 
@@ -42,7 +42,7 @@ const MilestoneList = ({ projectId, timeline }) => {
           throw new Error('Failed to fetch milestones');
         }
         const data = await response.json();
-        // Ensure we're working with an array
+        console.log('Fetched milestones:', data);
         setMilestones(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Error fetching milestones:', error);
@@ -263,15 +263,38 @@ const MilestoneList = ({ projectId, timeline }) => {
       )}
 
       <div className="space-y-4">
-        {milestones.length > 0 ? (
+        {isLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading milestones...</p>
+          </div>
+        ) : milestones.length > 0 ? (
           milestones.map((milestone) => (
-            <MilestoneCard
-              key={milestone.id}
-              milestone={milestone}
-              onAddTask={handleAddTask}
-              onTaskUpdate={handleTaskUpdate}
-              onTaskReview={handleTaskReview}
-            />
+            <div key={milestone.id} className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold">{milestone.title}</h3>
+                <span className={`px-3 py-1 rounded-full text-sm ${
+                  milestone.status === 'completed' 
+                    ? 'bg-green-500/20 text-green-400'
+                    : milestone.status === 'in_progress'
+                    ? 'bg-blue-500/20 text-blue-400'
+                    : 'bg-yellow-500/20 text-yellow-400'
+                }`}>
+                  {milestone.status.replace('_', ' ')}
+                </span>
+              </div>
+              <p className="text-gray-400 mb-4">{milestone.description}</p>
+              <div className="flex items-center gap-4 text-sm text-gray-400">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>Due: {new Date(milestone.due_date).toLocaleDateString()}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  <span>Created by: {milestone.created_by}</span>
+                </div>
+              </div>
+            </div>
           ))
         ) : (
           <div className="text-center py-8">
