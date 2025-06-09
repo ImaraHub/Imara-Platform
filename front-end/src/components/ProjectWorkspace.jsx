@@ -12,6 +12,8 @@ function ProjectWorkspace() {
   const [contributors, setContributors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [timeline, setTimeline] = useState(null);
+  const [projectProgress, setProjectProgress] = useState(0);
+  const [nextMilestone, setNextMilestone] = useState(null);
 
   useEffect(() => {
     const fetchContributors = async () => {
@@ -91,6 +93,75 @@ function ProjectWorkspace() {
       console.error('Error handling timeline:', error);
       alert(`Failed to handle timeline: ${error.message}`);
     }
+  };
+
+  // Update useEffect to calculate progress and find next milestone
+  useEffect(() => {
+    const fetchMilestones = async () => {
+      try {
+        const response = await fetch(`http://localhost:8080/api/projects/${id}/milestones`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch milestones');
+        }
+        const milestones = await response.json();
+        
+        // Calculate progress and find next milestone
+        const progress = calculateProjectProgress(milestones);
+        setProjectProgress(progress);
+        
+        const next = findNextMilestone(milestones);
+        setNextMilestone(next);
+      } catch (error) {
+        console.error('Error fetching milestones:', error);
+      }
+    };
+
+    fetchMilestones();
+  }, [id]);
+
+  // Add function to calculate project progress
+  const calculateProjectProgress = (milestones) => {
+    if (!milestones || milestones.length === 0) return 0;
+
+    let totalProgress = 0;
+    const milestoneWeight = 100 / milestones.length; // Each milestone contributes equally to total progress
+
+    milestones.forEach(milestone => {
+      if (!milestone.milestone_tasks || milestone.milestone_tasks.length === 0) {
+        // If milestone has no tasks, it's considered complete when its status is 'completed'
+        if (milestone.status === 'completed') {
+          totalProgress += milestoneWeight;
+        }
+        return;
+      }
+
+      const taskWeight = milestoneWeight / milestone.milestone_tasks.length;
+      const completedTasks = milestone.milestone_tasks.filter(task => task.status === 'completed').length;
+      totalProgress += completedTasks * taskWeight;
+    });
+
+    return Math.round(totalProgress);
+  };
+
+  // Add function to find next milestone
+  const findNextMilestone = (milestones) => {
+    if (!milestones || milestones.length === 0) return null;
+
+    const now = new Date();
+    const upcomingMilestones = milestones
+      .filter(milestone => milestone.status !== 'completed')
+      .sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+
+    if (upcomingMilestones.length === 0) return null;
+
+    const next = upcomingMilestones[0];
+    const dueDate = new Date(next.due_date);
+    const daysUntilDue = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+
+    return {
+      ...next,
+      daysUntilDue: daysUntilDue > 0 ? daysUntilDue : 0
+    };
   };
 
   return (
@@ -243,14 +314,22 @@ function ProjectWorkspace() {
                 <div>
                   <p className="text-sm text-gray-400">Progress</p>
                   <div className="w-full h-2 bg-gray-700 rounded-full mt-2">
-                    <div className="h-full bg-blue-500 rounded-full" style={{ width: '25%' }} />
+                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${projectProgress}%` }} />
                   </div>
-                  <p className="text-sm text-gray-400 mt-1">25% Complete</p>
+                  <p className="text-sm text-gray-400 mt-1">{projectProgress}% Complete</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-400">Next Milestone</p>
-                  <p className="text-white mt-1">Project Setup</p>
-                  <p className="text-sm text-gray-400">Due in 5 days</p>
+                  {nextMilestone ? (
+                    <>
+                      <p className="text-white mt-1">{nextMilestone.title}</p>
+                      <p className="text-sm text-gray-400">
+                        Due in {nextMilestone.daysUntilDue} {nextMilestone.daysUntilDue === 1 ? 'day' : 'days'}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-gray-400 mt-1">No upcoming milestones</p>
+                  )}
                 </div>
               </div>
             </section>
