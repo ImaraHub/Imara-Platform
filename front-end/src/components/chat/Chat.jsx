@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import TypingIndicator from './TypingIndicator';
+import { supabase } from '../../lib/supabase';
 
 function Chat({ currentUser }) {
   const [messages, setMessages] = useState([]);
@@ -89,6 +90,23 @@ function Chat({ currentUser }) {
       setNewMessage('');
     }
   };
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('project_id', currentProjectId)
+        .order('created_at', { ascending: true });
+      if (data) {
+        setMessages(data);
+      } else if (error) {
+        console.error('Error fetching messages:', error);
+      }
+    };
+
+    fetchMessages();
+  }, [currentProjectId]);
 
   return (
     <div className="flex flex-col h-full">
