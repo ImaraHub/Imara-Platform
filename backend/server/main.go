@@ -416,6 +416,7 @@ func main() {
 
 		var updates map[string]interface{}
 		if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
+			fmt.Printf("Error decoding task updates: %v\n", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -449,15 +450,20 @@ func main() {
 		}
 
 		// Parse the response to get the updated task
-		var updatedTask Task
-		if err := json.Unmarshal(data, &updatedTask); err != nil {
+		var updatedTasks []Task
+		if err := json.Unmarshal(data, &updatedTasks); err != nil {
 			fmt.Printf("Error unmarshaling task response: %v\n", err)
 			http.Error(w, "Error processing task data", http.StatusInternalServerError)
 			return
 		}
 
+		if len(updatedTasks) == 0 {
+			http.Error(w, "Task not found", http.StatusNotFound)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(updatedTask)
+		json.NewEncoder(w).Encode(updatedTasks[0])
 	}).Methods("PUT", "OPTIONS")
 
 	// Review task endpoint
