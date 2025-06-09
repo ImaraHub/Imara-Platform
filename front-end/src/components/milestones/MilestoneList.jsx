@@ -391,7 +391,11 @@ const MilestoneList = ({ projectId, timeline, contributors }) => {
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
-                  <span>Created by: {milestone.created_by}</span>
+                  <span>Created by: {
+                    contributors.find(c => c.user_id === milestone.created_by)?.user?.display_name || 
+                    contributors.find(c => c.user_id === milestone.created_by)?.user?.email || 
+                    'Unknown User'
+                  }</span>
                 </div>
               </div>
 
