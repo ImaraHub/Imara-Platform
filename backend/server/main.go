@@ -122,20 +122,44 @@ func main() {
 		vars := mux.Vars(r)
 		projectId := vars["projectId"]
 
+		// Add CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		// Handle preflight requests
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
 		// Fetch milestones from Supabase
-		_, response, err := client.From("milestones").
+		data, _, err := client.From("milestones").
 			Select("*", "", false).
 			Eq("project_id", projectId).
 			Execute()
 		if err != nil {
+			fmt.Printf("Error fetching milestones: %v\n", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		fmt.Println("Response:", response)
+		// Debug logging
+		fmt.Printf("Raw milestones data: %s\n", string(data))
+
+		// Parse the milestones data
+		var milestones []Milestone
+		if err := json.Unmarshal(data, &milestones); err != nil {
+			fmt.Printf("Error unmarshaling milestones: %v\n", err)
+			http.Error(w, "Error processing milestones data", http.StatusInternalServerError)
+			return
+		}
+
+		// Debug logging
+		fmt.Printf("Parsed milestones: %+v\n", milestones)
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		json.NewEncoder(w).Encode(milestones)
 	}).Methods("GET", "OPTIONS")
 
 	// Create milestone endpoint
