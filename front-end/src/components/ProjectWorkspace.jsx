@@ -153,7 +153,7 @@ function ProjectWorkspace() {
                           </div>
                           <div>
                             <h3 className="text-lg font-medium text-white">
-                              {contributor.user?.username || 'Anonymous User'}
+                              {contributor.user?.display_name || 'Anonymous User'}
                             </h3>
                             <p className="text-gray-400">{contributor.user?.email || 'No email provided'}</p>
                           </div>
