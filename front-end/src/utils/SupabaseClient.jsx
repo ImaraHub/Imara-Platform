@@ -406,45 +406,26 @@ export const getAllProjectContributors = async (projectId) => {
             return null;
         }
 
-        // First get all contributors for the project
-        const { data: contributors, error: contributorsError } = await supabase
-            .from('idea_contributors')
+        const { data, error } = await supabase
+            .from('idea_contributors_with_user')
             .select('*')
             .eq('idea_id', projectId);
 
-        if (contributorsError) {
-            console.error("Error fetching project contributors:", contributorsError);
+        if (error) {
+            console.error("Error fetching enriched contributors:", error);
             return null;
         }
 
-        // Then get user information for each contributor
-        const contributorsWithUserInfo = await Promise.all(
-            contributors.map(async (contributor) => {
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .select('email, username')
-                    .eq('auth_id', contributor.user_id)
-                    .single();
+        // Transform the data to match the expected structure
+        const transformedData = data.map(contributor => ({
+            ...contributor,
+            user: {
+                email: contributor.email || 'No email provided',
+                display_name: contributor.display_name || contributor.email || 'Anonymous User'
+            }
+        }));
 
-                if (userError) {
-                    console.error("Error fetching user data:", userError);
-                    return {
-                        ...contributor,
-                        user: {
-                            email: 'Unknown',
-                            username: 'Anonymous User'
-                        }
-                    };
-                }
-
-                return {
-                    ...contributor,
-                    user: userData
-                };
-            })
-        );
-
-        return contributorsWithUserInfo;
+        return transformedData;
     } catch (err) {
         console.error("Unexpected error in getAllProjectContributors:", err);
         return null;
