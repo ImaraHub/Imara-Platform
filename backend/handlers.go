@@ -135,54 +135,64 @@ type ChatMessagePayload struct {
 }
 
 // Handler for POST /api/chat/message
-func HandleChatMessage(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
+func HandleChatMessage(hub *Hub) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
 
-	var payload ChatMessagePayload
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"error": "invalid JSON"}`))
-		return
-	}
+		var payload ChatMessagePayload
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(`{"error": "invalid JSON"}`))
+			return
+		}
 
-	supabaseURL := os.Getenv("SUPABASE_URL")
-	supabaseKey := os.Getenv("SUPABASE_SERVICE_KEY")
-	if supabaseURL == "" || supabaseKey == "" {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error": "Supabase credentials not set"}`))
-		return
-	}
+		supabaseURL := os.Getenv("SUPABASE_URL")
+		supabaseKey := os.Getenv("SUPABASE_SERVICE_KEY")
+		if supabaseURL == "" || supabaseKey == "" {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(`{"error": "Supabase credentials not set"}`))
+			return
+		}
 
-	// Prepare the request to Supabase REST API
-	apiURL := supabaseURL + "/rest/v1/chat_messages"
-	jsonBody, _ := json.Marshal(payload)
-	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonBody))
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error": "failed to create request"}`))
-		return
-	}
-	req.Header.Set("apikey", supabaseKey)
-	req.Header.Set("Authorization", "Bearer "+supabaseKey)
-	req.Header.Set("Content-Type", "application/json")
+		// Prepare the request to Supabase REST API
+		apiURL := supabaseURL + "/rest/v1/chat_messages"
+		jsonBody, _ := json.Marshal(payload)
+		req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonBody))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(`{"error": "failed to create request"}`))
+			return
+		}
+		req.Header.Set("apikey", supabaseKey)
+		req.Header.Set("Authorization", "Bearer "+supabaseKey)
+		req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		w.WriteHeader(http.StatusBadGateway)
-		w.Write([]byte(`{"error": "failed to contact Supabase"}`))
-		return
-	}
-	defer resp.Body.Close()
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			w.WriteHeader(http.StatusBadGateway)
+			w.Write([]byte(`{"error": "failed to contact Supabase"}`))
+			return
+		}
+		defer resp.Body.Close()
 
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		w.WriteHeader(http.StatusCreated)
-		w.Write([]byte(`{"success": true}`))
-	} else {
-		w.WriteHeader(http.StatusBadGateway)
-		w.Write([]byte(`{"error": "Supabase error"}`))
+		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+			// Broadcast the message to all WebSocket clients
+			msg := Message{
+				Type:     "message",
+				Message:  payload.Message,
+				Username: payload.Username,
+				Email:    payload.Email,
+			}
+			hub.broadcast <- msg
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(`{"success": true}`))
+		} else {
+			w.WriteHeader(http.StatusBadGateway)
+			w.Write([]byte(`{"error": "Supabase error"}`))
+		}
 	}
 }
