@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Upload, Calendar } from 'lucide-react';
 import MilestoneCard from './MilestoneCard';
+import { supabase } from '../../utils/SupabaseClient';
 
 const MilestoneList = ({ projectId, timeline }) => {
   const [milestones, setMilestones] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
   const [newMilestone, setNewMilestone] = useState({
     title: '',
     description: '',
@@ -14,44 +16,28 @@ const MilestoneList = ({ projectId, timeline }) => {
   });
 
   useEffect(() => {
+    // Get current user from Supabase
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+    };
+    getCurrentUser();
+  }, []);
+
+  useEffect(() => {
     const fetchMilestones = async () => {
       setIsLoading(true);
       try {
-        // Here you would typically fetch milestones from your backend
-        // For now, we'll use a mock API call
-        const response = await fetch(`/api/projects/${projectId}/milestones`);
+        const response = await fetch(`http://localhost:8080/api/projects/${projectId}/milestones`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch milestones');
+        }
         const data = await response.json();
-        setMilestones(data);
+        // Ensure we're working with an array
+        setMilestones(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Error fetching milestones:', error);
-        // For development, use mock data
-        setMilestones([
-          {
-            id: 1,
-            title: 'Project Setup',
-            description: 'Complete initial project setup and team onboarding',
-            dueDate: '2024-03-15',
-            status: 'in_progress',
-            tasks: [
-              {
-                id: 1,
-                title: 'Set up project repository',
-                assignee: 'John Doe',
-                dueDate: '2024-03-10',
-                status: 'completed',
-                reviewed: true
-              },
-              {
-                id: 2,
-                title: 'Configure development environment',
-                assignee: 'Jane Smith',
-                dueDate: '2024-03-12',
-                status: 'in_progress',
-                reviewed: false
-              }
-            ]
-          }
-        ]);
+        setMilestones([]);
       } finally {
         setIsLoading(false);
       }
@@ -62,14 +48,35 @@ const MilestoneList = ({ projectId, timeline }) => {
 
   const handleAddMilestone = async (e) => {
     e.preventDefault();
+    if (!currentUser) {
+      console.error('No authenticated user found');
+      return;
+    }
+
     try {
-      // Here you would typically save the milestone to your backend
-      const milestone = {
-        id: Date.now(),
-        ...newMilestone,
-        tasks: []
-      };
-      setMilestones([...milestones, milestone]);
+      const response = await fetch('http://localhost:8080/api/milestones', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          project_id: projectId,
+          title: newMilestone.title,
+          description: newMilestone.description,
+          due_date: newMilestone.dueDate,
+          created_by: currentUser.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create milestone');
+      }
+
+      const data = await response.json();
+      // Ensure we're working with an array
+      const newMilestoneData = Array.isArray(data) ? data[0] : data;
+      setMilestones(prevMilestones => [...(Array.isArray(prevMilestones) ? prevMilestones : []), newMilestoneData]);
+      
       setNewMilestone({
         title: '',
         description: '',

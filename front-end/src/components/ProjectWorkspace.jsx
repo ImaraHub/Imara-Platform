@@ -33,10 +33,33 @@ function ProjectWorkspace() {
     fetchContributors();
   }, [activeTab, id]);
 
-  const handleTimelineUpdate = (newTimeline) => {
+  const handleTimelineUpdate = async (newTimeline) => {
     setTimeline(newTimeline);
-    // Here you would typically save the timeline to your backend
-    console.log('Timeline updated:', newTimeline);
+    try {
+      const response = await fetch('http://localhost:8080/api/timeline', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          project_id: id,
+          start_date: newTimeline.startDate,
+          end_date: newTimeline.endDate,
+          description: newTimeline.description
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save timeline');
+      }
+
+      const data = await response.json();
+      console.log('Timeline saved successfully:', data);
+    
+    } catch (error) {
+      console.error('Error saving timeline:', error);
+      // You might want to show an error message to the user here
+    }
   };
 
   return (
@@ -169,9 +192,13 @@ function ProjectWorkspace() {
             {activeTab === 'milestones' && (
               <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6">
                 {!timeline ? (
-                  <TimelineConfig onTimelineUpdate={handleTimelineUpdate} />
+                  <TimelineConfig onTimelineUpdate={handleTimelineUpdate} projectId={id} />
                 ) : (
-                  <MilestoneList projectId={id} timeline={timeline} />
+                  <MilestoneList 
+                    projectId={id} 
+                    timeline={timeline} 
+                    contributors={contributors}
+                  />
                 )}
               </section>
             )}
