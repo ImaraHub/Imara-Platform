@@ -463,7 +463,7 @@ const MilestoneList = ({ projectId, timeline, contributors }) => {
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium text-gray-300">Tasks</h4>
                     {milestoneTasks[milestone.id]?.map((task) => (
-                      <div key={task.id} className="bg-gray-900/50 rounded-lg p-3">
+                      <div key={`${milestone.id}-${task.id}`} className="bg-gray-900/50 rounded-lg p-3">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <h5 className="font-medium">{task.title}</h5>
