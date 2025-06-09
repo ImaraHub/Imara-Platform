@@ -3,7 +3,7 @@ import { Plus, Upload, Calendar, User, CheckCircle, Clock, AlertCircle, FileText
 import MilestoneCard from './MilestoneCard';
 import { supabase } from '../../utils/SupabaseClient';
 
-const MilestoneList = ({ projectId, timeline }) => {
+const MilestoneList = ({ projectId, timeline, contributors }) => {
   const [milestones, setMilestones] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -17,7 +17,9 @@ const MilestoneList = ({ projectId, timeline }) => {
   });
   const [newTask, setNewTask] = useState({
     title: '',
+    description: '',
     assignee: '',
+    assigneeId: '',
     dueDate: '',
     status: 'pending'
   });
@@ -106,6 +108,11 @@ const MilestoneList = ({ projectId, timeline }) => {
   };
 
   const handleAddTask = async (milestoneId, task) => {
+    if (!currentUser) {
+      console.error('No authenticated user found');
+      return;
+    }
+
     try {
       const response = await fetch(`http://localhost:8080/api/milestones/${milestoneId}/tasks`, {
         method: 'POST',
@@ -115,29 +122,49 @@ const MilestoneList = ({ projectId, timeline }) => {
         body: JSON.stringify({
           milestone_id: milestoneId,
           title: task.title,
-          assignee: task.assignee,
+          description: task.description || '',
+          assignee_id: task.assigneeId,
           due_date: task.dueDate,
-          status: 'pending'
+          status: 'pending',
+          reviewed: false,
+          created_by: currentUser.id
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create task');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Task creation error:', errorData);
+        throw new Error(errorData.message || 'Failed to create task');
       }
 
-      const data = await response.json();
+      // For POST request, we expect a single task object
+      const newTask = await response.json();
+      
+      if (!newTask || !newTask.id) {
+        throw new Error('Invalid task data received from server');
+      }
+
       setMilestones(milestones.map(milestone => {
         if (milestone.id === milestoneId) {
           return {
             ...milestone,
-            tasks: [...(milestone.tasks || []), data]
+            tasks: [...(milestone.tasks || []), newTask]
           };
         }
         return milestone;
       }));
-      setNewTask({ title: '', assignee: '', dueDate: '', status: 'pending' });
+
+      setNewTask({ 
+        title: '', 
+        description: '',
+        assignee: '', 
+        assigneeId: '', 
+        dueDate: '', 
+        status: 'pending' 
+      });
     } catch (error) {
       console.error('Error adding task:', error);
+      alert(`Failed to create task: ${error.message}`);
     }
   };
 
@@ -435,14 +462,38 @@ const MilestoneList = ({ projectId, timeline }) => {
                         className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                       />
-                      <input
-                        type="text"
+                      <textarea
+                        value={newTask.description || ''}
+                        onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                        placeholder="Task description"
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        rows="2"
+                      />
+                      <select
                         value={newTask.assignee}
-                        onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
-                        placeholder="Assignee"
+                        onChange={(e) => {
+                          const selectedOption = e.target.options[e.target.selectedIndex];
+                          const userId = selectedOption.getAttribute('data-user-id');
+                          setNewTask({ 
+                            ...newTask, 
+                            assignee: e.target.value,
+                            assigneeId: userId 
+                          });
+                        }}
                         className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
-                      />
+                      >
+                        <option value="">Select Assignee</option>
+                        {contributors.map((contributor) => (
+                          <option 
+                            key={contributor.user?.email} 
+                            value={contributor.user?.email}
+                            data-user-id={contributor.user_id}
+                          >
+                            {contributor.user?.display_name || 'Anonymous User'} ({contributor.user?.email})
+                          </option>
+                        ))}
+                      </select>
                       <input
                         type="date"
                         value={newTask.dueDate}

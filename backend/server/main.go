@@ -362,15 +362,20 @@ func main() {
 		}
 
 		// Parse the response to get the created task
-		var createdTask Task
-		if err := json.Unmarshal(data, &createdTask); err != nil {
+		var createdTasks []Task
+		if err := json.Unmarshal(data, &createdTasks); err != nil {
 			fmt.Printf("Error unmarshaling task response: %v\n", err)
 			http.Error(w, "Error processing task data", http.StatusInternalServerError)
 			return
 		}
 
+		if len(createdTasks) == 0 {
+			http.Error(w, "No task was created", http.StatusInternalServerError)
+			return
+		}
+
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(createdTask)
+		json.NewEncoder(w).Encode(createdTasks[0])
 	}).Methods("POST", "OPTIONS")
 
 	// Update task endpoint
