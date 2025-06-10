@@ -15,7 +15,7 @@ export default defineConfig({
     host: "0.0.0.0", // Allows external access
     port: Number(process.env.PORT) || 3000, // Use Render's expected port
     strictPort: true, // Prevents fallback to another port
-    allowedHosts: ['imara-platform-1.onrender.com'], // Allow Render host
+    allowedHosts: ['imara-platform-1.onrender.com','www.imarahub.xyz'], // Allow Render host
     sourcemap :false,
   },
   preview: {
