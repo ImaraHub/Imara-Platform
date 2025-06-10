@@ -6,6 +6,7 @@ import (
 	"os"
 	"bytes"
 	"encoding/json"
+	"fmt"
 
 	"github.com/gorilla/websocket"
 )
@@ -22,6 +23,7 @@ var upgrader = websocket.Upgrader{
 // Message is the structure sent/received via WebSocket
 type Message struct {
 	Type     string `json:"type"` // "message" or "typing"
+	ID       string `json:"id,omitempty"` // Add ID field
 	Message  string `json:"message,omitempty"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
@@ -47,12 +49,27 @@ func (c *Client) readPump() {
 			log.Println("read error:", err)
 			break
 		}
-		switch msg.Type {
-		case "message":
-			c.hub.broadcast <- msg
-		case "typing":
-			c.hub.broadcast <- msg
+		
+		// Save message to database first and get ID
+		if msg.Type == "message" {
+			payload := ChatMessagePayload{
+				Message:  msg.Message,
+				Username: msg.Username,
+				Email:    msg.Email,
+			}
+			
+			// Save to Supabase and get the ID
+			supabaseID, err := saveMessageToSupabase(payload)
+			if err != nil {
+				log.Printf("Error saving message to Supabase: %v", err)
+				continue
+			}
+			// Assign the Supabase ID to the message before broadcasting
+			msg.ID = supabaseID
 		}
+		
+		// Broadcast to all clients
+		c.hub.broadcast <- msg
 	}
 }
 
@@ -65,6 +82,51 @@ func (c *Client) writePump() {
 		}
 	}
 	c.conn.Close()
+}
+
+// Helper function to save message to Supabase and return its ID
+func saveMessageToSupabase(payload ChatMessagePayload) (string, error) {
+	supabaseURL := os.Getenv("SUPABASE_URL")
+	supabaseKey := os.Getenv("SUPABASE_SERVICE_KEY")
+	
+	if supabaseURL == "" || supabaseKey == "" {
+		return "", fmt.Errorf("Supabase credentials not set")
+	}
+	
+	apiURL := supabaseURL + "/rest/v1/chat_messages"
+	jsonBody, _ := json.Marshal(payload)
+	
+	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return "", err
+	}
+	
+	req.Header.Set("apikey", supabaseKey)
+	req.Header.Set("Authorization", "Bearer "+supabaseKey)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Prefer", "return=representation") // Request the inserted row back
+	
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		var result []struct { // Supabase returns an array of the inserted row
+			ID string `json:"id"`
+		} 
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			return "", fmt.Errorf("failed to decode Supabase response: %w", err)
+		}
+		if len(result) > 0 {
+			return result[0].ID, nil
+		}
+		return "", fmt.Errorf("no ID returned from Supabase")
+	}
+	
+	return "", fmt.Errorf("Supabase error: %d", resp.StatusCode)
 }
 
 // Hub keeps track of all clients
@@ -157,42 +219,25 @@ func HandleChatMessage(hub *Hub) http.HandlerFunc {
 			return
 		}
 
-		// Prepare the request to Supabase REST API
-		apiURL := supabaseURL + "/rest/v1/chat_messages"
-		jsonBody, _ := json.Marshal(payload)
-		req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonBody))
+		// Prepare the request to Supabase REST API and save message
+		supabaseID, err := saveMessageToSupabase(payload)
 		if err != nil {
+			log.Printf("Error saving message to Supabase via HTTP handler: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"error": "failed to create request"}`))
+			w.Write([]byte(fmt.Sprintf(`{"error": "failed to save message: %v"}`, err)))
 			return
 		}
-		req.Header.Set("apikey", supabaseKey)
-		req.Header.Set("Authorization", "Bearer "+supabaseKey)
-		req.Header.Set("Content-Type", "application/json")
 
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			w.WriteHeader(http.StatusBadGateway)
-			w.Write([]byte(`{"error": "failed to contact Supabase"}`))
-			return
+		// Broadcast the message to all WebSocket clients
+		msg := Message{
+			Type:     "message",
+			ID:       supabaseID, // Include the Supabase ID
+			Message:  payload.Message,
+			Username: payload.Username,
+			Email:    payload.Email,
 		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-			// Broadcast the message to all WebSocket clients
-			msg := Message{
-				Type:     "message",
-				Message:  payload.Message,
-				Username: payload.Username,
-				Email:    payload.Email,
-			}
-			hub.broadcast <- msg
-			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(`{"success": true}`))
-		} else {
-			w.WriteHeader(http.StatusBadGateway)
-			w.Write([]byte(`{"error": "Supabase error"}`))
-		}
+		hub.broadcast <- msg
+		w.WriteHeader(http.StatusCreated)
+		w.Write([]byte(`{"success": true}`))
 	}
 }
