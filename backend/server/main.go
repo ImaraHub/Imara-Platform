@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 	"github.com/supabase-community/supabase-go"
 )
 
@@ -69,11 +69,11 @@ type CreateTaskRequest struct {
 
 func main() {
 	// Replace with your Supabase project URL and API key
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Println("Error loading .env file")
-		return
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	fmt.Println("Error loading .env file")
+	// 	return
+	// }
 	API_URL := os.Getenv("SUPABASE_URL")
 	API_KEY := os.Getenv("SUPABASE_PUBLIC_KEY")
 	if API_URL == "" || API_KEY == "" {
