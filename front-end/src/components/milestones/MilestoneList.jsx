@@ -47,7 +47,7 @@ const MilestoneList = ({ projectId, timeline, contributors }) => {
     const fetchMilestones = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`http://localhost:8000/api/projects/${projectId}/milestones`);
+        const response = await fetch(`https://imara-milestone-service.onrender.com/api/projects/${projectId}/milestones`);
         if (!response.ok) {
           throw new Error('Failed to fetch milestones');
         }
@@ -73,7 +73,7 @@ const MilestoneList = ({ projectId, timeline, contributors }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:8000/api/milestones', {
+      const response = await fetch('https://imara-milestone-service.onrender.com/api/milestones', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ const MilestoneList = ({ projectId, timeline, contributors }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/api/milestones/${milestoneId}/tasks`, {
+      const response = await fetch(`https://imara-milestone-service.onrender.com/api/milestones/${milestoneId}/tasks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -171,7 +171,7 @@ const MilestoneList = ({ projectId, timeline, contributors }) => {
 
   const handleTaskUpdate = async (milestoneId, taskId, updates) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/tasks/${taskId}`, {
+      const response = await fetch(`https://imara-milestone-service.onrender.com/api/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -204,7 +204,7 @@ const MilestoneList = ({ projectId, timeline, contributors }) => {
 
   const handleTaskReview = async (milestoneId, taskId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/tasks/${taskId}/review`, {
+      const response = await fetch(`https://imara-milestone-service.onrender.com/api/tasks/${taskId}/review`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -247,7 +247,7 @@ const MilestoneList = ({ projectId, timeline, contributors }) => {
       formData.append('file', file);
       formData.append('task_id', taskId);
 
-      const response = await fetch(`http://localhost:8000/api/tasks/${taskId}/evidence`, {
+      const response = await fetch(`https://imara-milestone-service.onrender.com/api/tasks/${taskId}/evidence`, {
         method: 'POST',
         body: formData,
       });
@@ -266,7 +266,7 @@ const MilestoneList = ({ projectId, timeline, contributors }) => {
   // Add function to fetch tasks for a milestone
   const fetchMilestoneTasks = async (milestoneId) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/milestones/${milestoneId}/tasks`);
+      const response = await fetch(`https://imara-milestone-service.onrender.com/api/milestones/${milestoneId}/tasks`);
       if (!response.ok) {
         throw new Error('Failed to fetch tasks');
       }
@@ -293,7 +293,7 @@ const MilestoneList = ({ projectId, timeline, contributors }) => {
   // Add function to handle task status update
   const handleTaskStatusUpdate = async (milestoneId, taskId, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/tasks/${taskId}`, {
+      const response = await fetch(`https://imara-milestone-service.onrender.com/api/tasks/${taskId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
