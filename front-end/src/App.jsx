@@ -1,5 +1,5 @@
 import ThemeToggle from './components/ThemeToggle';
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './components/Home';
 import Auth from './components/Auth';
@@ -11,6 +11,7 @@ import ProjectManager from './components/ProjectManager';
 import Stake from './components/stake';
 import TokenizationPage from './components/token';
 import ViewIdea from './components/ViewIdea';
+import ProjectWorkspace from './components/ProjectWorkspace';
 // import StakingProfile from './components/StakingProfile';
 import JoinGroup from './components/joinGroup';
 import AuthCallback from './components/AuthCallback';
@@ -19,6 +20,8 @@ import { useAuth } from './AuthContext';
 
 function App() {
   const { user, loading } = useAuth();
+  const [showAuth, setShowAuth] = useState(false);
+  const [showHome, setShowHome] = useState(false);
 
   if (loading) {
     return (
@@ -38,12 +41,13 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={user ? <Navigate to="/home" /> : <Index />} />
-        <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/home" />} />
+        <Route path="/auth" element={!user ? <Auth setShowAuth={setShowAuth} setShowHome={setShowHome} /> : <Navigate to="/home" />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         {/* <Route path="/builder-profile" element={<BuilderProfile />} /> */}
         <Route path="/home" element={user ? <Home /> : <Navigate to="/auth" />} />
         <Route path="/idea" element={user ? <CreateIdea /> : <Navigate to="/auth" />} />
         <Route path="/idea/:id" element={user ? <ViewIdea /> : <Navigate to="/auth" />} />
+        <Route path="/idea/:id/workspace" element={user ? <ProjectWorkspace /> : <Navigate to="/auth" />} />
         <Route path="/profile" element={user ? <Profile /> : <Navigate to="/auth" />} />
         <Route path="/profile/settings" element={user ? <ProfileSettings /> : <Navigate to="/auth" />} />
         <Route path="/project-manager" element={user ? <ProjectManager /> : <Navigate to="/auth" />} />

@@ -40,33 +40,6 @@ import CreateIdea from './CreateIdea';
 import { displayIdeas } from '../utils/SupabaseClient';
 import { use } from 'react';
 
-const trendingProjects = [
-  {
-    id: 1,
-    title: "DeFi Lending Platform",
-    description: "Decentralized lending platform with AI-driven risk assessment",
-    image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60",
-    category: "DeFi",
-    progress: 75
-  },
-  {
-    id: 2,
-    title: "NFT Marketplace",
-    description: "Community-driven NFT marketplace for digital artists",
-    image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60",
-    category: "NFT",
-    progress: 60
-  },
-  {
-    id: 3,
-    title: "GameFi Project",
-    description: "Play-to-earn gaming platform with unique tokenomics",
-    image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60",
-    category: "Gaming",
-    progress: 85
-  }
-];
-
 const categories = ["All", "DeFi", "NFT", "Gaming", "DAO", "Infrastructure"];
 const stages = ["All Stages", "Ideation", "Development", "Launch Ready"];
 const sortOptions = ["Newest", "Most Popular", "Highest Funded"];
@@ -78,12 +51,16 @@ function Home() {
   const [selectedSort, setSelectedSort] = useState("Newest");
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
-   const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [projects, setProjects] = useState([]);
   const [copiedLink, setCopiedLink] = useState(false);
-   const [showBuilderProfile, setShowBuilderProfile] = useState(false);
+  const [showBuilderProfile, setShowBuilderProfile] = useState(false);
   const [showProjectManager, setShowProjectManager] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredProjects, setFilteredProjects] = useState([]);
+  const [trendingProjects, setTrendingProjects] = useState([]);
+  const projectsPerPage = 6;
 
   const allProjects = displayIdeas();
   const navigate = useNavigate();
@@ -96,12 +73,14 @@ function Home() {
   const [selectedIdea, setSelectedIdea] = useState(null);
   const [showProfileSettings,setShowProfileSettings] = useState(false);
 
-  // call displayIdea from supabaseClient to retrieve posts
-
   useEffect(() => {
     const fetchProjects = async () => {
       const projects = await displayIdeas();
       setProjects(projects || []);
+      
+      // Get top 3 projects based on votes
+      const sortedProjects = [...(projects || [])].sort((a, b) => (b.votes || 0) - (a.votes || 0));
+      setTrendingProjects(sortedProjects.slice(0, 3));
     };
 
     fetchProjects();
@@ -116,6 +95,53 @@ function Home() {
       setUserEmail(address.slice(0, 6) + '...' + address.slice(-4) );
     }
   }, [address]);
+
+  // Add this new useEffect for search functionality
+  useEffect(() => {
+    if (projects) {
+      const filtered = projects.filter(project => 
+        project.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredProjects(filtered);
+    }
+  }, [searchQuery, projects]);
+
+  // Add this new useEffect for sorting functionality
+  useEffect(() => {
+    if (projects) {
+      let sortedProjects = [...projects];
+      
+      switch (selectedSort) {
+        case "Newest":
+          sortedProjects.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          break;
+        case "Most Popular":
+          sortedProjects.sort((a, b) => (b.votes || 0) - (a.votes || 0));
+          break;
+        case "Highest Funded":
+          sortedProjects.sort((a, b) => (b.stakeAmount || 0) - (a.stakeAmount || 0));
+          break;
+        default:
+          break;
+      }
+
+      // Apply search filter if there's a search query
+      if (searchQuery) {
+        sortedProjects = sortedProjects.filter(project => 
+          project.title.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+
+      setFilteredProjects(sortedProjects);
+    }
+  }, [selectedSort, projects, searchQuery]);
+
+  // Calculate pagination
+  const indexOfLastProject = currentPage * projectsPerPage;
+  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
+  const currentProjects = (searchQuery || selectedSort !== "Newest" ? filteredProjects : projects)
+    .slice(indexOfFirstProject, indexOfLastProject);
+  const totalPages = Math.ceil((searchQuery || selectedSort !== "Newest" ? filteredProjects : projects).length / projectsPerPage);
 
   const handleIdeaClick = (idea) => {
     navigate(`/idea/${idea.id}`, { 
@@ -134,7 +160,7 @@ function Home() {
   }
   
   const handleCopyLink = (projectId) => {
-    const url = `https://imara.com/project/${projectId}`;
+    const url = `https://imara-platform-1.onrender.com/project/${projectId}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -173,7 +199,7 @@ function Home() {
 
         <div className="bg-gray-700/50 p-3 rounded-lg flex items-center gap-3">
           <div className="flex-1 truncate text-gray-300 text-sm">
-            https://imara.com/project/{project.id}
+            https://imaraplatform-1.onrender.com/project/{project.id}
           </div>
           <button
             onClick={() => handleCopyLink(project.id)}
@@ -296,28 +322,28 @@ function Home() {
         <Carousel className="rounded-xl overflow-hidden">
           {trendingProjects.map((project) => (
             <Carousel.Item key={project.id}>
-              <div className="relative h-[400px]" >
+              <div className="relative h-[400px]">
                 <img
                   className="w-full h-full object-cover"
-                  src={project.image}
+                  src={project.image || "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&auto=format&fit=crop&q=60"}
                   alt={project.title}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" >
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent">
                   <div className="absolute bottom-0 left-0 right-0 p-8">
                     <h3 className="text-3xl font-bold text-white mb-2">{project.title}</h3>
-                    <p className="text-gray-200 mb-4">{project.description}</p>
+                    <p className="text-gray-200 mb-4">{project.projectDescription}</p>
                     <div className="flex items-center gap-4">
                       <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm">
-                        {project.category}
+                        {project.categories}
                       </span>
                       <div className="flex items-center gap-2">
                         <div className="w-32 h-2 bg-gray-700 rounded-full">
                           <div
                             className="h-full bg-blue-500 rounded-full"
-                            style={{ width: `${project.progress}%` }}
+                            style={{ width: `${(project.votes || 0) * 10}%` }}
                           />
                         </div>
-                        <span className="text-gray-400 text-sm">{project.progress}%</span>
+                        <span className="text-gray-400 text-sm">{project.votes || 0} votes</span>
                       </div>
                     </div>
                   </div>
@@ -339,6 +365,8 @@ function Home() {
                   <input
                     type="text"
                     placeholder="Search projects..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <Search className="absolute right-3 top-2.5 w-5 h-5 text-gray-400" />
@@ -401,7 +429,7 @@ function Home() {
 {/* AllProject */}
           <div className="flex-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => (
+              {currentProjects.map((project) => (
                 
                 <div
                   key={project.id}
@@ -500,26 +528,38 @@ function Home() {
             <div className="flex justify-center items-center gap-2 mt-8">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                className="p-2 rounded-lg bg-gray-800/50 text-gray-400 hover:bg-gray-700 transition-colors"
+                disabled={currentPage === 1}
+                className={`p-2 rounded-lg ${
+                  currentPage === 1 
+                    ? 'bg-gray-800/30 text-gray-600 cursor-not-allowed' 
+                    : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700'
+                } transition-colors`}
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              {[1, 2, 3].map((page) => (
+              
+              {[...Array(totalPages)].map((_, index) => (
                 <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
+                  key={index + 1}
+                  onClick={() => setCurrentPage(index + 1)}
                   className={`w-10 h-10 rounded-lg ${
-                    currentPage === page
+                    currentPage === index + 1
                       ? 'bg-blue-500 text-white'
                       : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700'
                   } transition-colors`}
                 >
-                  {page}
+                  {index + 1}
                 </button>
               ))}
+              
               <button
-                onClick={() => setCurrentPage(Math.min(3, currentPage + 1))}
-                className="p-2 rounded-lg bg-gray-800/50 text-gray-400 hover:bg-gray-700 transition-colors"
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-lg ${
+                  currentPage === totalPages 
+                    ? 'bg-gray-800/30 text-gray-600 cursor-not-allowed' 
+                    : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700'
+                } transition-colors`}
               >
                 <ChevronRight className="w-5 h-5" />
               </button>

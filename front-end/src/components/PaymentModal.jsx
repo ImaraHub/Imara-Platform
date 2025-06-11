@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, CreditCard, Smartphone, Loader, Check, AlertCircle, RefreshCw } from 'lucide-react';
-import { useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
+import { useAddress, useContract, useContractWrite, ConnectWallet } from "@thirdweb-dev/react";
 import { ethers } from 'ethers';
 import { useNavigate } from 'react-router-dom';
 import stakeToken from '../utils/stake';
@@ -9,6 +9,7 @@ import { jsPDF } from 'jspdf';
 import { useAuth } from '../AuthContext';
 import { addProjectContributor } from '../utils/SupabaseClient';
 import { sendStakingConfirmationEmail } from '../utils/emailService';
+import { addUserData, updateUser } from '../utils/SupabaseClient';
 
 // Lisk Stake Contract ABI (minimal for stake function)
 const STAKE_ABI = [
@@ -114,7 +115,7 @@ const USDT_ABI = [
 
 const USDT_CONTRACT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"; // Polygon USDT
 
-const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, userEmail }) => {
+const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, userEmail, role, formData }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState('usdt');
@@ -167,7 +168,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
         clearInterval(interval);
         setPollingInterval(null);
         setPaymentStatus('error');
-        setErrorMessage(error.message);
+        setErrorMessage('Failed to poll payment status');
       }
     }, 2000);
 
@@ -221,7 +222,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
     } catch (error) {
       console.error('Stake error:', error);
       setPaymentStatus('error');
-      setErrorMessage(error.message || 'Failed to stake USDT');
+      setErrorMessage(`stake lisk error ${result.message}` || 'Failed to stake USDT');
     }
   };
 
@@ -231,6 +232,21 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
     setPaymentStatus('pending');
 
     try {
+      // First update user data in database
+      const stakerAddress = paymentMethod === 'usdt' ? address : phoneNumber;
+      console.log("Updating user data with staker address:", stakerAddress);
+      console.log("Form data being sent:", formData);
+      
+      if (!formData) {
+        throw new Error('Form data is required');
+      }
+
+      const result = await addUserData(formData, user, stakerAddress);
+      if (result !== true) {
+        await updateUser(user, formData, stakerAddress);
+      }
+      console.log("User data updated successfully");
+
       if (paymentMethod === 'usdt') {
         await handleLiskStake();
       } else {
@@ -279,10 +295,23 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
     // If we have a project prop, we're in the join group context
     if (project) {
       try {
-        // Add user as contributor to the project
-        console.log("Adding user as contributor to project:", project.id);
-        await addProjectContributor(project, user, "member");
-        console.log("User added as contributor successfully");
+        // Navigate first to prevent the join group page from showing
+        navigate(`/idea/${project.id}`, { 
+          state: { 
+            project, 
+            stakeSuccess: true,
+            paymentData,
+            isContributor: true
+          } 
+        });
+
+        // Then handle the async operations
+        const result = await onPaymentComplete(paymentData);
+        
+        if (!result.success) {
+          console.error("Error updating user data:", result.error);
+          return;
+        }
 
         // Send confirmation email
         console.log("Sending email to:", userEmail);
@@ -301,23 +330,30 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
           console.warn('Failed to send confirmation email');
         }
 
-        // Navigate to the project page with updated state
+        // Fetch updated project data
+        const updatedProject = await fetchProjectById(project.id);
+        console.log("Updated project data:", updatedProject);
+
+        // Update the state with the latest data
         navigate(`/idea/${project.id}`, { 
           state: { 
-            project, 
+            project: updatedProject, 
             stakeSuccess: true,
-            paymentData 
+            paymentData,
+            isContributor: true,
+            userData: result.userData
           } 
         });
+
       } catch (error) {
         console.error("Error in handleContinue:", error);
-        // Still navigate even if contributor addition fails
+        // The user is already on the ViewIdea page, so we just need to show an error message
         navigate(`/idea/${project.id}`, { 
           state: { 
             project, 
             stakeSuccess: true,
             paymentData,
-            error: "Payment successful but failed to add as contributor. Please contact support."
+            error: error.message || "Payment successful but failed to update user data. Please contact support."
           } 
         });
       }
@@ -446,14 +482,48 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
           </div>
         )}
 
-        {/* Wallet Warning - Only for USDT */}
+        {/* Wallet Connection - Only for USDT */}
         {paymentMethod === 'usdt' && !address && (
-          <div className="mb-6 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-yellow-400" />
-              <p className="text-sm text-yellow-300">
-                Please connect your wallet to proceed with USDT staking
-              </p>
+          <div className="mb-6 space-y-4">
+            <div className="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+              <div className="flex items-center gap-2 mb-4">
+                <AlertCircle className="w-5 h-5 text-yellow-400" />
+                <p className="text-sm text-yellow-300">
+                  Please connect your wallet to proceed with USDT staking
+                </p>
+              </div>
+              <ConnectWallet 
+                theme="dark"
+                btnTitle="Connect Wallet"
+                modalSize="wide"
+                welcomeScreen={{
+                  title: "Welcome to Imara Platform",
+                  subtitle: "Connect your wallet to stake USDT"
+                }}
+                modalTitleIconUrl=""
+                termsOfServiceUrl=""
+                privacyPolicyUrl=""
+                switchToActiveChain={true}
+                modalTitle="Connect Your Wallet"
+                auth={{
+                  loginOptional: false
+                }}
+                style={{
+                  width: "100%",
+                  height: "48px",
+                  backgroundColor: "#3b82f6",
+                  color: "white",
+                  borderRadius: "0.5rem",
+                  fontSize: "1rem",
+                  fontWeight: "600",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease-in-out",
+                  _hover: {
+                    backgroundColor: "#2563eb"
+                  }
+                }}
+              />
             </div>
           </div>
         )}
@@ -463,6 +533,11 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
           <div className="mb-6 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
             <div className="flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-blue-400" />
+              <p className="text-sm text-blue-300">
+                Connected Wallet: <span className="font-mono text-xs">{address.slice(0, 6)}...{address.slice(-4)}</span>
+              </p>
+            </div>
+            <div className="mt-2">
               <p className="text-sm text-blue-300">
                 You will stake 1 USDT in the Lisk contract
               </p>
@@ -562,7 +637,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400">Transaction Hash:</span>
                       <a 
-                        href={`https://polygonscan.com/tx/${transactionHash}`}
+                        href={`https:blockscout.lisk.com/tx/${transactionHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-green-400 hover:text-green-300 font-mono text-xs truncate max-w-[200px]"
