@@ -276,6 +276,10 @@ export const updateUser = async (user, formData, address) => {
 
 export const addProjectContributor = async (project, user, role) => {
     try {
+        if (!project || !project.id) {
+          console.error("Project ID is missing!");
+          return "Project ID is required";
+         }   
         const { data, error } = await supabase
             .from('idea_contributors')
             .insert([
@@ -284,6 +288,7 @@ export const addProjectContributor = async (project, user, role) => {
                     user_id: user.id,
                     role: role,
                     approved_status: 'pending',
+                    stake_status:"staked"
                 },
             ]);
 
@@ -302,54 +307,76 @@ export const addProjectContributor = async (project, user, role) => {
 
 
 
-export const getProjectContributors = async (project, user) => {
-    try {
-        const { data, error } = await supabase
-            .from('idea_contributors')
-            .select('*') // Select all columns for now
-            .eq('idea_id', project.id);
-            // .eq('user_id', user.id); // Optional: filter by user if needed
+    //  retrieve project contributors from db based on project id and user.id
+    export const getProjectContributors = async (project, user) => {
+      try {
+          if (!project || !project.id) {
+              console.error("Project ID is missing!");
+              return "Project ID is required";
+          }
+          if (!user || !user.id) {
+              console.error("User ID is missing!");
+              return "User ID is required";
+          }
+          // Retrieve project contributors from the database      
+          const { data, error } = await supabase
+          .from('idea_contributors')
+          .select('*')
+          .eq('idea_id', project.id)
+          .eq('user_id', user.id);
+          if (error) {
+              console.error("Error fetching project contributors:", error);
+              return null;
+          }
+          return data;
+      }
 
-        if (error) {
-            console.error("Error fetching project contributors:", error);
-            return [];
-        }
-
-        return data;
-    } catch (err) {
-        console.error("Unexpected error in getProjectContributors:", err);
-        return [];
-    }
-};
+      catch (err) {
+          console.error("Unexpected error:", err);
+          return null;
+      }
+  }   
 
 export const retrieveJoinedProjects = async (user) => {
     try {
-      const { data, error } = await supabase
-        .from('idea_contributors')
-        .select(
-          `
-            idea_id,
-            ideas (*)
-          `
-        )
-        .eq('user_id', user.id)
-        .eq('approved_status', 'approved');
-  
-      if (error) {
-        console.error("Error fetching joined projects:", error);
-        return [];
-      }
-  
-      // Extract the idea objects from the nested structure
-      const joinedProjects = data.map(item => item.ideas);
-  
-      return joinedProjects;
-    } catch (err) {
-      console.error("Unexpected error in retrieveJoinedProjects:", err);
-      return [];
-    }
-  };
+        // First get the contributor records for the user
+        const { data: contributorData, error: contributorError } = await supabase
+            .from('idea_contributors')
+            .select(`
+                *,
+                ideas:idea_id (
+                    id,
+                    title,
+                    projectDescription,
+                    image,
+                    categories,
+                    created_at,
+                    uid
+                )
+            `)
+            .eq('user_id', user.id)
+            .eq('approved_status', 'pending');
 
+        if (contributorError) {
+            console.error("Error fetching joined projects:", contributorError);
+            return null;
+        }
+
+        // Transform the data to include both contributor and idea information
+        const joinedProjects = contributorData.map(contributor => ({
+            ...contributor.ideas,
+            role: contributor.role,
+            joinedDate: contributor.created_at,
+            stake_status: contributor.stake_status,
+            approved_status: contributor.approved_status
+        }));
+
+        return joinedProjects;
+    } catch (err) {
+        console.error("Unexpected error in retrieveJoinedProjects:", err);
+        return null;
+    }
+}
   export const retrieveCreatedProjects = async (user) => {
     try {
       const { data, error } = await supabase
@@ -465,7 +492,8 @@ export const isRoleAvailable = async (projectId, role) => {
         return false;
     }
 };
-
+// Backend API Base URL (Replace with your deployed backend URL in production)
+const BACKEND_API_BASE_URL = 'http://localhost:8080/api';
 // Chat related functions
 export const createChatMessage = async (projectId, userId, message, userData) => {
   try {

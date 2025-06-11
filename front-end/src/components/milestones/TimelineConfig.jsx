@@ -12,7 +12,7 @@ const TimelineConfig = ({ onTimelineUpdate, projectId }) => {
   useEffect(() => {
     const checkExistingTimeline = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/projects/${projectId}/timeline`);
+        const response = await fetch(`http://localhost:8000/api/projects/${projectId}/timeline`);
         if (!response.ok) {
           throw new Error('Failed to fetch timeline');
         }
