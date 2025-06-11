@@ -1,5 +1,5 @@
 import ThemeToggle from './components/ThemeToggle';
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './components/Home';
 import Auth from './components/Auth';
@@ -20,6 +20,8 @@ import { useAuth } from './AuthContext';
 
 function App() {
   const { user, loading } = useAuth();
+  const [showAuth, setShowAuth] = useState(false);
+  const [showHome, setShowHome] = useState(false);
 
   if (loading) {
     return (
@@ -39,7 +41,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={user ? <Navigate to="/home" /> : <Index />} />
-        <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/home" />} />
+        <Route path="/auth" element={!user ? <Auth setShowAuth={setShowAuth} setShowHome={setShowHome} /> : <Navigate to="/home" />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         {/* <Route path="/builder-profile" element={<BuilderProfile />} /> */}
         <Route path="/home" element={user ? <Home /> : <Navigate to="/auth" />} />

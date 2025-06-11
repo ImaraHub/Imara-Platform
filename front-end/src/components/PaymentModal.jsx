@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, CreditCard, Smartphone, Loader, Check, AlertCircle, RefreshCw } from 'lucide-react';
-import { useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
+import { useAddress, useContract, useContractWrite, ConnectWallet } from "@thirdweb-dev/react";
 import { ethers } from 'ethers';
 import { useNavigate } from 'react-router-dom';
 import stakeToken from '../utils/stake';
@@ -482,14 +482,48 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
           </div>
         )}
 
-        {/* Wallet Warning - Only for USDT */}
+        {/* Wallet Connection - Only for USDT */}
         {paymentMethod === 'usdt' && !address && (
-          <div className="mb-6 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-yellow-400" />
-              <p className="text-sm text-yellow-300">
-                Please connect your wallet to proceed with USDT staking
-              </p>
+          <div className="mb-6 space-y-4">
+            <div className="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+              <div className="flex items-center gap-2 mb-4">
+                <AlertCircle className="w-5 h-5 text-yellow-400" />
+                <p className="text-sm text-yellow-300">
+                  Please connect your wallet to proceed with USDT staking
+                </p>
+              </div>
+              <ConnectWallet 
+                theme="dark"
+                btnTitle="Connect Wallet"
+                modalSize="wide"
+                welcomeScreen={{
+                  title: "Welcome to Imara Platform",
+                  subtitle: "Connect your wallet to stake USDT"
+                }}
+                modalTitleIconUrl=""
+                termsOfServiceUrl=""
+                privacyPolicyUrl=""
+                switchToActiveChain={true}
+                modalTitle="Connect Your Wallet"
+                auth={{
+                  loginOptional: false
+                }}
+                style={{
+                  width: "100%",
+                  height: "48px",
+                  backgroundColor: "#3b82f6",
+                  color: "white",
+                  borderRadius: "0.5rem",
+                  fontSize: "1rem",
+                  fontWeight: "600",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease-in-out",
+                  _hover: {
+                    backgroundColor: "#2563eb"
+                  }
+                }}
+              />
             </div>
           </div>
         )}
@@ -499,6 +533,11 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
           <div className="mb-6 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
             <div className="flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-blue-400" />
+              <p className="text-sm text-blue-300">
+                Connected Wallet: <span className="font-mono text-xs">{address.slice(0, 6)}...{address.slice(-4)}</span>
+              </p>
+            </div>
+            <div className="mt-2">
               <p className="text-sm text-blue-300">
                 You will stake 1 USDT in the Lisk contract
               </p>
