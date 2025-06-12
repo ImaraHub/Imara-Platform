@@ -40,8 +40,8 @@ export const initiateMpesaPayment = async (phoneNumber, amount) => {
     };
 
     console.log('Making request to:', `${SWYPT_API_URL}/swypt-onramp`);
-    console.log('Request payload:', requestPayload);
-    console.log('Request headers:', getAuthHeaders());
+    // console.log('Request payload:', requestPayload);
+    // console.log('Request headers:', getAuthHeaders());
     
     // Initiate STK push to user's phone number
     const response = await axios.post(`${SWYPT_API_URL}/swypt-onramp`, requestPayload, {
@@ -74,7 +74,7 @@ export const checkOnrampStatus = async (orderID) => {
       headers: getAuthHeaders()
     });
 
-    console.log(response.data);
+    // console.log(response.data);
     if (response.data.status === 'success') {
       return {
         success: true,
@@ -87,7 +87,7 @@ export const checkOnrampStatus = async (orderID) => {
       throw new Error(response.data.message || 'Failed to check payment status');
     }
   } catch (error) {
-    console.error('Status check error:', error);
+    // console.error('Status check error:', error);
     throw new Error(
       error.response?.data?.message || 
       error.message || 
@@ -105,7 +105,7 @@ export const processCryptoTransfer = async (orderID, userAddress) => {
       throw new Error('Failed to get order details');
     }
 
-    console.log('Processing crypto transfer:', { orderID, userAddress });
+    // console.log('Processing crypto transfer:', { orderID, userAddress });
 
     const response = await axios.post(`${SWYPT_API_URL}/swypt-deposit`, {
       chain: 'lisk',
@@ -116,7 +116,7 @@ export const processCryptoTransfer = async (orderID, userAddress) => {
       headers: getAuthHeaders()
     });
 
-    console.log('Crypto transfer response:', response.data);
+    // console.log('Crypto transfer response:', response.data);
 
     if (response.data.status === 200) {
       return {
