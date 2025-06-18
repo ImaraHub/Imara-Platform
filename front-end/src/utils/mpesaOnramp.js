@@ -111,7 +111,7 @@ export const processCryptoTransfer = async (orderID, userAddress) => {
       chain: 'lisk',
       address: userAddress,
       orderID: orderID,
-      project: 'onramp'
+      project: 'imara'
     }, {
       headers: getAuthHeaders()
     });
