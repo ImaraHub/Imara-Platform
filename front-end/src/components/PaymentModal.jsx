@@ -10,110 +10,15 @@ import { useAuth } from '../AuthContext';
 import { addProjectContributor } from '../utils/SupabaseClient';
 import { sendStakingConfirmationEmail } from '../utils/emailService';
 import { addUserData, updateUser } from '../utils/SupabaseClient';
+import { generatePermitSignature } from '../utils/permit';
 
-// Lisk Stake Contract ABI (minimal for stake function)
-const STAKE_ABI = [
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "stake",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "balanceOf",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  }
+
+// Add the depositWithPermit ABI
+const DEPOSIT_CONTRACT_ADDRESS = '0x3df3ef1ede72c486066af309a9ec794004c0943a';
+const DEPOSIT_CONTRACT_ABI = [
+  'function depositWithPermit(address token, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns (uint256)'
 ];
-
-// USDT Contract ABI (for approval)
-const USDT_ABI = [
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "spender",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "approve",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "balanceOf",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "decimals",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  }
-];
-
-const USDT_CONTRACT_ADDRESS = "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"; // Polygon USDT
+const USDT_CONTRACT_ADDRESS = '0x8a21CF9Ba08Ae709D64Cb25AfAA951183EC9FF6D';
 
 const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, userEmail, role, formData }) => {
   const navigate = useNavigate();
@@ -175,54 +80,74 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
     setPollingInterval(interval);
   };
 
-  const handleLiskStake = async () => {
+  // New handler for USDT staking with permit
+  const handleUsdtStakeWithPermit = async () => {
     try {
-      if (!address) {
-        throw new Error('Please connect your wallet first');
-      }
+      if (!window.ethereum) throw new Error('MetaMask is not installed');
+      if (!address) throw new Error('Please connect your wallet first');
 
-      // Convert amount to USDT decimals (6 decimals for USDT)
+      setIsProcessing(true);
+      setErrorMessage('');
+      setPaymentStatus('pending');
+
+      // Setup provider and signer
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send('eth_requestAccounts', []);
+      const signer = provider.getSigner();
+      const owner = address;
+      const spender = DEPOSIT_CONTRACT_ADDRESS;
+      const tokenAddress = USDT_CONTRACT_ADDRESS;
+      const chainId = (await provider.getNetwork()).chainId;
       const amountInDecimals = ethers.utils.parseUnits("1", 6); // 1 USDT
+      const deadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
 
-      // Check USDT balance
-      const balance = await usdtContract.call("balanceOf", [address]);
-      if (balance.lt(amountInDecimals)) {
-        throw new Error('Insufficient USDT balance');
-      }
-
-      // First approve the stake contract to spend USDT
-      const approveTx = await approveUSDT({
-        args: [stakeContractAddress, amountInDecimals],
-      });
-      
-      // Wait for approval transaction to be mined
-      await approveTx.wait();
-
-      // Now stake the USDT
-      const stakeTx = await stake({
-        args: [amountInDecimals],
+      // Generate permit signature
+      const { v, r, s } = await generatePermitSignature({
+        tokenAddress,
+        owner,
+        spender,
+        value: amountInDecimals,
+        deadline,
+        provider,
+        signer,
+        chainId
       });
 
-      // Wait for stake transaction to be mined
-      const receipt = await stakeTx.wait();
-      
-      setTransactionHash(receipt.transactionHash);
+      // Deposit contract instance
+      const depositContract = new ethers.Contract(
+        DEPOSIT_CONTRACT_ADDRESS,
+        DEPOSIT_CONTRACT_ABI,
+        signer
+      );
+
+      // Call depositWithPermit
+      const tx = await depositContract.depositWithPermit(
+        tokenAddress,
+        amountInDecimals,
+        deadline,
+        v,
+        r,
+        s
+      );
+      setTransactionHash(tx.hash);
+      const receipt = await tx.wait();
       setPaymentStatus('success');
-      onPaymentComplete({ 
-        method: 'usdt', 
-        address: address,
+      onPaymentComplete({
+        method: 'usdt',
+        address,
         details: {
-          hash: receipt.transactionHash,
+          hash: tx.hash,
           amount: "1",
           token: "USDT",
           type: "stake"
         }
       });
-
     } catch (error) {
-      console.error('Stake error:', error);
       setPaymentStatus('error');
-      setErrorMessage(`stake lisk error ${result.message}` || 'Failed to stake USDT');
+      setErrorMessage(error.message || 'Failed to stake USDT with permit');
+      console.error('USDT permit stake error:', error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -248,7 +173,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
       console.log("User data updated successfully");
 
       if (paymentMethod === 'usdt') {
-        await handleLiskStake();
+        await handleUsdtStakeWithPermit();
       } else {
         // Handle M-Pesa payment
         if (!phoneNumber || phoneNumber.length < 10) {
