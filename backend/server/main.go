@@ -591,6 +591,6 @@ func main() {
 		})
 	}).Methods("POST", "OPTIONS")
 
-	fmt.Println("Server starting on :8080")
-	http.ListenAndServe(":8080", r)
+	fmt.Println("Server starting on :8000")
+	http.ListenAndServe(":8000", r)
 }
