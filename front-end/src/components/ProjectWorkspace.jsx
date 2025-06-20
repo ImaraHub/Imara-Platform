@@ -154,7 +154,7 @@ function ProjectWorkspace() {
   const handleTimelineUpdate = async (newTimeline) => {
     try {
       // First check if a timeline already exists
-      const checkResponse = await fetch(`http://localhost:8000/api/projects/${id}/timeline`, {
+      const checkResponse = await fetch(`https://imara-milestone-service.onrender.com/api/projects/${id}/timeline`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -181,7 +181,7 @@ function ProjectWorkspace() {
 
       // If no timeline exists, save the new one
       console.log('No existing timeline, saving new timeline');
-      const response = await fetch('http://localhost:8000/api/timeline', {
+      const response = await fetch('https://imara-milestone-service.onrender.com/api/timeline', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,7 +215,7 @@ function ProjectWorkspace() {
   useEffect(() => {
     const fetchMilestones = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/projects/${id}/milestones`);
+        const response = await fetch(`https://imara-milestone-service.onrender.com/projects/${id}/milestones`);
         if (!response.ok) {
           throw new Error('Failed to fetch milestones');
         }

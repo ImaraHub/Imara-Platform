@@ -14,7 +14,7 @@ function Chat({ currentUser }) {
 
   useEffect(() => {
     // Connect to WebSocket server
-    socketRef.current = new WebSocket('ws://localhost:8080/ws');
+    socketRef.current = new WebSocket('wss://imara-chatservice.onrender.com/ws');
 
     socketRef.current.onopen = () => {
       console.log('WebSocket connected');

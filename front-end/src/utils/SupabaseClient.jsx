@@ -493,7 +493,9 @@ export const isRoleAvailable = async (projectId, role) => {
     }
 };
 // Backend API Base URL (Replace with your deployed backend URL in production)
-const BACKEND_API_BASE_URL = 'http://localhost:8080/api';
+// const BACKEND_API_BASE_URL = 'http://localhost:8080/api';
+const BACKEND_API_BASE_URL = 'https://imara-chatservice.onrender.com/api'; // ✅ Correct
+
 // Chat related functions
 export const createChatMessage = async (projectId, userId, message, userData) => {
   try {
