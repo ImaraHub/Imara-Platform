@@ -99,10 +99,12 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
         throw new Error('Please switch to the Lisk Sepolia test network');
       }
       const amountInDecimals = ethers.utils.parseUnits("0.0001", 18); // 1 LSK
+
+      console.log(amountInDecimals.toString(), "amount in decimals");
       const deadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
 
       // Generate permit signature
-      const { v, r, s } = await generatePermitSignature({
+      const { v, r, s, error } = await generatePermitSignature({
         tokenAddress,
         owner,
         spender,
@@ -112,6 +114,9 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
         signer,
         chainId
       });
+      if (error) {
+        throw new Error(`Insufficient Balance in Your Wallet`);
+      }
 
       // Deposit contract instance
       const depositContract = new ethers.Contract(
@@ -144,6 +149,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
       });
     } catch (error) {
       setPaymentStatus('error');
+      console.log("Error during USDT staking with permit:", error);
       setErrorMessage(error.message || 'Failed to stake USDT with permit');
       console.error('USDT permit stake error:', error);
     } finally {
@@ -175,6 +181,8 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
       if (paymentMethod === 'usdt') {
         await handleUsdtStakeWithPermit();
       } else {
+        //  clear errors
+        
         // Handle M-Pesa payment
         if (!phoneNumber || phoneNumber.length < 10) {
           throw new Error('Please enter a valid phone number');
