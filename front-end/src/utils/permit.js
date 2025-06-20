@@ -14,6 +14,7 @@ import { ethers } from "ethers";
  * @param {number} params.chainId - Chain ID
  * @returns {Promise<{v: number, r: string, s: string}>}
  */
+
 export async function generatePermitSignature({
   tokenAddress,
   owner,
@@ -23,68 +24,78 @@ export async function generatePermitSignature({
   signer,
   chainId
 }) {
-  // Minimal ABI for permit
-  const ERC20PermitABI = [
-    "function nonces(address) view returns (uint256)",
-    "function name() view returns (string)",
-    "function DOMAIN_SEPARATOR() view returns (bytes32)",
-    'function balanceOf(address) view returns (uint256)',
-    'function allowance(address, address) view returns (uint256)',
-    'function nonces(address) view returns (uint256)',
-  ];
-
-
-  const balance = await token.balanceOf(wallet.address);
-  console.log(`🪙 Wallet balance: ${ethers.formatUnits(balance, 18)} LSK`);
-  console.log(`🛠  Attempting to permit: ${ethers.formatUnits(AMOUNT, 18)} LSK`);
-  
-  if (balance.lt(AMOUNT)) {
-    console.error("❌ Insufficient balance: can't approve more than owned.");
-    process.exit(1); // Exit early
-  }
-
-  const token = new ethers.Contract(tokenAddress, ERC20PermitABI, signer);
-
-  // Get nonce
-  const nonce = await token.nonces(owner);
-
-  // Get token name
-  let name = "LSK";
   try {
-    name = await token.name();
-  } catch (e) {
-    console.warn("Token name() failed, using fallback 'LSK'");
+    // Minimal ABI for permit
+    const ERC20PermitABI = [
+      "function nonces(address) view returns (uint256)",
+      "function name() view returns (string)",
+      "function DOMAIN_SEPARATOR() view returns (bytes32)",
+      "function balanceOf(address) view returns (uint256)",
+      "function allowance(address, address) view returns (uint256)"
+    ];
+
+    const token = new ethers.Contract(tokenAddress, ERC20PermitABI, signer);
+
+    const balance = await token.balanceOf(owner);
+    console.log(`🪙 Wallet balance: ${balance} LSK`);
+    console.log(`🛠  Attempting to permit ${value} LSK from ${owner}`);
+    console.log("valueeeeeeeee", value, typeof value);
+
+    if (balance.lt(value)) {
+      const errMessage = "❌ Insufficient balance: can't approve more than owned.";
+      console.error(errMessage);
+      return { error: errMessage };
+    }
+
+ 
+    // Get nonce
+    const nonce = await token.nonces(owner);
+
+    // Get token name
+    let name = "LSK";
+    try {
+      name = await token.name();
+    } catch {
+      console.warn("⚠️ token.name() failed, using fallback 'LSK'");
+    }
+
+    // Domain
+    const domain = {
+      name,
+      version: "1",
+      chainId,
+      verifyingContract: tokenAddress
+    };
+console.log("value", value, typeof value);
+    // Types
+    const types = {
+      Permit: [
+        { name: "owner", type: "address" },
+        { name: "spender", type: "address" },
+        { name: "value", type: "uint256" },
+        { name: "nonce", type: "uint256" },
+        { name: "deadline", type: "uint256" }
+      ]
+    };
+
+    const message = {
+      owner,
+      spender,
+      value: value.toString(),
+      nonce: nonce.toString(),
+      deadline: deadline.toString()
+    };
+
+    // Sign the message
+    const signature = await signer._signTypedData(domain, types, message);
+    const { v, r, s } = ethers.utils.splitSignature(signature);
+
+    return { v, r, s, nonce, deadline };
+
+  } catch (error) {
+    console.error("❌ generatePermitSignature error:", error);
+    return {
+      error: error.message || "Unknown error during permit signature generation."
+    };
   }
-
-  // EIP-2612 domain
-  const domain = {
-    name,
-    version: "1",
-    chainId,
-    verifyingContract: tokenAddress
-  };
-
-  // EIP-2612 types
-  const types = {
-    Permit: [
-      { name: "owner", type: "address" },
-      { name: "spender", type: "address" },
-      { name: "value", type: "uint256" },
-      { name: "nonce", type: "uint256" },
-      { name: "deadline", type: "uint256" }
-    ]
-  };
-
-  const message = {
-    owner,
-    spender,
-    value: value.toString(),
-    nonce: nonce.toString(),
-    deadline: deadline.toString()
-  };
-
-  // Sign the permit
-  const signature = await signer._signTypedData(domain, types, message);
-  const { v, r, s } = ethers.utils.splitSignature(signature);
-  return { v, r, s , nonce, deadline};
-} 
+}
