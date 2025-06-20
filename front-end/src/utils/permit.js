@@ -20,7 +20,6 @@ export async function generatePermitSignature({
   spender,
   value,
   deadline,
-  provider,
   signer,
   chainId
 }) {
@@ -28,21 +27,33 @@ export async function generatePermitSignature({
   const ERC20PermitABI = [
     "function nonces(address) view returns (uint256)",
     "function name() view returns (string)",
-    "function DOMAIN_SEPARATOR() view returns (bytes32)"
+    "function DOMAIN_SEPARATOR() view returns (bytes32)",
+    'function balanceOf(address) view returns (uint256)',
+    'function allowance(address, address) view returns (uint256)',
+    'function nonces(address) view returns (uint256)',
   ];
 
-  const token = new ethers.Contract(tokenAddress, ERC20PermitABI, provider);
+
+  const balance = await token.balanceOf(wallet.address);
+  console.log(`🪙 Wallet balance: ${ethers.formatUnits(balance, 18)} LSK`);
+  console.log(`🛠  Attempting to permit: ${ethers.formatUnits(AMOUNT, 18)} LSK`);
+  
+  if (balance.lt(AMOUNT)) {
+    console.error("❌ Insufficient balance: can't approve more than owned.");
+    process.exit(1); // Exit early
+  }
+
+  const token = new ethers.Contract(tokenAddress, ERC20PermitABI, signer);
 
   // Get nonce
   const nonce = await token.nonces(owner);
 
   // Get token name
-  let name;
+  let name = "LSK";
   try {
     name = await token.name();
-  } catch {
-    // fallback: use a default name if not implemented
-    name = "Token";
+  } catch (e) {
+    console.warn("Token name() failed, using fallback 'LSK'");
   }
 
   // EIP-2612 domain
@@ -75,5 +86,5 @@ export async function generatePermitSignature({
   // Sign the permit
   const signature = await signer._signTypedData(domain, types, message);
   const { v, r, s } = ethers.utils.splitSignature(signature);
-  return { v, r, s };
+  return { v, r, s , nonce, deadline};
 } 
