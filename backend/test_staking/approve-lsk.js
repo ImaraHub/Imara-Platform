@@ -1,15 +1,98 @@
 // approve-lsk.js
 const { ethers } = require("ethers");
 
+/**
+ * Generate permit signature for ERC20 tokens with permit functionality
+ * @param {object} params - Permit parameters
+ * @param {string} params.tokenAddress - ERC20 token contract address
+ * @param {string} params.ownerAddress - Token owner address
+ * @param {string} params.spenderAddress - Spender address (contract)
+ * @param {string} params.amount - Amount to approve (in wei/smallest unit)
+ * @param {number} params.deadline - Unix timestamp deadline
+ * @param {object} params.signer - Ethers signer object
+ * @param {number} params.chainId - Chain ID (1 for mainnet, 5 for goerli, etc.)
+ * @returns {object} Signature components {v, r, s}
+ */
+async function generatePermitSignature({
+    tokenAddress,
+    ownerAddress,
+    spenderAddress,
+    amount,
+    deadline,
+    signer,
+    chainId
+}) {
+    // ERC20 token contract instance
+    const tokenContract = new ethers.Contract(
+        tokenAddress,
+        [
+            'function name() view returns (string)',
+            'function nonces(address) view returns (uint256)',
+            'function DOMAIN_SEPARATOR() view returns (bytes32)'
+        ],
+        signer
+    );
+    
+    // Get token name and current nonce
+    const [name, nonce] = await Promise.all([
+        tokenContract.name(),
+        tokenContract.nonces(ownerAddress)
+    ]);
+    
+    // EIP-712 domain
+    const domain = {
+        name: name,
+        version: '1',
+        chainId: chainId,
+        verifyingContract: tokenAddress
+    };
+    
+    // EIP-712 types
+    const types = {
+        Permit: [
+            { name: 'owner', type: 'address' },
+            { name: 'spender', type: 'address' },
+            { name: 'value', type: 'uint256' },
+            { name: 'nonce', type: 'uint256' },
+            { name: 'deadline', type: 'uint256' }
+        ]
+    };
+    
+    // Permit message
+    const message = {
+        owner: ownerAddress,
+        spender: spenderAddress,
+        value: amount,
+        nonce: nonce,
+        deadline: deadline
+    };
+    
+    // Generate signature
+    const signature = await signer.signTypedData(domain, types, message);
+    
+    // Split signature into components
+    const { v, r, s } = ethers.Signature.from(signature);
 
-const CONTRACT_ADDRESS = '0x3df3ef1ede72c486066af309a9ec794004c0943a';
+    console.log('v:', v);
+    console.log('r:', r);
+
+    console.log('s:', s);
+    
+    return { v, r, s, nonce, deadline };
+}
+
+/**
+ * Example usage for depositing USDT with permit
+ */
 async function depositUSDTWithPermit() {
     // Setup (replace with your actual values)
     const provider = new ethers.JsonRpcProvider('https://rpc.sepolia-api.lisk.com');
-    const CONTRACT_ADDRESS = '0x3df3ef1ede72c486066af309a9ec794004c0943a';
+    const wallet = new ethers.Wallet("", provider);
+    
+    const USDT_ADDRESS = '0x8a21CF9Ba08Ae709D64Cb25AfAA951183EC9FF6D'; // Testnet USDT
+    const CONTRACT_ADDRESS = '0x3DF3EF1eDE72C486066aF309a9eC794004C0943A';
     const AMOUNT = ethers.parseUnits('0.1', 18); // LSK (18 decimals)
-
- const DEADLINE = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
+    const DEADLINE = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
     
     try {
         // Generate permit signature
@@ -67,6 +150,6 @@ async function depositUSDTWithPermit() {
 module.exports = {
     generatePermitSignature,
     depositUSDTWithPermit
-};
+}; 
 
 depositUSDTWithPermit();
