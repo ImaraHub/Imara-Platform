@@ -39,7 +39,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
 export const addIdea = async (formData, user) => {
     try {
         // Insert idea along with the authenticated user's UID
-        const { title, solution, projectDescription, problemStatement, image, resources, timeline } = formData;
+        const { title, solution, projectDescription, problemStatement, image, resources, timeline, stakeAmount } = formData;
         const needsprojectmanager = formData.needsProjectManager; 
 
         // Ensure resources is formatted correctly
@@ -57,6 +57,7 @@ export const addIdea = async (formData, user) => {
                 resources: formattedResources,
                 needsprojectmanager,
                 timeline, 
+                stakeAmount,
                 uid: user.id
             }])
             .select()
