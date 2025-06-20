@@ -14,7 +14,7 @@ import { generatePermitSignature } from '../utils/permit';
 
 
 // Add the depositWithPermit ABI
-const DEPOSIT_CONTRACT_ADDRESS = '0x3df3ef1ede72c486066af309a9ec794004c0943a';
+const DEPOSIT_CONTRACT_ADDRESS = '0x3DF3EF1eDE72C486066aF309a9eC794004C0943A';
 const DEPOSIT_CONTRACT_ABI = [
   'function depositWithPermit(address token, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns (uint256)'
 ];
@@ -33,10 +33,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
   const [transactionHash, setTransactionHash] = useState('');
   
   const address = useAddress();
-  const { contract: usdtContract } = useContract(USDT_CONTRACT_ADDRESS, USDT_ABI);
-  const { contract: stakeContract } = useContract(stakeContractAddress, STAKE_ABI);
-  const { mutateAsync: approveUSDT } = useContractWrite(usdtContract, "approve");
-  const { mutateAsync: stake } = useContractWrite(stakeContract, "stake");
+
 
   // Cleanup polling on unmount
   useEffect(() => {
@@ -98,7 +95,10 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
       const spender = DEPOSIT_CONTRACT_ADDRESS;
       const tokenAddress = USDT_CONTRACT_ADDRESS;
       const chainId = (await provider.getNetwork()).chainId;
-      const amountInDecimals = ethers.utils.parseUnits("1", 6); // 1 USDT
+      if (chainId !== 4202) {
+        throw new Error('Please switch to the Lisk Sepolia test network');
+      }
+      const amountInDecimals = ethers.utils.parseUnits("0.0001", 18); // 1 LSK
       const deadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
 
       // Generate permit signature
@@ -138,7 +138,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
         details: {
           hash: tx.hash,
           amount: "1",
-          token: "USDT",
+          token: "LSK",
           type: "stake"
         }
       });
