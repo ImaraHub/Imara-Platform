@@ -4,7 +4,7 @@ import { useAddress, useContract, useContractWrite, ConnectWallet } from "@third
 import { ethers } from 'ethers';
 import { useNavigate } from 'react-router-dom';
 import stakeToken from '../utils/stake';
-import { initiateMpesaPayment, pollPaymentStatus, stakeContractAddress, userAddress } from '../utils/mpesaOnramp';
+import { initiateMpesaPayment, pollPaymentStatus} from '../utils/mpesaOnramp';
 import { jsPDF } from 'jspdf';
 import { useAuth } from '../AuthContext';
 import { addProjectContributor } from '../utils/SupabaseClient';
@@ -51,7 +51,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
 
     const interval = setInterval(async () => {
       try {
-        const result = await pollPaymentStatus(orderID, userAddress);
+        const result = await pollPaymentStatus(orderID);
         if (result.success) {
           clearInterval(interval);
           setPollingInterval(null);
@@ -142,7 +142,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
         address,
         details: {
           hash: tx.hash,
-          amount: "1",
+          amount: "2",
           token: "LSK",
           type: "stake"
         }
