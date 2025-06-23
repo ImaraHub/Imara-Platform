@@ -8,17 +8,19 @@ import (
 	handlers "server/handlers"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
+
 	// "github.com/joho/godotenv"
 	"github.com/supabase-community/supabase-go"
 )
 
 func main() {
 	// Replace with your Supabase project URL and API key
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	fmt.Println("Error loading .env file")
-	// 	return
-	// }
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Error loading .env file")
+		return
+	}
 	API_URL := os.Getenv("SUPABASE_URL")
 	API_KEY := os.Getenv("SUPABASE_PUBLIC_KEY")
 	if API_URL == "" || API_KEY == "" {
@@ -32,16 +34,7 @@ func main() {
 		return
 	}
 
-	// // Example: Fetch data from a table
-	// _, response, err := client.From("users").Select("*", "", false).Execute()
-	// if err != nil {
-	// 	fmt.Println("Error fetching data:", err)
-	// 	return
-	// }
 
-	// fmt.Println("Response:", response)
-
-	// convert the  byte to character?
 
 	r := mux.NewRouter()
 
@@ -78,6 +71,18 @@ func main() {
 	// M-Pesa endpoints
 	r.HandleFunc("/api/mpesa/initiate", handlers.InitiateMpesaPaymentHandler()).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/mpesa/status/{orderID}", handlers.PollPaymentStatusHandler()).Methods("GET", "OPTIONS")
+
+	// Swypt crypto transfer endpoint
+	r.HandleFunc("/api/swypt/crypto-transfer", handlers.ProcessCryptoTransferHandler()).Methods("POST", "OPTIONS")
+
+	// Swypt quote endpoint
+	r.HandleFunc("/api/swypt/quotes", handlers.GetSwyptQuoteHandler()).Methods("POST", "OPTIONS")
+
+	// Swypt supported assets endpoint
+	r.HandleFunc("/api/swypt/supported-assets", handlers.GetSwyptSupportedAssetsHandler()).Methods("GET", "OPTIONS")
+
+	// Swypt offramp endpoint
+	r.HandleFunc("/api/swypt/offramp", handlers.SwyptOfframpHandler()).Methods("POST", "OPTIONS")
 
 	fmt.Println("Server starting on :8000")
 	http.ListenAndServe(":8000", r)
