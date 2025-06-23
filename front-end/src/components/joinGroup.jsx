@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, Github, Linkedin, Twitter, Globe, Check, Loader } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import ViewIdea from './ViewIdea';
-import stakeToken from '../utils/stake';
 import {updateUser, uploadCvToSupabase} from '../utils/SupabaseClient';
 import { useAddress } from "@thirdweb-dev/react";
 import { useAuth } from '../AuthContext';
 import { addUserData, getUserData, addProjectContributor, isRoleAvailable } from '../utils/SupabaseClient';
 import PaymentModal from './PaymentModal';
+import { fetchKesEquivalent } from '../utils/mpesaOnramp';
 
 
 function JoinGroup({ project, onBack }) {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     role: '',
     email: '',
@@ -23,15 +20,20 @@ function JoinGroup({ project, onBack }) {
   });
   const [isStaking, setIsStaking] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [stakingAmount] = useState(1); // Set your staking amount here
+  const [stakingAmount] = useState(project.stakeAmount); // Set your staking amount here
   const address = useAddress();
   const [stakingAddress,setStakingAddress] = useState(null);
   const { user } = useAuth();
   const [roleError, setRoleError] = useState('');
+  const [kesEquivalent, setKesEquivalent] = useState(null);
+  const [kesLoading, setKesLoading] = useState(false);
+  const [kesError, setKesError] = useState('');
 
   
   // retrieve user data from db
   useEffect(() => {
+
+      
       const fetchUserData = async () => {
         if (!user) return;
 
@@ -134,6 +136,31 @@ function JoinGroup({ project, onBack }) {
   };
 
   console.log("Contributor email in JoinGroup:", formData.email);
+
+  const getKesEquivalent = async () => {
+    setKesLoading(true);
+    setKesError('');
+    try {
+      const data = await fetchKesEquivalent({
+        amount: stakingAmount.toString(),
+        cryptoCurrency: 'USDT',
+        network: 'lisk',
+        category: 'imarahub',
+      });
+      setKesEquivalent(data?.data?.fiatAmount || data?.fiatAmount || null);
+    } catch (err) {
+      setKesError('Could not fetch KES equivalent');
+      setKesEquivalent(null);
+    } finally {
+      setKesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (stakingAmount) {
+      getKesEquivalent();
+    }
+  }, [stakingAmount]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
@@ -321,7 +348,7 @@ function JoinGroup({ project, onBack }) {
             </>
           ) : (
             <>
-              Stake to Join (KES {stakingAmount.toLocaleString()})
+              Stake to Join (USDT {stakingAmount.toLocaleString()}/ KES{kesEquivalent})
             </>
           )}
         </button>
@@ -339,6 +366,16 @@ function JoinGroup({ project, onBack }) {
         role={formData.role}
         formData={formData}
       />
+
+      <div>
+        {kesLoading && <span>Loading KES equivalent...</span>}
+        {kesError && <span className="text-red-500">{kesError}</span>}
+        {kesEquivalent && (
+          <span>
+            Equivalent in KES: <b>{kesEquivalent}</b>
+          </span>
+        )}
+      </div>
     </div>
   );
 }
