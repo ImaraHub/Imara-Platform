@@ -8,11 +8,7 @@ import { useAddress } from "@thirdweb-dev/react";
 import { useAuth } from '../AuthContext';
 import { addUserData, getUserData,addProjectContributor } from '../utils/SupabaseClient';
 import PaymentModal from './PaymentModal';
-import * as pdfjsLib from 'pdfjs-dist';
-import { verifyCVWithAI } from '../utils/aiVerification';
-
-// Initialize PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+import { verifyCVWithAI, verifyCVWithCustomAPI } from '../utils/aiVerification';
 
 function JoinGroup({ project, onBack }) {
   const navigate = useNavigate();
@@ -25,7 +21,6 @@ function JoinGroup({ project, onBack }) {
     portfolio: '',
     cv: '',
   });
-  const [cvText, setCvText] = useState('');
   const [isStaking, setIsStaking] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [stakingAmount] = useState(1); // Set your staking amount here
@@ -36,8 +31,8 @@ function JoinGroup({ project, onBack }) {
   const [verificationMessage, setVerificationMessage] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationDetails, setVerificationDetails] = useState(null);
+  const [cvFile, setCvFile] = useState(null);
 
-  
   // retrieve user data from db
   useEffect(() => {
     const fetchUserData = async () => {
@@ -58,47 +53,15 @@ function JoinGroup({ project, onBack }) {
     fetchUserData();
   }, [user]);
 
-  // Function to extract text from PDF
-  const extractTextFromPDF = async (file) => {
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      let fullText = '';
-
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map(item => item.str).join(' ');
-        fullText += pageText + ' ';
-      }
-
-      return fullText;
-    } catch (error) {
-      console.error('Error extracting text from PDF:', error);
-      throw error;
-    }
-  };
-
   const handleFileChange = async (e) => {
     var file = e.target.files[0];
     if (!file) return;
-
+    setCvFile(file);
     try {
       // First upload the CV
       const cvUrl = await uploadCvToSupabase(file, user);
-
       if (cvUrl) {
         setFormData(prev => ({ ...prev, cv: cvUrl }));
-        
-        // After successful upload, extract text from the PDF
-        try {
-          const extractedText = await extractTextFromPDF(file);
-          setCvText(extractedText);
-          console.log('CV text extracted successfully');
-        } catch (extractError) {
-          console.error('Error extracting text from CV:', extractError);
-          // Don't block the upload if text extraction fails
-        }
       } else {
         console.error('CV upload failed - no URL returned');
       }
@@ -117,21 +80,18 @@ function JoinGroup({ project, onBack }) {
     e.preventDefault();
     setIsVerifying(true);
     setVerificationMessage('Verifying your profile...');
-    
     try {
       // Basic form validation with detailed feedback
       const missingFields = [];
       if (!formData.role) missingFields.push('Role');
       if (!formData.email) missingFields.push('Email');
       if (!formData.cv) missingFields.push('CV');
-
       if (missingFields.length > 0) {
         setVerificationStatus('rejected');
         setVerificationMessage(`Please fill in the following required fields: ${missingFields.join(', ')}`);
         setIsVerifying(false);
         return;
       }
-
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
@@ -140,7 +100,6 @@ function JoinGroup({ project, onBack }) {
         setIsVerifying(false);
         return;
       }
-
       // Check if the selected role exists in the project's required roles
       const roleExists = resourcesArray.some(role => role.role === formData.role);
       if (!roleExists) {
@@ -149,29 +108,21 @@ function JoinGroup({ project, onBack }) {
         setIsVerifying(false);
         return;
       }
-
-      // AI Verification
-      if (!cvText) {
+      // AI Verification (use new API)
+      if (!cvFile) {
         setVerificationStatus('rejected');
-        setVerificationMessage('CV text could not be extracted. Please try uploading your CV again.');
+        setVerificationMessage('Please upload your CV again.');
         setIsVerifying(false);
         return;
       }
-
-      const verificationResult = await verifyCVWithAI(cvText, formData.role);
-
+      const verificationResult = await verifyCVWithCustomAPI(cvFile, formData.role);
       if (verificationResult.qualified) {
         setVerificationStatus('verified');
-        setVerificationMessage(`Profile verified successfully! ${verificationResult.reason}`);
+        setVerificationMessage('Profile verified successfully!');
       } else {
         setVerificationStatus('rejected');
-        setVerificationMessage(
-          `Verification failed: ${verificationResult.reason}\n\n` +
-          `Found technologies: ${verificationResult.found_technologies.join(', ')}\n` +
-          `Missing technologies: ${verificationResult.missing_technologies.join(', ')}`
-        );
+        setVerificationMessage('Verification failed: You do not meet the requirements for this role.');
       }
-
     } catch (error) {
       console.error('Verification error:', error);
       setVerificationStatus('rejected');
@@ -198,8 +149,6 @@ function JoinGroup({ project, onBack }) {
       if (!stakingAddress) {
         setStakingAddress(address);
       }
-
-
 
       const result = await addUserData(formData, user, stakerAddress);
 
@@ -259,8 +208,6 @@ function JoinGroup({ project, onBack }) {
                     </option>
                   ))}
               </select>
-
-
             </label>
           </div>
 
