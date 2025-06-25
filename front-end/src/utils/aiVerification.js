@@ -87,4 +87,17 @@ const getRoleSpecificCriteria = (role) => {
     default:
       return 'General technical skills and relevant experience';
   }
+};
+
+// Custom API for local model verification
+export const verifyCVWithCustomAPI = async (cvFile, role) => {
+  const formData = new FormData();
+  formData.append('cv', cvFile);
+  formData.append('role', role);
+
+  const response = await fetch('http://localhost:8000/verify', {
+    method: 'POST',
+    body: formData,
+  });
+  return await response.json();
 }; 
