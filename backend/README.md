@@ -64,3 +64,7 @@ $ forge --help
 $ anvil --help
 $ cast --help
 ```
+
+## go_ai_service
+
+This directory contains a Go-based REST API for verifying builder CVs for project roles. It extracts text from PDF CVs and matches required skills for each role. See go_ai_service/README.md for usage.
