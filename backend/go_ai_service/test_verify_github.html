@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test /verify-github Endpoint</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #222; color: #eee; padding: 2em; }
+    label, input, select, button { display: block; margin: 1em 0; }
+    input, select { padding: 0.5em; width: 300px; }
+    button { padding: 0.5em 1em; }
+    pre { background: #111; color: #0f0; padding: 1em; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Test /verify-github Endpoint</h1>
+  <form id="verifyForm">
+    <label>
+      Role:
+      <select id="role" required>
+        <option value="">Select a role</option>
+        <option value="Frontend Developer">Frontend Developer</option>
+        <option value="Backend Developer">Backend Developer</option>
+        <option value="UI/UX Designer">UI/UX Designer</option>
+      </select>
+    </label>
+    <label>
+      GitHub Profile or Username:
+      <input type="text" id="github" placeholder="e.g. https://github.com/octocat or octocat" required />
+    </label>
+    <button type="submit">Verify</button>
+  </form>
+  <h2>Response:</h2>
+  <pre id="response"></pre>
+  <script>
+    document.getElementById('verifyForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const role = document.getElementById('role').value;
+      const github = document.getElementById('github').value;
+      document.getElementById('response').textContent = 'Loading...';
+      try {
+        const res = await fetch('http://localhost:8000/verify-github', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role, github })
+        });
+        const data = await res.json();
+        document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('response').textContent = 'Error: ' + err;
+      }
+    };
+  </script>
+</body>
+</html> 
