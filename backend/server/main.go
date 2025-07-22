@@ -100,6 +100,8 @@ func main() {
 		return
 	}
 
+	LoadConfig()
+
 
 	API_URL := os.Getenv("SUPABASE_URL") 
 	API_KEY := os.Getenv("SUPABASE_PUBLIC_KEY")
