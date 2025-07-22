@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	"github.com/supabase-community/supabase-go"
 )
 
@@ -67,7 +66,7 @@ type CreateTaskRequest struct {
 	CreatedBy   string `json:"created_by"`
 }
 
-func LoadConfig(){
+func LoadConfig() {
 	//  read the config file
 	configFile, err := os.Open("config.json")
 	if err != nil {
@@ -93,17 +92,9 @@ func LoadConfig(){
 }
 
 func main() {
-	// Replace with your Supabase project URL and API key
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Println("Error loading .env file")
-		return
-	}
-
 	LoadConfig()
 
-
-	API_URL := os.Getenv("SUPABASE_URL") 
+	API_URL := os.Getenv("SUPABASE_URL")
 	API_KEY := os.Getenv("SUPABASE_PUBLIC_KEY")
 	APP_URL := os.Getenv("APP_BASE_URL")
 	if API_URL == "" || API_KEY == "" {
@@ -214,7 +205,6 @@ func main() {
 			`, "", false).
 			Eq("project_id", projectId).
 			Execute()
-
 		if err != nil {
 			fmt.Printf("Error fetching milestones: %v\n", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -282,16 +272,11 @@ func main() {
 			Select("*", "", false).
 			Eq("project_id", projectId).
 			Execute()
-
 		if err != nil {
 			fmt.Printf("Error fetching timeline: %v\n", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
-		// Debug logging
-		fmt.Printf("Project ID: %s\n", projectId)
-		fmt.Printf("Raw timeline data: %s\n", string(data))
 
 		// Decode the byte array into a string
 		var timelineData []Timeline
@@ -340,7 +325,6 @@ func main() {
 			Update(timeline, "", "").
 			Eq("id", timelineId).
 			Execute()
-
 		if err != nil {
 			fmt.Printf("Error updating timeline: %v\n", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -362,7 +346,6 @@ func main() {
 				Select("*", "", false).
 				Eq("milestone_id", milestoneId).
 				Execute()
-
 			if err != nil {
 				fmt.Printf("Error fetching tasks: %v\n", err)
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -467,7 +450,6 @@ func main() {
 			Update(updates, "", "").
 			Eq("id", taskId).
 			Execute()
-
 		if err != nil {
 			fmt.Printf("Error updating task: %v\n", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -510,7 +492,6 @@ func main() {
 			Update(updates, "", "").
 			Eq("id", taskId).
 			Execute()
-
 		if err != nil {
 			fmt.Printf("Error reviewing task: %v\n", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -554,7 +535,7 @@ func main() {
 
 		// Create uploads directory if it doesn't exist
 		uploadDir := "./uploads"
-		if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		if err := os.MkdirAll(uploadDir, 0o755); err != nil {
 			http.Error(w, "Error creating upload directory", http.StatusInternalServerError)
 			return
 		}
@@ -589,7 +570,6 @@ func main() {
 			Update(updates, "", "").
 			Eq("id", taskId).
 			Execute()
-
 		if err != nil {
 			fmt.Printf("Error updating task evidence: %v\n", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
