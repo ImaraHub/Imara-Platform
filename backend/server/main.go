@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/gorilla/mux"
-	// "github.com/joho/godotenv"
+	"github.com/joho/godotenv"
 	"github.com/supabase-community/supabase-go"
 )
 
@@ -67,15 +67,43 @@ type CreateTaskRequest struct {
 	CreatedBy   string `json:"created_by"`
 }
 
+func LoadConfig(){
+	//  read the config file
+	configFile, err := os.Open("config.json")
+	if err != nil {
+		fmt.Println("Error opening config file:", err)
+		return
+	}
+	defer configFile.Close()
+	decoder := json.NewDecoder(configFile)
+	var config map[string]string
+	err = decoder.Decode(&config)
+	if err != nil {
+		fmt.Println("Error decoding config file:", err)
+		return
+	}
+	// Set environment variables
+	for key, value := range config {
+		err := os.Setenv(key, value)
+		if err != nil {
+			fmt.Printf("Error setting environment variable %s: %v\n", key, err)
+			return
+		}
+	}
+}
+
 func main() {
 	// Replace with your Supabase project URL and API key
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	fmt.Println("Error loading .env file")
-	// 	return
-	// }
-	API_URL := os.Getenv("SUPABASE_URL")
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Error loading .env file")
+		return
+	}
+
+
+	API_URL := os.Getenv("SUPABASE_URL") 
 	API_KEY := os.Getenv("SUPABASE_PUBLIC_KEY")
+	APP_URL := os.Getenv("APP_BASE_URL")
 	if API_URL == "" || API_KEY == "" {
 		fmt.Println("Please set SUPABASE_URL and SUPABASE_KEY in your .env file")
 		return
@@ -87,23 +115,12 @@ func main() {
 		return
 	}
 
-	// // Example: Fetch data from a table
-	// _, response, err := client.From("users").Select("*", "", false).Execute()
-	// if err != nil {
-	// 	fmt.Println("Error fetching data:", err)
-	// 	return
-	// }
-
-	// fmt.Println("Response:", response)
-
-	// convert the  byte to character?
-
 	r := mux.NewRouter()
 
 	// Add CORS middleware
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", "https://www.imarahub.xyz")
+			w.Header().Set("Access-Control-Allow-Origin", APP_URL)
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
