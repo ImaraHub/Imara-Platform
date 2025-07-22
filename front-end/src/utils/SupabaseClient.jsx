@@ -1,8 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import { useAuth } from "../AuthContext";
+import { useConfig } from '../ConfigContext';
+const config = useConfig();
 
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = config.VITE_SUPABASE_KEY;
+const supabaseUrl = config.VITE_SUPABASE_URL;
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     detectSessionInUrl: true,
@@ -120,9 +122,6 @@ export const uploadCvToSupabase = async (cv, user) => {
 
 
 export const uploadImageToSupabase = async (image, user) => {
-    // const user = supabase.auth.getUser(); // Check if user is authenticated
-    // console.log("Uploading Image:", image);
-    // console.log("Current user in uploadImage:", user);
 
     // upload image to storage
 
@@ -152,9 +151,6 @@ export const uploadImageToSupabase = async (image, user) => {
         return null;
     }
 
-    // console.log("Public URL Response:", publicUrlData);
-   
-
     return publicUrlData.publicUrl;
 
 }
@@ -178,10 +174,7 @@ export const displayIdeas = async () => {
 
 export const addUserData = async (formData, user, address) => {
     try {
-        // Insert idea along with the authenticated user's UID
 
-        // retrieve user auth id
-        // console.log("User in addUserData:", user);
 
         const { github, linkedin, twitter, portfolio,cv } = formData;
         const { data, error } = await supabase
@@ -214,7 +207,7 @@ export const addUserData = async (formData, user, address) => {
 //  retrieve details from db for user based on their user.id (auth_id) or user.email
 export const getUserData = async (user) => {
     try {
-        // console.log("User in getUserData:", user);
+
         // Retrieve user data from the database
         const { data, error } = await supabase
         .from('users')
@@ -241,8 +234,6 @@ export const updateUser = async (user, formData, address) => {
 
         const { github, linkedin, twitter, portfolio, cv } = formData;
 
-        // console.log("Updating user:", user.id, "with data:", formData);  
-
         // Construct updated data object
         const updatedData = {
             linkedin_profile: linkedin || null,
@@ -250,7 +241,7 @@ export const updateUser = async (user, formData, address) => {
             email: user.email,  // Ensure email is not undefined
             twitter_handle: twitter || null,
             portfolio_link: portfolio || null,
-            wallet_address: address || null,  // FIXED: Now properly passed
+            wallet_address: address || null,  
             cv_link: cv || null,
         };
 
@@ -495,7 +486,7 @@ export const isRoleAvailable = async (projectId, role) => {
 };
 // Backend API Base URL (Replace with your deployed backend URL in production)
 // const BACKEND_API_BASE_URL = 'http://localhost:8080/api';
-const BACKEND_API_BASE_URL = 'https://imara-chatservice.onrender.com/api'; // ✅ Correct
+const BACKEND_API_BASE_URL = config.BACKEND_API_BASE_URL; // ✅ Correct
 
 // Chat related functions
 export const createChatMessage = async (projectId, userId, message, userData) => {
