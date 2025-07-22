@@ -12,9 +12,11 @@ function Chat({ currentUser }) {
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
+  const webSocketUrl = config.BACKEND_CHAT_BASE_URL;
+
   useEffect(() => {
     // Connect to WebSocket server
-    socketRef.current = new WebSocket('wss://imara-chatservice.onrender.com/ws');
+    socketRef.current = new WebSocket(`${webSocketUrl}/ws`);
 
     socketRef.current.onopen = () => {
       console.log('WebSocket connected');
