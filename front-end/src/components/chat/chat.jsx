@@ -3,6 +3,8 @@ import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 import TypingIndicator from './TypingIndicator';
 import { supabase } from '../../lib/supabase';
+import { useConfig } from '../..ConfigContext';
+
 
 function Chat({ currentUser }) {
   const [messages, setMessages] = useState([]);
@@ -11,10 +13,13 @@ function Chat({ currentUser }) {
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const config = useConfig();
+
+  const webSocketUrl = config.BACKEND_CHAT_BASE_URL;
 
   useEffect(() => {
     // Connect to WebSocket server
-    socketRef.current = new WebSocket('wss://imara-chatservice.onrender.com/ws');
+    socketRef.current = new WebSocket(`${webSocketUrl}/ws`);
 
     socketRef.current.onopen = () => {
       console.log('WebSocket connected');
