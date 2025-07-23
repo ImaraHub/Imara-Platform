@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const BACKEND_MILESTONE_URL = import.meta.env.VITE_MILESTONE_BACKEND_URL; // Update with your backend URL
+
 const TimelineConfig = ({ onTimelineUpdate, projectId }) => {
   const [timeline, setTimeline] = useState({
     startDate: '',
@@ -12,7 +14,7 @@ const TimelineConfig = ({ onTimelineUpdate, projectId }) => {
   useEffect(() => {
     const checkExistingTimeline = async () => {
       try {
-        const response = await fetch(`https://imara-milestone-service.onrender.com/api/projects/${projectId}/timeline`);
+        const response = await fetch(`${BACKEND_MILESTONE_URL}/api/projects/${projectId}/timeline`);
         if (!response.ok) {
           throw new Error('Failed to fetch timeline');
         }

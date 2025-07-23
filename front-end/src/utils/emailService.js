@@ -1,5 +1,5 @@
 import emailjs from '@emailjs/browser';
-import { useConfig } from '../ConfigContext';
+
 /**
  * Sends a staking confirmation email to the user
  * @param {Object} params - The parameters for the email
@@ -9,7 +9,6 @@ import { useConfig } from '../ConfigContext';
  * @returns {Promise<boolean>} - Whether the email was sent successfully
  */
 export const sendStakingConfirmationEmail = async ({ userEmail, project, paymentDetails }) => {
-   const config = useConfig();
   try {
     // Prepare email template parameters
     const templateParams = {
@@ -23,15 +22,15 @@ export const sendStakingConfirmationEmail = async ({ userEmail, project, payment
       transaction_hash: paymentDetails.transactionHash,
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
-      project_url: `${config.APP_BASE_URL}/idea/${project.id}`
+      project_url: `https://imara-platform-1.onrender.com/idea/${project.id}`
     };
 
     // Send email using EmailJS
     const response = await emailjs.send(
-      config.VITE_EMAILJS_SERVICE_ID,
-      config.VITE_EMAILJS_TEMPLATE_ID,
+      import.meta.env.VITE_EMAILJS_SERVICE_ID,
+      import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
       templateParams,
-      config.VITE_EMAILJS_PUBLIC_KEY
+      import.meta.env.VITE_EMAILJS_PUBLIC_KEY
     );
 
     if (response.status === 200) {

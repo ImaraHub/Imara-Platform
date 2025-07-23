@@ -11,12 +11,10 @@ function Chat({ currentUser }) {
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
-
-  const webSocketUrl = config.BACKEND_CHAT_BASE_URL;
-
+const CHAT_WS_URL = import.meta.env.VITE_CHAT_WS_URL ; // Update with your WebSocket URL 
   useEffect(() => {
     // Connect to WebSocket server
-    socketRef.current = new WebSocket(`${webSocketUrl}/ws`);
+    socketRef.current = new WebSocket(CHAT_WS_URL);
 
     socketRef.current.onopen = () => {
       console.log('WebSocket connected');

@@ -96,7 +96,7 @@ func main() {
 
 	API_URL := os.Getenv("SUPABASE_URL")
 	API_KEY := os.Getenv("SUPABASE_PUBLIC_KEY")
-	APP_URL := os.Getenv("APP_BASE_URL")
+	// APP_URL := os.Getenv("APP_BASE_URL")
 	if API_URL == "" || API_KEY == "" {
 		fmt.Println("Please set SUPABASE_URL and SUPABASE_KEY in your .env file")
 		return
@@ -113,7 +113,7 @@ func main() {
 	// Add CORS middleware
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", APP_URL)
+			w.Header().Set("Access-Control-Allow-Origin", "*")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			w.Header().Set("Access-Control-Allow-Credentials", "true")

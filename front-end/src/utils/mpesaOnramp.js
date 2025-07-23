@@ -1,15 +1,13 @@
 import axios from 'axios';
-import { useConfig } from '../ConfigContext';
 
-const config = useConfig();
-const SWYPT_API_URL = config.SWYPT_API_URL;
-const USDT_TOKEN_ADDRESS = config.USDT_TOKEN_ADDRESS || "0x05D032ac25d322df992303dCa074EE7392C117b9"; // Default to USDT on Lisk if not set
+const SWYPT_API_URL = 'https://pool.swypt.io/api';
+const USDT_TOKEN_ADDRESS = '0x05D032ac25d322df992303dCa074EE7392C117b9';
 export const stakeContractAddress = "";  // to launch on mainnet???
 export const userAddress = "0x42772299247aDd126151ADe909e36A8f4975437e";  // for testing deposit into wallet(swypt )
 // Helper function to get auth headers
 
-const SWYPT_API_KEY = config.SWYPT_API_KEY;
-const SWYPT_API_SECRET = config.SWYPT_API_SECRET;
+const SWYPT_API_KEY = import.meta.env.VITE_REACT_APP_SWYPT_API_KEY;
+const SWYPT_API_SECRET = import.meta.env.VITE_REACT_APP_SWYPT_API_SECRET;
 
 const getAuthHeaders = () => ({
   'x-api-key': SWYPT_API_KEY,
@@ -29,7 +27,6 @@ console.log('API Secret exists:', !!SWYPT_API_SECRET);
  * @returns {Promise<{success: boolean, orderID: string, message: string}>}
  */
 export const initiateMpesaPayment = async (phoneNumber, amount) => {
-  const config = useConfig();
   try {
     // Format phone number to ensure it starts with 254 (e.g., 0712345678 -> 254712345678)
     const formattedPhone = phoneNumber.startsWith('254') ? phoneNumber : `254${phoneNumber.replace(/^0+/, '')}`;
