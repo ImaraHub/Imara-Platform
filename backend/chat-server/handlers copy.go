@@ -150,7 +150,7 @@ func HandleChatMessage(hub *Hub) http.HandlerFunc {
 		}
 
 		supabaseURL := os.Getenv("SUPABASE_URL")
-		supabaseKey := os.Getenv("SUPABASE_SERVICE_KEY")
+		supabaseKey := os.Getenv("SUPABASE_PUBLIC_KEY")
 		if supabaseURL == "" || supabaseKey == "" {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(`{"error": "Supabase credentials not set"}`))
