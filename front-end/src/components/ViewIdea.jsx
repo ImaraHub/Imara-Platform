@@ -32,6 +32,7 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const { id } = useParams();
   const { user } = useAuth();
   
+  const BASE_APP_URL = import.meta.env.VITE_APP_BASE_URL;
   // All useState declarations at the top
   const [projectData, setProjectData] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -180,8 +181,9 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
     return <JoinGroup project={projectData}  onBack={() => setShowJoinGroup(false)}/>;
   }
 
+
   const handleCopyLink = () => {
-    const url = `https://imara-platform-1.com/idea/${projectData?.id || "unknown"}`;
+    const url = `${BASE_APP_URL}/idea/${projectData?.id || "unknown"}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);

@@ -5,6 +5,9 @@ import { ConnectWallet, useAddress, useSigner } from "@thirdweb-dev/react";
 import { supabase } from '../utils/SupabaseClient';
 import logo from '../assets/logo.png';
 
+
+const BASE_APP_URL = import.meta.env.VITE_APP_BASE_URL;
+
 export function Auth({ setShowAuth, setShowHome }) {
 
   const [isLogin, setIsLogin] = useState(true);
@@ -20,7 +23,7 @@ export function Auth({ setShowAuth, setShowHome }) {
   useEffect(() => {
     if (address) {
       signMessage();
-      console.log("Connected wallet address:", address);
+
       setShowAuth(false);  // Hide the Auth page
       setShowHome(true);    // Show the Home page
     }
@@ -43,11 +46,10 @@ export function Auth({ setShowAuth, setShowHome }) {
       setLoading(true);
       setErrorMsg('');
       
-      console.log('Initiating GitHub sign-in...');
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `https://imara-platform-1.onrender.com/auth/callback`,
+          redirectTo: `${BASE_APP_URL}/auth/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -55,20 +57,14 @@ export function Auth({ setShowAuth, setShowHome }) {
         }
       });
 
-      console.log('GitHub sign-in response:', {
-        hasData: !!data,
-        hasError: !!error,
-        errorMessage: error?.message,
-        url: data?.url
-      });
+
 
       if (error) {
-        console.error('Error signing in with GitHub:', error.message);
+
         setErrorMsg(error.message);
         setLoading(false);
       }
     } catch (err) {
-      console.error('Unexpected error during GitHub sign in:', err);
       setErrorMsg('An unexpected error occurred. Please try again.');
       setLoading(false);
     }
@@ -83,7 +79,7 @@ export function Auth({ setShowAuth, setShowHome }) {
     const message = "Sign this message to sign into Imara";
     const signature = await signer.signMessage(message);
     setSignature(signature);
-    console.log("Signature:", signature);
+  
   };
 
   const handleSubmit = async (e) => {
@@ -103,7 +99,7 @@ export function Auth({ setShowAuth, setShowHome }) {
       email,
       password,
       options: {
-        emailRedirectTo: 'https://imara-platform-1.onrender.com',
+        emailRedirectTo: BASE_APP_URL,
         data: {
         display_name: userName, // Replace `fullName` with the actual state/input
       },
@@ -116,7 +112,7 @@ export function Auth({ setShowAuth, setShowHome }) {
     } else {
       setErrorMsg('Please check your email to confirm your sign up.');
       setIsLogin(true);
-      console.log('confirmation email sent to :', email);
+    
     }
 
   }
@@ -140,10 +136,9 @@ export function Auth({ setShowAuth, setShowHome }) {
     if (error) {
 
       setErrorMsg('User not found. Please sign up.');
-      console.log('Error signing in:', error.message)
+   
 
     } else {
-      console.log('User signed in successfully:', data);
 
       // Fetch user details
       const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -177,7 +172,7 @@ export function Auth({ setShowAuth, setShowHome }) {
           <h2 className="text-3xl font-bold text-white">Welcome to IMARA</h2>
           <p className="text-gray-400 mt-2">
             {isLogin ? 'Sign in to continue to the platform' : 'Create your account to get started'}
-          </p>
+          </p>VITE_APP_BASE_URL
         </div>
 
         {/* Back Button */}

@@ -1,4 +1,5 @@
 class ChatService {
+    
     constructor() {
         this.ws = null;
         this.messageHandlers = new Set();

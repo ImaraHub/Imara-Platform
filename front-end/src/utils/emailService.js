@@ -9,6 +9,7 @@ import emailjs from '@emailjs/browser';
  * @returns {Promise<boolean>} - Whether the email was sent successfully
  */
 export const sendStakingConfirmationEmail = async ({ userEmail, project, paymentDetails }) => {
+  const baseUrl = import.meta.env.VITE_APP_BASE_URL;
   try {
     // Prepare email template parameters
     const templateParams = {
@@ -22,7 +23,7 @@ export const sendStakingConfirmationEmail = async ({ userEmail, project, payment
       transaction_hash: paymentDetails.transactionHash,
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
-      project_url: `https://imara-platform-1.onrender.com/idea/${project.id}`
+      project_url: `${VITE_APP_BASE_URL}/idea/${project.id}`
     };
 
     // Send email using EmailJS

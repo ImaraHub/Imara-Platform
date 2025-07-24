@@ -14,7 +14,7 @@ function Chat({ currentUser }) {
 const CHAT_WS_URL = import.meta.env.VITE_CHAT_WS_URL ; // Update with your WebSocket URL 
   useEffect(() => {
     // Connect to WebSocket server
-    socketRef.current = new WebSocket(CHAT_WS_URL);
+    socketRef.current = new WebSocket(`${CHAT_WS_URL}/ws`);
 
     socketRef.current.onopen = () => {
       console.log('WebSocket connected');

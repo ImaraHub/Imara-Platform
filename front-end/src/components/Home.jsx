@@ -136,6 +136,8 @@ function Home() {
     }
   }, [selectedSort, projects, searchQuery]);
 
+  const BASE_APP_URL = import.meta.env.VITE_BASE_APP_URL;
+
   // Calculate pagination
   const indexOfLastProject = currentPage * projectsPerPage;
   const indexOfFirstProject = indexOfLastProject - projectsPerPage;
@@ -167,6 +169,7 @@ function Home() {
   };
 
   const ShareModal = ({ project, onClose }) => (
+
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
       <div className="bg-gray-800 rounded-xl p-6 w-full max-w-md relative">
         <button
@@ -199,7 +202,7 @@ function Home() {
 
         <div className="bg-gray-700/50 p-3 rounded-lg flex items-center gap-3">
           <div className="flex-1 truncate text-gray-300 text-sm">
-            https://imaraplatform-1.onrender.com/project/{project.id}
+            {BASE_APP_URL}/idea/{project.id}
           </div>
           <button
             onClick={() => handleCopyLink(project.id)}
