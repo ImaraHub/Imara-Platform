@@ -23,7 +23,7 @@ function JoinGroup({ project, onBack }) {
   });
   const [isStaking, setIsStaking] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [stakingAmount] = useState(1); // Set your staking amount here
+  const [stakingAmount] = useState(15); // Set your staking amount here
   const address = useAddress();
   const [stakingAddress,setStakingAddress] = useState(null);
   const { user } = useAuth();
