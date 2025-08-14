@@ -6,3 +6,6 @@ out
 package-lock.json
 .vite
 config.json
+dist/
+chat_server
+milestone_server
