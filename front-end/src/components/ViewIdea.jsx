@@ -17,8 +17,10 @@ import {
   Check,
   X,
   Loader,
-  Users
+  Users,
+  DollarSign
 } from 'lucide-react';
+import PaymentModal from './PaymentModal';
 
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import JoinGroup from './joinGroup';
@@ -47,6 +49,11 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const [isLoading, setIsLoading] = useState(true);
   const [roleAvailability, setRoleAvailability] = useState({});
   const [isTeamFull, setIsTeamFull] = useState(false);
+  const [autoStakeOnJoin, setAutoStakeOnJoin] = useState(false);
+  // Removed showInvestModal; Invest now routes directly to JoinGroup
+  // add investor payment modal state
+  const [showInvestPaymentModal, setShowInvestPaymentModal] = useState(false);
+  const [investAmount] = useState(15);
 
   const stakingSuccess = stakeSuccess || location.state?.stakeSuccess || false;
   const isContributorFromState = location.state?.isContributor || false;
@@ -178,7 +185,7 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   }
 
   if (showJoinGroup && !stakingSuccess){
-    return <JoinGroup project={projectData}  onBack={() => setShowJoinGroup(false)}/>;
+    return <JoinGroup project={projectData} autoOpenStake={autoStakeOnJoin} onBack={() => setShowJoinGroup(false)}/>;
   }
 
 
@@ -202,6 +209,16 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
     } else {
       navigate(-2); // Go back one step in history
     }
+  };
+
+  // replace invest click to open payment directly
+  const handleInvestClick = () => {
+    setShowInvestPaymentModal(true);
+  };
+
+  // investor payment complete handler (no contributor addition)
+  const handleInvestorPaymentComplete = async (paymentData) => {
+    return { success: true, userData: { email: user?.email || '', role: 'Investor' } };
   };
 
   return (
@@ -362,17 +379,28 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
                   Share
                 </button>
               </div>
-              <button
-                onClick={() => setShowJoinGroup(true)}
-                className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isContributor || !!joinStatus || isTeamFull}
-              >
-                {isContributor 
-                  ? "You are a Member"
-                  : isTeamFull
-                    ? "Team is Full"
-                    : "Join Project"}
-              </button>
+              
+              {/* Join and Invest Buttons */}
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowJoinGroup(true)}
+                  className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isContributor || !!joinStatus || isTeamFull}
+                >
+                  {isContributor 
+                    ? "You are a Member"
+                    : isTeamFull
+                      ? "Team is Full"
+                      : "Join Project"}
+                </button>
+
+                <button
+                  onClick={handleInvestClick}
+                  className="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                >
+                  Invest in Project
+                </button>
+              </div>
 
               {isContributor && (
                 <button
@@ -383,67 +411,6 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
                   Go to Workspace
                 </button>
               )}
-            </div>
-            <div className="mt-4">
-            
-
-                { /* Show team members ONLY when confirmation message disappears  */}
-                {(joinStatus === "confirmed" )&&(
-                  <section className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mt-6">
-                    <h2 className="text-2xl font-semibold mb-4">Team Members</h2>
-                    <ul className="space-y-3">
-                      {teamMembers.length > 0 ? (
-                        teamMembers.map((member, index) => (
-                          <li key={index} className="flex items-center gap-4 bg-gray-900 p-3 rounded-lg">
-                            <User className="w-6 h-6 text-gray-300" />
-                            <div>
-                              <p className="text-white">{member.username}</p>
-                              <p className="text-gray-400 text-sm">{member.email}</p>
-                            </div>
-                          </li>
-                        ))
-                      ) : (
-                        <p className="text-gray-400">No members yet...</p>
-                      )}
-                    </ul>
-                  </section>
-                )}
-
-                {!(joinStatus === "confirmed") && (
-                  <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mt-6">
-                    <h3 className="text-lg font-semibold mb-4">Team Needed</h3>
-                    <div className="space-y-3">
-                      {(projectData.resources 
-                        ? (Array.isArray(projectData.resources) ? projectData.resources : JSON.parse(projectData.resources || "[]")) 
-                        : []
-                      ).map((role, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between px-4 py-3 bg-white/5 rounded-lg"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-300">{role.role}</span>
-                            {roleAvailability[role.role] === false && (
-                              <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded-full text-xs">
-                                Position Filled
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-400">
-                              {roleAvailability[`${role.role}_count`] || 0}/{role.count} filled
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    {isTeamFull && (
-                      <div className="mt-4 p-3 bg-yellow-500/20 text-yellow-400 rounded-lg text-sm">
-                        This project's team is now full. No more positions are available.
-                      </div>
-                    )}
-                  </div>
-                )}
             </div>
 
             {/* Project Links */}
@@ -499,6 +466,25 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
         <ShareModal onClose={() => setShowShareModal(false)} />
       )}
   
+      {/* Investor Payment Modal (direct) */}
+      <PaymentModal
+        isOpen={showInvestPaymentModal}
+        onClose={() => setShowInvestPaymentModal(false)}
+        amount={investAmount}
+        onPaymentComplete={handleInvestorPaymentComplete}
+        project={projectData}
+        userEmail={user?.email || ''}
+        role={'Investor'}
+        formData={{
+          role: 'Investor',
+          email: user?.email || '',
+          github: '',
+          linkedin: '',
+          twitter: '',
+          portfolio: '',
+          cv: ''
+        }}
+      />
     </div>
   );
   

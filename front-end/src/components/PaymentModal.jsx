@@ -535,6 +535,8 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
                 <Loader className="w-5 h-5 animate-spin" />
                 Processing...
               </>
+            ) : role === 'Investor' ? (
+              'Invest'
             ) : paymentMethod === 'usdt' ? (
               address ? 'Stake USDT' : 'Connect Wallet'
             ) : (
