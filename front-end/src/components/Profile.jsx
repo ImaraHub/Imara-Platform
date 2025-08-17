@@ -27,6 +27,7 @@ function Profile({ user }) {
   const [userData, setUserData] = useState(null);
   const [createdProjects, setCreatedProjects] = useState([]);
   const [joinedProjects, setJoinedProjects] = useState([]);
+  const [investedProjects, setInvestedProjects] = useState([]);
   const [activeTab, setActiveTab] = useState('joined');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -74,6 +75,12 @@ function Profile({ user }) {
       };
       fetchCreatedProjects();
     }
+  }, [authUser]);
+
+  // TODO: Replace with real retrieval when available
+  useEffect(() => {
+    // Placeholder: derive invested projects if stored similarly
+    setInvestedProjects([]);
   }, [authUser]);
   
   if (!userData) {
@@ -217,10 +224,20 @@ function Profile({ user }) {
             >
               Created Projects
             </button>
+            <button
+              onClick={() => setActiveTab('invested')}
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                activeTab === 'invested'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700'
+              }`}
+            >
+              Invested Projects
+            </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {(activeTab === 'joined' ? joinedProjects : createdProjects).map((project) => (
+            {(activeTab === 'joined' ? joinedProjects : activeTab === 'created' ? createdProjects : investedProjects).map((project) => (
               <div
                 key={project.id}
                 onClick={() => navigate(`/idea/${project.id}`)}
@@ -248,8 +265,6 @@ function Profile({ user }) {
                 </div>
 
                 <div className="p-6">
-                  <p className="text-gray-300 mb-4">{project.projectDescription}</p>
-                  
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     {activeTab === 'joined' && (
                       <div className="flex items-center gap-2 text-gray-400">
@@ -270,24 +285,12 @@ function Profile({ user }) {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-24 h-2 bg-gray-600 rounded-full">
-                        <div
-                          className="h-full bg-blue-500 rounded-full"
-                          style={{ width: `${project.progress || 0}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-gray-400">{project.progress || 0}%</span>
-                    </div>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/idea/${project.id}`);
-                      }} 
-                      className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors"
+                    {/* Additional per-project actions can go here */}
+                    <button
+                      onClick={() => navigate(`/idea/${project.id}`)}
+                      className="flex items-center gap-2 text-blue-400 hover:text-blue-300"
                     >
-                      View Project
-                      <ArrowUpRight className="w-4 h-4" />
+                      View <ArrowUpRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -296,24 +299,27 @@ function Profile({ user }) {
           </div>
 
           {((activeTab === 'joined' && joinedProjects.length === 0) ||
-            (activeTab === 'created' && createdProjects.length === 0)) && (
+            (activeTab === 'created' && createdProjects.length === 0) ||
+            (activeTab === 'invested' && investedProjects.length === 0)) && (
             <div className="text-center py-12">
               <div className="w-16 h-16 bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Star className="w-8 h-8 text-gray-400" />
               </div>
               <h3 className="text-xl font-semibold mb-2">
-                No {activeTab === 'joined' ? 'joined' : 'created'} projects yet
+                No {activeTab === 'joined' ? 'joined' : activeTab === 'created' ? 'created' : 'invested'} projects yet
               </h3>
               <p className="text-gray-400">
                 {activeTab === 'joined'
                   ? 'Start collaborating by joining exciting projects'
-                  : 'Share your ideas by creating a new project'}
+                  : activeTab === 'created'
+                  ? 'Share your ideas by creating a new project'
+                  : 'Support teams by investing in promising projects'}
               </p>
               <button
-                onClick={() => navigate(activeTab === 'joined' ? '/' : '/create-idea')}
+                onClick={() => navigate(activeTab === 'created' ? '/create-idea' : '/')}
                 className="mt-6 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
-                {activeTab === 'joined' ? 'Explore Projects' : 'Create Project'}
+                {activeTab === 'created' ? 'Create Project' : 'Explore Projects'}
               </button>
             </div>
           )}

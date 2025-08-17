@@ -10,7 +10,7 @@ import { addUserData, getUserData, addProjectContributor, isRoleAvailable } from
 import PaymentModal from './PaymentModal';
 
 
-function JoinGroup({ project, onBack }) {
+function JoinGroup({ project, onBack, autoOpenStake }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     role: '',
@@ -28,6 +28,7 @@ function JoinGroup({ project, onBack }) {
   const [stakingAddress,setStakingAddress] = useState(null);
   const { user } = useAuth();
   const [roleError, setRoleError] = useState('');
+  const [autoStakeTriggered, setAutoStakeTriggered] = useState(false);
 
   
   // retrieve user data from db
@@ -82,7 +83,7 @@ function JoinGroup({ project, onBack }) {
   : [];
 
   const handleStakeClick = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     
     // Check if the selected role is available
     const isAvailable = await isRoleAvailable(project.id, formData.role);
@@ -93,6 +94,26 @@ function JoinGroup({ project, onBack }) {
 
     setShowPaymentModal(true);
   };
+
+  // If coming from Invest button, auto-open staking once role is selected and available
+  useEffect(() => {
+    const tryAutoOpenStake = async () => {
+      if (!autoOpenStake || autoStakeTriggered) return;
+      if (!formData.role) {
+        setRoleError('Select a role to continue to investment.');
+        return;
+      }
+      const available = await isRoleAvailable(project.id, formData.role);
+      if (!available) {
+        setRoleError('This role is no longer available. Please select another role.');
+        return;
+      }
+      setAutoStakeTriggered(true);
+      setShowPaymentModal(true);
+    };
+    tryAutoOpenStake();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoOpenStake, formData.role]);
 
   const handlePaymentComplete = async (paymentData) => {
     setIsStaking(true);
@@ -215,7 +236,6 @@ function JoinGroup({ project, onBack }) {
                     onChange={(e) => setFormData(prev => ({ ...prev, github: e.target.value }))}
                     className="w-full pl-10 pr-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
                     placeholder="https://github.com/username"
-                    required
                   />
                   <Github className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
                 </div>
@@ -233,7 +253,6 @@ function JoinGroup({ project, onBack }) {
                     onChange={(e) => setFormData(prev => ({ ...prev, linkedin: e.target.value }))}
                     className="w-full pl-10 pr-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
                     placeholder="https://linkedin.com/in/username"
-                    required
                   />
                   <Linkedin className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
                 </div>
