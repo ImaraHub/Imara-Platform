@@ -3,19 +3,17 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './components/Home';
 import Auth from './components/Auth';
-import BuilderProfile from './components/BuilderProfile';
 import CreateIdea from './components/CreateIdea';
 import Index from './components/Index';
-import Profile from './components/Profile';
+import Profile from './components/profiles/Profile';
 import ProjectManager from './components/ProjectManager';
-import Stake from './components/stake';
-import TokenizationPage from './components/token';
+
 import ViewIdea from './components/ViewIdea';
 import ProjectWorkspace from './components/ProjectWorkspace';
 // import StakingProfile from './components/StakingProfile';
 import JoinGroup from './components/joinGroup';
 import AuthCallback from './components/AuthCallback';
-import ProfileSettings from './components/ProfileSettings';
+import ProfileSettings from './components/profiles/ProfileSettings';
 import { useAuth } from './AuthContext';
 
 function App() {
@@ -51,8 +49,8 @@ function App() {
         <Route path="/profile" element={user ? <Profile /> : <Navigate to="/auth" />} />
         <Route path="/profile/settings" element={user ? <ProfileSettings /> : <Navigate to="/auth" />} />
         <Route path="/project-manager" element={user ? <ProjectManager /> : <Navigate to="/auth" />} />
-        <Route path="/stake" element={user ? <Stake /> : <Navigate to="/auth" />} />
-        <Route path="/token" element={user ? <TokenizationPage /> : <Navigate to="/auth" />} />
+
+
         {/* <Route path="/staking-profile" element={<StakingProfile/>} /> */}
         <Route path="/join-group" element={user ? <JoinGroup /> : <Navigate to="/auth" />} />
 
