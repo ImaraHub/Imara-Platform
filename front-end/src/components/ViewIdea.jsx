@@ -52,7 +52,6 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   // Removed showInvestModal; Invest now routes directly to JoinGroup
   // add investor payment modal state
   const [showInvestPaymentModal, setShowInvestPaymentModal] = useState(false);
-  const [investAmount] = useState(15);
 
   const stakingSuccess = stakeSuccess || location.state?.stakeSuccess || false;
   const isContributorFromState = location.state?.isContributor || false;
@@ -468,7 +467,7 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
       <PaymentModal
         isOpen={showInvestPaymentModal}
         onClose={() => setShowInvestPaymentModal(false)}
-        amount={investAmount}
+        amount={15}
         onPaymentComplete={handleInvestorPaymentComplete}
         project={projectData}
         userEmail={user?.email || ''}
