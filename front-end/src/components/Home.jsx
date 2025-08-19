@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {useAddress, useDisconnect} from "@thirdweb-dev/react";
 import { Carousel } from 'react-bootstrap';
-import BuilderProfile from './BuilderProfile';
-import ViewIdea from './ViewIdea';
-import ProjectManager from './ProjectManager';
-import ProfileSettings from './ProfileSettings'; // Correct import path
+
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/SupabaseClient';
 import logo from '../assets/logo.png';  // Add this import
@@ -36,9 +33,9 @@ import {
   Check
 } from 'lucide-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import CreateIdea from './CreateIdea';
+
 import { displayIdeas } from '../utils/SupabaseClient';
-import { use } from 'react';
+
 
 const categories = ["All", "DeFi", "NFT", "Gaming", "DAO", "Infrastructure"];
 const stages = ["All Stages", "Ideation", "Development", "Launch Ready"];
@@ -55,8 +52,6 @@ function Home() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [projects, setProjects] = useState([]);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [showBuilderProfile, setShowBuilderProfile] = useState(false);
-  const [showProjectManager, setShowProjectManager] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [trendingProjects, setTrendingProjects] = useState([]);
@@ -160,7 +155,7 @@ function Home() {
   }
   
   const handleCopyLink = (projectId) => {
-    const url = `https://imara-platform-1.onrender.com/project/${projectId}`;
+    const url = `https://www.imarahub.xyz/idea/${projectId}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -199,7 +194,7 @@ function Home() {
 
         <div className="bg-gray-700/50 p-3 rounded-lg flex items-center gap-3">
           <div className="flex-1 truncate text-gray-300 text-sm">
-            https://imaraplatform-1.onrender.com/project/{project.id}
+            https://www.imarahub.xyz/idea/{project.id}
           </div>
           <button
             onClick={() => handleCopyLink(project.id)}
