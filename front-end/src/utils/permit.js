@@ -37,8 +37,8 @@ export async function generatePermitSignature({
     const token = new ethers.Contract(tokenAddress, ERC20PermitABI, signer);
 
     const balance = await token.balanceOf(owner);
-    console.log(`🪙 Wallet balance: ${balance} LSK`);
-    console.log(`🛠  Attempting to permit ${value} LSK from ${owner}`);
+    console.log(`🪙 Wallet balance: ${balance} USDC`);
+    console.log(`🛠  Attempting to permit ${value} USDC from ${owner}`);
     console.log("valueeeeeeeee", value, typeof value);
 
     if (balance.lt(value)) {
@@ -52,11 +52,11 @@ export async function generatePermitSignature({
     const nonce = await token.nonces(owner);
 
     // Get token name
-    let name = "LSK";
+    let name = "USDC";
     try {
       name = await token.name();
     } catch {
-      console.warn("⚠️ token.name() failed, using fallback 'LSK'");
+      console.warn("⚠️ token.name() failed, using fallback 'USDC'");
     }
 
     // Domain
