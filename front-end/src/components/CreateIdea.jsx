@@ -8,6 +8,9 @@ import CheckEmailForWallet from '../utils/walletEmailLinking';
 import {LoginWithWallet} from '../utils/sessionGenerate';
 import RequestEmail from './EmailRequest';
 import { useNavigate } from 'react-router-dom';
+import PaymentModal from './PaymentModal';
+import imaraContractService from '../utils/imaraContract';
+import { ethers } from 'ethers';
 
 const CreateIdea = () => {
   const navigate = useNavigate();
@@ -23,6 +26,8 @@ const CreateIdea = () => {
   const [ShowEmailComponent ,setShowEmailComponent] = useState(false);
 
   const [showHomePage, setHomePage] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [newProjectId, setNewProjectId] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     projectDescription: '',
@@ -93,13 +98,36 @@ const CreateIdea = () => {
 
     try {
 
-      await LoginWithWallet(user);
+      // Remove admin session generation on client; rely on existing AuthContext session
       const result = await addIdea(formData, user);
       console.log('Idea added successfully', result);
-      setHomePage(true);
 
+      // Expect the DB to return the created idea with its ID (UUID)
+      const dbProjectId = result?.id || result?.data?.id;
+      if (!dbProjectId) {
+        console.warn('No DB project ID found in addIdea result');
+        setHomePage(true);
+        return;
+      }
 
-    }catch (err) {
+      // Derive a uint256 on-chain projectId from the UUID (keccak256)
+      const onchainIdHex = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(dbProjectId));
+      const onchainProjectId = ethers.BigNumber.from(onchainIdHex);
+
+      try {
+        // Connect wallet and create project on-chain with derived ID and stakeAmount
+        await imaraContractService.connect();
+        const humanAmount = String(formData.stakeAmount || '1');
+        const { tx } = await imaraContractService.createProjectWithDatabaseId(onchainProjectId, humanAmount);
+        console.log('On-chain project created:', tx.hash);
+      } catch (chainErr) {
+        console.warn('On-chain project creation skipped/failed:', chainErr?.message || chainErr);
+      }
+
+      setNewProjectId(onchainProjectId.toString());
+      setShowPaymentModal(true);
+
+    } catch (err) {
       console.error('Unexpected error:', err.message);
 
     }  
@@ -152,6 +180,17 @@ const handleCustomDurationSubmit = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
       <div className="container mx-auto px-4 py-8">
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => { setShowPaymentModal(false); setHomePage(true); }}
+          amount={Number(formData.stakeAmount) || 1}
+          onPaymentComplete={() => ({ success: true })}
+          project={{ id: newProjectId, stakeAmount: Number(formData.stakeAmount) || 1, creator: true }}
+          userEmail={user?.email}
+          role={'Creator'}
+          formData={formData}
+          projectIdForDeposit={newProjectId}
+        />
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
