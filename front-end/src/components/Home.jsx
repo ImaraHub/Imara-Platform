@@ -64,9 +64,7 @@ function Home() {
   const email = localStorage.getItem("userEmail");
   const [userEmail, setUserEmail] = useState(email);
 
-  const [showIdeationMenu, setShowIdeationMenu] = useState(false);
   const [selectedIdea, setSelectedIdea] = useState(null);
-  const [showProfileSettings,setShowProfileSettings] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -144,15 +142,7 @@ function Home() {
     });
   };
   
-  if (showProfileSettings) {
-    navigate('/profile');
-    return null;
-  }
-
-  if (showIdeationMenu) {
-    navigate('/idea');
-    return null;
-  }
+  // Avoid navigating during render; navigate in event handlers instead
   
   const handleCopyLink = (projectId) => {
     const url = `https://www.imarahub.xyz/idea/${projectId}`;
@@ -253,7 +243,7 @@ function Home() {
             <div className="flex items-center gap-4">
               <div className="relative">
                 <button
-                  onClick={() => setShowIdeationMenu(true)}
+                  onClick={() => navigate('/idea')}
                   className="flex items-center gap-2 bg-blue-500/20 px-4 py-2 rounded-lg hover:bg-blue-500/30 transition-all duration-200"
                 > <PlusCircle className="w-4 h-4 text-purple-400" />
                   <span className="text-sm font-medium text-purple-400">Create an Idea</span>
