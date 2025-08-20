@@ -7,24 +7,15 @@ import stakeToken from '../utils/stake';
 import { initiateMpesaPayment, pollPaymentStatus, stakeContractAddress, userAddress } from '../utils/mpesaOnramp';
 import { jsPDF } from 'jspdf';
 import { useAuth } from '../AuthContext';
-import { addProjectContributor } from '../utils/SupabaseClient';
+import { addProjectContributor, updateIdeaStatus } from '../utils/SupabaseClient';
 import { sendStakingConfirmationEmail } from '../utils/emailService';
 import { addUserData, updateUser } from '../utils/SupabaseClient';
 import { generatePermitSignature } from '../utils/permit';
+import imaraContractService from "../utils/imaraContract";
 
+// Contract interactions are delegated to imaraContractService
 
-// Add the depositWithPermit ABI
-//  0x3DF3EF1eDE72C486066aF309a9eC794004C0943A
-const DEPOSIT_CONTRACT_ADDRESS = '0xdd072931db6cd1d57066f032327e90f7fd46fa7f';
-const DEPOSIT_CONTRACT_ABI = [
-  'function depositWithPermit(address token, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns (uint256)',
-  'function addFundsWithPermit(uint256 _projectId, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s)',
-  'event ProjectCreated(uint256 indexed projectId, address indexed creator)'
-];
-const USDT_CONTRACT_ADDRESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
-// 
-
-const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, userEmail, role, formData }) => {
+const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, userEmail, role, formData, projectIdForDeposit }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState('usdt');
@@ -35,9 +26,11 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
   const [mpesaOrderId, setMpesaOrderId] = useState('');
   const [pollingInterval, setPollingInterval] = useState(null);
   const [transactionHash, setTransactionHash] = useState('');
-  const [stakeAmount, setStakeAmount] = useState(amount || 15);
+  const minStake = Number(project?.stakeAmount ?? project?.stake_amount ?? amount ?? 0);
+  const [stakeAmount, setStakeAmount] = useState(amount || minStake || 15);
   
   const address = useAddress();
+  const targetProjectId = project?.id ?? projectIdForDeposit;
 
 
   // Cleanup polling on unmount
@@ -48,6 +41,16 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
       }
     };
   }, [pollingInterval]);
+
+  // Unified close handler (mark NotStaked if creator did not complete)
+  const handleModalClose = async () => {
+    try {
+      if (role === 'Creator' && targetProjectId && paymentStatus !== 'success') {
+        await updateIdeaStatus(targetProjectId, 'NotStaked');
+      }
+    } catch (_) {}
+    onClose?.();
+  };
 
   const startPolling = (orderID) => {
     if (pollingInterval) {
@@ -82,7 +85,7 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
     setPollingInterval(interval);
   };
 
-  // New handler for USDT staking with permit
+  // Unified staking/funding via service
   const handleUsdtStakeWithPermit = async () => {
     try {
       if (!window.ethereum) throw new Error('MetaMask is not installed');
@@ -92,88 +95,32 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
       setErrorMessage('');
       setPaymentStatus('pending');
 
-      // Setup provider and signer
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send('eth_requestAccounts', []);
-      const signer = provider.getSigner();
-      const owner = address;
-      const spender = DEPOSIT_CONTRACT_ADDRESS;
-      const tokenAddress = USDT_CONTRACT_ADDRESS;
-      const chainId = (await provider.getNetwork()).chainId;
-      if (chainId !== 84532) {
-        throw new Error('Please switch to the Base Sepolia test network');
+      // enforce minimum stake for Creator/Participant only
+      const numericStake = Number(stakeAmount);
+      if ((role === 'Creator' || role === 'Participant') && numericStake < minStake) {
+        throw new Error(`Minimum amount is ${minStake}`);
       }
-      const amountInDecimals = role === 'Investor' 
-        ? ethers.utils.parseUnits(stakeAmount.toString(), 6) 
-        : ethers.utils.parseUnits("0.1", 6); // 0.1 USDC for contributors, custom amount for investors
-
-      console.log(amountInDecimals.toString(), "amount in decimals");
-      const deadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
-
-      // Generate permit signature
-      const { v, r, s, error } = await generatePermitSignature({
-        tokenAddress,
-        owner,
-        spender,
-        value: amountInDecimals,
-        deadline,
-        provider,
-        signer,
-        chainId
-      });
-      if (error) {
-        throw new Error(`Insufficient Balance in Your Wallet`);
+      await imaraContractService.connect();
+      let txRes;
+      if (role === 'Investor') {
+        txRes = await imaraContractService.addFunds(targetProjectId, String(numericStake));
+      } else if (role === 'Participant') {
+        txRes = await imaraContractService.stakeToApply(targetProjectId, String(numericStake));
+      } else {
+        txRes = await imaraContractService.addFunds(targetProjectId, String(numericStake));
       }
-
-      // Deposit contract instance
-      const depositContract = new ethers.Contract(
-        DEPOSIT_CONTRACT_ADDRESS,
-        DEPOSIT_CONTRACT_ABI,
-        signer
-      );
-
-      // Call depositWithPermit
-      // uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32
-      const tx = await depositContract.addFundsWithPermit(
-        5,
-        amountInDecimals,
-        deadline,
-        v,
-        r,
-        s
-      );
-      setTransactionHash(tx.hash);
-      const receipt = await tx.wait();
-
-      // Try to extract projectId from ProjectCreated event (if this tx created a project)
-      let createdProjectId = null;
-      try {
-        for (const log of receipt.logs || []) {
-          if (log.address?.toLowerCase() !== DEPOSIT_CONTRACT_ADDRESS.toLowerCase()) continue;
-          try {
-            const parsed = depositContract.interface.parseLog(log);
-            if (parsed && parsed.name === 'ProjectCreated' && parsed.args?.projectId != null) {
-              createdProjectId = parsed.args.projectId.toString();
-              break;
-            }
-          } catch (_) {
-            // not this event, continue
-          }
-        }
-      } catch (_) {
-        // ignore parsing issues
-      }
+      setTransactionHash(txRes.tx.hash);
 
       setPaymentStatus('success');
       onPaymentComplete({
         method: 'usdt',
         address,
         details: {
-          hash: tx.hash,
+          hash: txRes.tx.hash,
           amount: "1",
           token: "USDC",
           type: "stake",
-          projectId: createdProjectId
+          projectId: targetProjectId
         }
       });
     } catch (error) {
@@ -181,6 +128,12 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
       console.log("Error during USDC staking with permit:", error);
       setErrorMessage(error.message || 'Failed to stake USDC with permit');
       console.error('USDC permit stake error:', error);
+      // If creator context and staking failed, mark NotStaked in DB
+      try {
+        if (role === 'Creator' && targetProjectId) {
+          await updateIdeaStatus(targetProjectId, 'NotStaked');
+        }
+      } catch (_) {}
     } finally {
       setIsProcessing(false);
     }
@@ -431,21 +384,21 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
         </div>
 
         {/* Investment Amount Input - Only for Investors */}
-        {role === 'Investor' && (
+        {(role === 'Investor' || role === 'Creator' || role === 'Participant') && (
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Investment Amount (KES)
+              {role === 'Investor' ? 'Investment Amount (USDT)' : 'Stake Amount (USDT)'}
             </label>
             <input
               type="number"
               value={stakeAmount}
               onChange={(e) => setStakeAmount(Number(e.target.value) || 0)}
               min="1"
-              placeholder="Enter amount to invest"
+              placeholder={`Minimum ${minStake}`}
               className="w-full px-4 py-3 bg-white/5 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-white"
             />
             <p className="text-sm text-gray-400 mt-2">
-              Enter the amount you want to invest in this project
+              Minimum required: {minStake}
             </p>
           </div>
         )}
