@@ -23,7 +23,10 @@ function JoinGroup({ project, onBack, autoOpenStake }) {
   });
   const [isStaking, setIsStaking] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [stakingAmount] = useState(15); // Set your staking amount here
+  const [stakingAmount, setStakingAmount] = useState(() => {
+    const v = project?.stakeAmount ?? project?.stake_amount ?? 15;
+    return Number(v) || 15;
+  });
   const address = useAddress();
   const [stakingAddress,setStakingAddress] = useState(null);
   const { user } = useAuth();
@@ -60,6 +63,15 @@ function JoinGroup({ project, onBack, autoOpenStake }) {
 
   fetchUserData();
 }, [user]);  
+
+  // keep staking amount in sync with project prop
+  useEffect(() => {
+    const v = project?.stakeAmount ?? project?.stake_amount;
+    if (v != null) {
+      const n = Number(v);
+      if (!Number.isNaN(n) && n > 0) setStakingAmount(n);
+    }
+  }, [project]);
 
 
   const handleFileChange = async (e) => {
@@ -353,9 +365,9 @@ function JoinGroup({ project, onBack, autoOpenStake }) {
         onClose={() => setShowPaymentModal(false)}
         amount={stakingAmount}
         onPaymentComplete={handlePaymentComplete}
-        project={project}
+        project={{ ...project, stakeAmount: stakingAmount }}
         userEmail={formData.email}
-        role={formData.role}
+        role={'Participant'}
         formData={formData}
       />
     </div>
