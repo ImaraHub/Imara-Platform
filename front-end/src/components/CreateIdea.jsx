@@ -110,21 +110,8 @@ const CreateIdea = () => {
         return;
       }
 
-      // Derive a uint256 on-chain projectId from the UUID (keccak256)
-      const onchainIdHex = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(dbProjectId));
-      const onchainProjectId = ethers.BigNumber.from(onchainIdHex);
-
-      try {
-        // Connect wallet and create project on-chain with derived ID and stakeAmount
-        await imaraContractService.connect();
-        const humanAmount = String(formData.stakeAmount || '1');
-        const { tx } = await imaraContractService.createProjectWithDatabaseId(onchainProjectId, humanAmount);
-        console.log('On-chain project created:', tx.hash);
-      } catch (chainErr) {
-        console.warn('On-chain project creation skipped/failed:', chainErr?.message || chainErr);
-      }
-
-      setNewProjectId(onchainProjectId.toString());
+      // Store the database project ID for later use in PaymentModal
+      setNewProjectId(dbProjectId);
       setShowPaymentModal(true);
 
     } catch (err) {
