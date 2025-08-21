@@ -68,12 +68,23 @@ export const addIdea = async (formData, user) => {
             return null;
         }
 
-        // Create initial chat message
+        // Create initial chat message only if the user is authenticated
         if (data) {
-            await createInitialChatMessage(data.id, {
-                ...data,
-                uid: user.id
-            });
+            try {
+                const { data: authData, error: authErr } = await supabase.auth.getUser();
+                if (authErr) {
+                    console.warn('Auth check failed, skipping initial chat message:', authErr.message);
+                } else if (authData?.user) {
+                    await createInitialChatMessage(data.id, {
+                        ...data,
+                        uid: authData.user.id
+                    });
+                } else {
+                    console.warn('No authenticated user, skipping initial chat message');
+                }
+            } catch (_) {
+                // ignore; backend policy not configured yet
+            }
         }
     
         return data;
@@ -582,5 +593,23 @@ export const createInitialChatMessage = async (projectId, projectData) => {
   } catch (err) {
     console.error("Unexpected error in createInitialChatMessage:", err);
     return null;
+  }
+};
+
+// Update project status in ideas table
+export const updateIdeaStatus = async (projectId, status) => {
+  try {
+    const { error } = await supabase
+      .from('ideas')
+      .update({ status })
+      .eq('id', projectId);
+    if (error) {
+      console.error('Error updating idea status:', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Unexpected error in updateIdeaStatus:', err);
+    return false;
   }
 };
