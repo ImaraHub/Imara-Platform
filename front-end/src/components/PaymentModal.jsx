@@ -102,7 +102,10 @@ const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, use
       }
       await imaraContractService.connect();
       let txRes;
-      if (role === 'Investor') {
+      if (role === 'Creator') {
+        // For creators, create the on-chain project with their staked amount
+        txRes = await imaraContractService.createProjectWithDatabaseId(targetProjectId, String(numericStake));
+      } else if (role === 'Investor') {
         txRes = await imaraContractService.addFunds(targetProjectId, String(numericStake));
       } else if (role === 'Participant') {
         txRes = await imaraContractService.stakeToApply(targetProjectId, String(numericStake));
