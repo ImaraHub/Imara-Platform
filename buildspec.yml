@@ -6,7 +6,7 @@ phases:
       nodejs: 24
     commands:
       - echo "Installing dependencies..."
-      - cd frontend
+      - cd front-end
       - npm install
 
   build:
@@ -26,4 +26,4 @@ phases:
 artifacts:
   files:
     - '**/*'
-  base-directory: frontend/dist
+  base-directory: front-end/dist
