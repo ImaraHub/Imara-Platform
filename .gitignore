@@ -5,3 +5,4 @@ cache
 out
 package-lock.json
 .vite
+dist/
