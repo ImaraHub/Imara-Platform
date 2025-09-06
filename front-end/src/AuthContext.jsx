@@ -3,10 +3,6 @@ import { supabase } from "./utils/SupabaseClient";
 
 const AuthContext = createContext();
 
-// const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
-// const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-// export const supabase = createClient(supabaseUrl, supabaseKey);
-
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -7,6 +7,8 @@ import { useAuth } from '../AuthContext';
 import MilestoneList from './milestones/MilestoneList';
 import TimelineConfig from './milestones/TimelineConfig';
 
+const BACKEND_MILESTONE_BASE__URL = import.meta.env.BACKEND_MILESTONE_BASE_URL
+
 function ProjectWorkspace() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -154,7 +156,7 @@ function ProjectWorkspace() {
   const handleTimelineUpdate = async (newTimeline) => {
     try {
       // First check if a timeline already exists
-      const checkResponse = await fetch(`https://imara-milestone-service.onrender.com/api/projects/${id}/timeline`, {
+      const checkResponse = await fetch(`https://${BACKEND_MILESTONE_BASE__URL}/api/projects/${id}/timeline`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -181,7 +183,7 @@ function ProjectWorkspace() {
 
       // If no timeline exists, save the new one
       console.log('No existing timeline, saving new timeline');
-      const response = await fetch('https://imara-milestone-service.onrender.com/api/timeline', {
+      const response = await fetch(`https://${BACKEND_MILESTONE_BASE__URL}/api/timeline`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,7 +217,7 @@ function ProjectWorkspace() {
   useEffect(() => {
     const fetchMilestones = async () => {
       try {
-        const response = await fetch(`https://imara-milestone-service.onrender.com/projects/${id}/milestones`);
+        const response = await fetch(`https://${BACKEND_MILESTONE_BASE__URL}/projects/${id}/milestones`);
         if (!response.ok) {
           throw new Error('Failed to fetch milestones');
         }

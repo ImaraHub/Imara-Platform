@@ -4,6 +4,8 @@ import ChatInput from './ChatInput';
 import TypingIndicator from './TypingIndicator';
 import { supabase } from '../../lib/supabase';
 
+const BACKEND_CHAT_BASE_URL = import.meta.env.VITE_BACKEND_CHAT_BASE_URL
+
 function Chat({ currentUser }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -14,7 +16,7 @@ function Chat({ currentUser }) {
 
   useEffect(() => {
     // Connect to WebSocket server
-    socketRef.current = new WebSocket('wss://imara-chatservice.onrender.com/ws');
+    socketRef.current = new WebSocket(`wss://${BACKEND_CHAT_BASE_URL}/ws`);
 
     socketRef.current.onopen = () => {
       console.log('WebSocket connected');
