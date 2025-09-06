@@ -5,6 +5,8 @@ import { ConnectWallet, useAddress, useSigner } from "@thirdweb-dev/react";
 import { supabase } from '../utils/SupabaseClient';
 import logo from '../assets/logo.png';
 
+const APP_BASE_URL = import.meta.env.APP_BASE_URL
+
 export function Auth({ setShowAuth, setShowHome }) {
 
   const [isLogin, setIsLogin] = useState(true);
@@ -47,7 +49,7 @@ export function Auth({ setShowAuth, setShowHome }) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `https://imara-platform-1.onrender.com/auth/callback`,
+          redirectTo: `${APP_BASE_URL}/auth/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -103,7 +105,7 @@ export function Auth({ setShowAuth, setShowHome }) {
       email,
       password,
       options: {
-        emailRedirectTo: 'https://imara-platform-1.onrender.com',
+        emailRedirectTo: `${APP_BASE_URL}`,
         data: {
         display_name: userName, // Replace `fullName` with the actual state/input
       },

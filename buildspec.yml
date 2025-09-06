@@ -8,6 +8,12 @@ phases:
       - echo "Installing dependencies..."
       - cd front-end
       - npm install
+  pre_build:
+      commands:
+      - echo "Creating .env file from environment variables..."
+      - cd front-end
+      - echo "VITE_SUPABASE_KEY=$VITE_SUPABASE_KEY" > .env
+      - echo "VITE_SUPABASE_URL=$VITE_SUPABASE_URL" >> .env
 
   build:
     commands:

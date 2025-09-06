@@ -14,11 +14,11 @@ import { generatePermitSignature } from '../utils/permit';
 
 
 // Add the depositWithPermit ABI
-const DEPOSIT_CONTRACT_ADDRESS = '0x3DF3EF1eDE72C486066aF309a9eC794004C0943A';
+const DEPOSIT_CONTRACT_ADDRESS = import.meta.env.VITE_USDT_DEPOSIT_ADDRESS||'0x3DF3EF1eDE72C486066aF309a9eC794004C0943A';
 const DEPOSIT_CONTRACT_ABI = [
   'function depositWithPermit(address token, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) returns (uint256)'
 ];
-const USDT_CONTRACT_ADDRESS = '0x8a21CF9Ba08Ae709D64Cb25AfAA951183EC9FF6D';
+const USDT_CONTRACT_ADDRESS = import.meta.env.VITE_USDT_TOKEN_ADDRESS || '0x8a21CF9Ba08Ae709D64Cb25AfAA951183EC9FF6D';
 
 const PaymentModal = ({ isOpen, onClose, amount, onPaymentComplete, project, userEmail, role, formData }) => {
   const navigate = useNavigate();

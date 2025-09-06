@@ -28,6 +28,8 @@ import { useAuth } from '../AuthContext';
 import { getProjectContributors, fetchProjectById, isRoleAvailable } from '../utils/SupabaseClient';
 import { supabase } from '../utils/SupabaseClient';
 
+const APP_BASE_URL = import.meta.env.APP_BASE_URL
+
 function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -188,7 +190,7 @@ function ViewIdea({ project: propProject = {}, stakeSuccess = false, onBack }) {
   }
 
   const handleCopyLink = () => {
-    const url = `https://imara-platform-1.com/idea/${projectData?.id || "unknown"}`;
+    const url = `https://${APP_BASE_URL}/idea/${projectData?.id || "unknown"}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);

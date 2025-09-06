@@ -1,21 +1,19 @@
 import axios from 'axios';
 
-const SWYPT_API_URL = 'https://pool.swypt.io/api';
-const USDT_TOKEN_ADDRESS = '0x05D032ac25d322df992303dCa074EE7392C117b9';
+const SWYPT_API_URL = import.meta.env.SWYPT_API_URL
+const USDT_TOKEN_ADDRESS = import.meta.env.VITE_USDT_TOKEN_ADDRESS;
 export const stakeContractAddress = "";  // to launch on mainnet???
-export const userAddress = "0x42772299247aDd126151ADe909e36A8f4975437e";  // for testing deposit into wallet(swypt )
+export const userAddress = import.meta.env.VITE_USDT_DEPOSIT_ADDRESS;  // for testing deposit into wallet(swypt )
 // Helper function to get auth headers
 
-const SWYPT_API_KEY = import.meta.env.VITE_REACT_APP_SWYPT_API_KEY;
-const SWYPT_API_SECRET = import.meta.env.VITE_REACT_APP_SWYPT_API_SECRET;
+const SWYPT_API_KEY = import.meta.env.VITE_SWYPT_API_KEY;
+const SWYPT_API_SECRET = import.meta.env.VITE_SWYPT_API_SECRET;
 
 const getAuthHeaders = () => ({
   'x-api-key': SWYPT_API_KEY,
   'x-api-secret': SWYPT_API_SECRET
 });
 
-console.log('API Key exists:', !!SWYPT_API_KEY);
-console.log('API Secret exists:', !!SWYPT_API_SECRET);
 
 /**
  * Initiates an M-Pesa STK push to the user's phone number.

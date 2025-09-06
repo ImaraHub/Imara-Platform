@@ -160,7 +160,7 @@ function Home() {
   }
   
   const handleCopyLink = (projectId) => {
-    const url = `https://imara-platform-1.onrender.com/project/${projectId}`;
+    const url = `https://${APP_BASE_URL}/project/${projectId}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -199,7 +199,7 @@ function Home() {
 
         <div className="bg-gray-700/50 p-3 rounded-lg flex items-center gap-3">
           <div className="flex-1 truncate text-gray-300 text-sm">
-            https://imaraplatform-1.onrender.com/project/{project.id}
+            https://${APP_BASE_URL}/project/{project.id}
           </div>
           <button
             onClick={() => handleCopyLink(project.id)}

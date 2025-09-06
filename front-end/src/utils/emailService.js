@@ -1,5 +1,6 @@
 import emailjs from '@emailjs/browser';
 
+const APP_BASE__URL = import.meta.env.APP_BASE_URL
 /**
  * Sends a staking confirmation email to the user
  * @param {Object} params - The parameters for the email
@@ -22,7 +23,7 @@ export const sendStakingConfirmationEmail = async ({ userEmail, project, payment
       transaction_hash: paymentDetails.transactionHash,
       date: new Date().toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
-      project_url: `https://imara-platform-1.onrender.com/idea/${project.id}`
+      project_url: `https://${APP_BASE_URL}/idea/${project.id}`
     };
 
     // Send email using EmailJS
